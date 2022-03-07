@@ -1,12 +1,14 @@
 #include "app.hpp"
 #include <stdexcept>
+#include <iostream>
 
 void App::init() {
-
+    std::printf("app.init()\n");
 }
 
 void App::loop() {
-
+    std::printf("app.loop()\n");
+    throw std::runtime_error("If you see this, everything works!\n");
 }
 
 void App::start() {

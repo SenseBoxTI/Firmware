@@ -1,5 +1,6 @@
 #include <Arduino.h>
-#include "app/app.hpp"
+#include <esp_task.h>
+#include <app.hpp>
 
 extern "C" void app_main();
 
@@ -9,5 +10,6 @@ void app_main() {
     auto app = App();
     app.start();
 
-    while (true); //hang
+    // hang, update watchdog once in a while to keep RTOS happy
+    while (true) vTaskDelay(1000 / portTICK_PERIOD_MS);
 }
