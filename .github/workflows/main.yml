@@ -37,7 +37,7 @@ jobs:
         run: echo "::set-output name=short::$(git rev-parse --short HEAD)"
 
       - name: Create flashing instructions
-        run: echo -e '# Flashing instructions\nTo flash the firmware onto your device you can use [esptool](https://github.com/espressif/esptool).\n\nUsing the following command arguments:\n```\n-p (PORT) -b 460800 --before default_reset --after hard_reset --chip esp32  write_flash --flash_mode dio --flash_size detect --flash_freq 40m 0x1000 bootloader.bin 0x8000 partition-table.bin 0x10000 main.bin\n```\n**!! Replace (PORT) with your device !!**' > flashing.md
+        run: echo '# Flashing instructions\nTo flash the firmware onto your device you can use [esptool](https://github.com/espressif/esptool).\n\nUsing the following command arguments:\n```\n -p (PORT) -b 460800 --before default_reset --after hard_reset --chip esp32  write_flash --flash_mode dio --flash_size detect --flash_freq 40m 0x1000 build/bootloader/bootloader.bin 0x8000 build/partition_table/partition-table.bin 0x10000 build/main.bin\n```\n**!! Replace (PORT) with your device !!**' > flashing.md
 
       # Runs a set of commands using the runners shell
       - name: Upload build artifact
