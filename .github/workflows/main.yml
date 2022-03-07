@@ -37,8 +37,8 @@ jobs:
         run: echo "::set-output name=short::$(git rev-parse --short HEAD)"
 
       # Runs a set of commands using the runners shell
-      - name: Upload build artifacts
-        uses: actions/upload-artifacts@v2.3.1
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v2.3.1
         with:
           name: build-${{steps.commit_sha.outputs.short}}
           path: |
