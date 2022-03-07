@@ -41,7 +41,7 @@ idf.py -p <port> flash
 │   └── Arduino             # arduino esp32 core
 ├── main                    # source directory
 │   ├── app                 # the sensebox implementation 
-│   │   ├── app.cpp/hpp     # (TODO) application wrapper
+│   │   ├── app.cpp/hpp     # application wrapper
 │   │   ├── <sensors>       # (TODO) sensor implementations
 │   │   └── <core>          # (TODO) core component implementations (SD card, etc)
 │   ├── CMakeLists.txt      # source include
