@@ -2,7 +2,4 @@
     path = components/arduino
     url  = git://github.com/espressif/arduino-esp32.git
 
-# Add other components here as submodules too
-# [submodule "some-library"]
-#     path = components/some-library
-#     url  = git://github.com/our/forked/library.git
+# Add other libs as submodules from our own forked repositories (preferably)
