@@ -2,23 +2,3 @@
 [submodule "components/arduino"]
 	path = components/arduino
 	url = git://github.com/espressif/arduino-esp32.git
-
-[submodule "components/adafruit_scd30"]
-	path = components/adafruit_scd30
-	url = git://github.com/SenseBoxTI/Adafruit_SCD30.git
-
-[submodule "components/adafruit_ssd1306"]
-	path = components/adafruit_ssd1306
-	url = git://github.com/SenseBoxTI/Adafruit_SSD1306.git
-
-[submodule "components/adafruit_sensor"]
-	path = components/adafruit_sensor
-	url = git://github.com/SenseBoxTI/Adafruit_Sensor.git
-
-[submodule "components/adafruit_gfx_library"]
-	path = components/adafruit-gfx-library
-	url = git://github.com/SenseBoxTI/Adafruit-GFX-Library.git
-
-[submodule "components/adafruit_busio"]
-	path = components/adafruit_busio
-	url = git://github.com/SenseBoxTI/Adafruit_BusIO.git
