@@ -1,6 +1,6 @@
 #include "dbsensor.hpp"
 
-SensorOutput CDbSensor::measureCallback() {
+SensorOutput CDbSensor::m_MeasureCallback() {
     SensorOutput output;
 
     output.insert({"db", "40.0"});
@@ -8,6 +8,6 @@ SensorOutput CDbSensor::measureCallback() {
     return output;
 }
 
-CSensorStatus CDbSensor::initCallback() {
+CSensorStatus CDbSensor::m_InitCallback() {
     return CSensorStatus::Ok();
 }

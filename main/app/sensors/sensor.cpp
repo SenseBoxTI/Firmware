@@ -1,12 +1,12 @@
 #include "sensor.hpp"
 
-SensorOutput CSensor::measure() {
-    m_LastMeasurement = measureCallback();
+SensorOutput CSensor::mMeasure() {
+    m_LastMeasurement = m_MeasureCallback();
     return m_LastMeasurement;
 }
 
-CSensorStatus CSensor::init() {
-    m_Status = initCallback();
+CSensorStatus CSensor::mInit() {
+    m_Status = m_InitCallback();
     return m_Status;
 }
 

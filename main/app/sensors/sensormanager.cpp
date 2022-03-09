@@ -8,17 +8,17 @@ CSensorManager& CSensorManager::getInstance() {
 CSensorManager::CSensorManager() {
 }
 
-CSensorStatus CSensorManager::addSensor(CSensor* apSensor) {
-    auto status = apSensor->init();
+CSensorStatus CSensorManager::mAddSensor(CSensor* apSensor) {
+    auto status = apSensor->mInit();
     m_Sensors.push_back(apSensor);
     return status;
 }
 
-Measurements CSensorManager::measure() {
+Measurements CSensorManager::mMeasure() {
     Measurements measurements;
 
     for (auto sensor : m_Sensors) {
-        measurements.insert({sensor->mName, sensor->measure()});
+        measurements.insert({sensor->mName, sensor->mMeasure()});
     }
     m_Measurements = measurements;
 

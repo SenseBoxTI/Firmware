@@ -7,6 +7,6 @@ class CDbSensor : public CSensor {
     using CSensor::CSensor;
 
     private:
-    SensorOutput measureCallback();
-    CSensorStatus initCallback();
+    SensorOutput m_MeasureCallback();
+    CSensorStatus m_InitCallback();
 };

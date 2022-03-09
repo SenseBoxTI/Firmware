@@ -7,8 +7,8 @@
 class CSensorManager {
 public:
     static CSensorManager& getInstance();
-    CSensorStatus addSensor(CSensor* apSensor);
-    Measurements measure();
+    CSensorStatus mAddSensor(CSensor* apSensor);
+    Measurements mMeasure();
 
 private:
     std::vector<CSensor*> m_Sensors;
