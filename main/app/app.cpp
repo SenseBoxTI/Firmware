@@ -1,13 +1,33 @@
 #include "app.hpp"
 #include <stdexcept>
 #include <iostream>
+#include <sensormanager.hpp>
+#include <dbsensor.hpp>
+
+auto sensorManager = CSensorManager::getInstance();
 
 void App::init() {
     std::printf("app.init()\n");
+    sensorManager.addSensor(new CDbSensor("dbSensor"));
 }
 
 void App::loop() {
     std::printf("app.loop()\n");
+    
+    auto sensors = sensorManager.measure();
+
+    // Print all measurements
+    for (auto const &sensor: sensors) {
+        std::printf("Sensor '%s':\n", sensor.first.c_str());
+        for (auto const &measurement : sensor.second) {
+            std::printf("%s\t: %s\n",
+                measurement.first.c_str(),
+                measurement.second.c_str()
+            );
+        }
+        std::printf("\n");
+    }
+
     throw std::runtime_error("If you see this, everything works!\n");
 }
 
