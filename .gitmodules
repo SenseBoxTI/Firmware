@@ -17,3 +17,12 @@
 [submodule "components/adafruit_busio"]
 	path = components/adafruit_busio
 	url = git://github.com/SenseBoxTI/Adafruit_BusIO.git
+[submodule "components/adafruit_tsl2591"]
+	path = components/adafruit_tsl2591
+	url = git://github.com/SenseBoxTI/Adafruit_TSL2591_Library.git
+[submodule "components/adafruit_pm25aqi"]
+	path = components/adafruit_pm25aqi
+	url = git://github.com/SenseBoxTI/Adafruit_PM25AQI.git
+[submodule "components/adafruit_as726x"]
+	path = components/adafruit_as726x
+	url = git://github.com/SenseBoxTI/Adafruit_AS726x
