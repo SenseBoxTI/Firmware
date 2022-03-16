@@ -11,6 +11,8 @@ SRCS
     "./app/sensors/measurements.cpp"
     # Sensor Impl
     "./app/sensors/impl/dbsensor.cpp"
+    # SD
+    "./app/SD/sd.cpp"
 INCLUDE_DIRS
     # Add directories seperately.
     "./app/"
@@ -18,4 +20,6 @@ INCLUDE_DIRS
     "./app/sensors/"
     # Sensor Impl
     "./app/sensors/impl/"
+    # SD
+    "./app/SD"
 )

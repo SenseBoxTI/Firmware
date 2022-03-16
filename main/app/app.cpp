@@ -3,12 +3,22 @@
 #include <iostream>
 #include <sensormanager.hpp>
 #include <dbsensor.hpp>
+#include <sd.hpp>
+
+#include <sys/unistd.h>
+// temp var to keep track of cycle count
+uint64_t dataTestCounter = 0;
 
 void App::init() {
     std::printf("app.init()\n");
     auto sensorManager = CSensorManager::getInstance();
-
     sensorManager.mAddSensor(new CDbSensor("dbSensor"));
+
+    auto& SD = CSD::getInstance();
+    auto ret = SD.mInit();
+    auto file = fopen(MOUNT_POINT "/sd_test.txt", "w");
+    fprintf(file, "Testing file write\n");
+    fclose(file);
 }
 
 void App::loop() {
@@ -16,19 +26,32 @@ void App::loop() {
     auto sensorManager = CSensorManager::getInstance();
 
     auto sensors = sensorManager.mMeasure();
-
     // Print all measurements
+    auto file = fopen(MOUNT_POINT "/sd_test.txt", "a");
+    fprintf(file, "-- data %lu --\n", dataTestCounter);
+    dataTestCounter++;
     for (auto const &sensor: sensors) {
         std::printf("Sensor '%s':\n", sensor.first.c_str());
+
         for (auto const &measurement : sensor.second) {
             std::printf("\t%s\t: %s\n",
                 measurement.first.c_str(),
                 measurement.second.c_str()
             );
+
+            if (file != nullptr) {
+                fprintf(file, "\t%s\t: %s\n",
+                    measurement.first.c_str(),
+                    measurement.second.c_str()
+                    );
+            }
         }
+
         std::printf("\n");
     }
 
+    fprintf(file, "---------------\n", dataTestCounter);
+    fclose(file);
     // Throw debug error
     throw std::runtime_error("If you see this, everything works!\n");
 }
