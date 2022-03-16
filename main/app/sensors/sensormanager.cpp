@@ -1,7 +1,7 @@
 #include "sensormanager.hpp"
 
 CSensorManager& CSensorManager::getInstance() {
-    static CSensorManager instance = {};
+    static CSensorManager instance;
     return instance;
 }
 

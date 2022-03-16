@@ -4,17 +4,15 @@
 #include <sensormanager.hpp>
 #include <dbsensor.hpp>
 
-void App::init() {
-    std::printf("app.init()\n");
-    auto sensorManager = CSensorManager::getInstance();
+auto sensorManager = CSensorManager::getInstance();
 
+void App::init() {
+    // std::printf("app.init()\n");
     sensorManager.mAddSensor(new CDbSensor("dbSensor"));
 }
 
 void App::loop() {
-    std::printf("app.loop()\n");
-    auto sensorManager = CSensorManager::getInstance();
-
+    // std::printf("app.loop()\n");
     auto sensors = sensorManager.mMeasure();
 
     // Print all measurements
@@ -28,9 +26,9 @@ void App::loop() {
         }
         std::printf("\n");
     }
-
+    
     // Throw debug error
-    throw std::runtime_error("If you see this, everything works!\n");
+    // throw std::runtime_error("If you see this, everything works!\n");
 }
 
 void App::start() {
