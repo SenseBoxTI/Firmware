@@ -6,14 +6,14 @@
 
 void App::init() {
     std::printf("app.init()\n");
-    auto sensorManager = CSensorManager::getInstance();
+    auto& sensorManager = CSensorManager::getInstance();
 
     sensorManager.mAddSensor(new CDbSensor("dbSensor"));
 }
 
 void App::loop() {
     std::printf("app.loop()\n");
-    auto sensorManager = CSensorManager::getInstance();
+    auto& sensorManager = CSensorManager::getInstance();
 
     auto sensors = sensorManager.mMeasure();
 
