@@ -1,6 +1,7 @@
 #include "app.hpp"
 #include <stdexcept>
 #include <iostream>
+#include <fstream>
 #include <sensormanager.hpp>
 #include <dbsensor.hpp>
 #include <sd.hpp>
@@ -57,13 +58,16 @@ void App::loop() {
     fprintf(file, "---------------\n");
     fclose(file);
 
-    auto file_read = fopen(MOUNT_POINT "/sd_test.txt", "r");
-    char ch;
-
     std::printf("Printing out sd_test.txt:\n");
-    while(fgets(&ch, 1, file_read) != nullptr)
-      std::printf("%c", ch);
+    
+    std::ifstream file_read(MOUNT_POINT "/sd_test.txt", std::ios::out | std::ios::binary);
+    char c = file_read.get();
+    while (file_read.good()) {
+        std::printf("%c", c);
+        c = file_read.get();
+    } 
 
+    file_read.close();
     // Throw debug error
     throw std::runtime_error("If you see this, everything works!\n");
 }
