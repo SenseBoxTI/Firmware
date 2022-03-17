@@ -11,24 +11,26 @@ uint64_t dataTestCounter = 0;
 
 void App::init() {
     std::printf("app.init()\n");
-    auto sensorManager = CSensorManager::getInstance();
+    auto& sensorManager = CSensorManager::getInstance();
     sensorManager.mAddSensor(new CDbSensor("dbSensor"));
 
     auto& SD = CSD::getInstance();
     auto ret = SD.mInit();
-    auto file = fopen(MOUNT_POINT "/sd_test.txt", "w");
-    fprintf(file, "Testing file write\n");
-    fclose(file);
+    if (ret != ESP_OK) {
+        auto file = fopen(MOUNT_POINT "/sd_test.txt", "w");
+        fprintf(file, "Testing file write\n");
+        fclose(file);
+    }
 }
 
 void App::loop() {
     std::printf("app.loop()\n");
-    auto sensorManager = CSensorManager::getInstance();
+    auto& sensorManager = CSensorManager::getInstance();
 
     auto sensors = sensorManager.mMeasure();
     // Print all measurements
     auto file = fopen(MOUNT_POINT "/sd_test.txt", "a");
-    fprintf(file, "-- data %lu --\n", dataTestCounter);
+    fprintf(file, "-- data %llu --\n", dataTestCounter);
     dataTestCounter++;
     for (auto const &sensor: sensors) {
         std::printf("Sensor '%s':\n", sensor.first.c_str());
@@ -50,7 +52,7 @@ void App::loop() {
         std::printf("\n");
     }
 
-    fprintf(file, "---------------\n", dataTestCounter);
+    fprintf(file, "---------------\n");
     fclose(file);
     // Throw debug error
     throw std::runtime_error("If you see this, everything works!\n");

@@ -3,9 +3,9 @@
 #include <sys/unistd.h>
 #include <string.h>
 #include <iostream>
-
 #include "esp_vfs_fat.h"
 
+#define SDSPI_DEFAULT_DMA 1
 static constexpr const char* mount_point = MOUNT_POINT;
 static constexpr const int pin_miso = 6;
 static constexpr const int pin_mosi = 4;
@@ -27,8 +27,6 @@ esp_err_t CSD::mInit() {
     };
 
     sdmmc_host_t host = SDSPI_HOST_DEFAULT();
-    #pragma clang diagnostic push
-    #pragma clang diagnostic ignored "-Wmissing-field-initializers"
     spi_bus_config_t bus_cfg = {
         .mosi_io_num = pin_mosi,
         .miso_io_num = pin_miso,
@@ -37,7 +35,7 @@ esp_err_t CSD::mInit() {
         .quadhd_io_num = -1,
         .max_transfer_sz = 4000,
     };
-    #pragma clang diagnostic pop
+
     ret = spi_bus_initialize((spi_host_device_t)host.slot, &bus_cfg, SDSPI_DEFAULT_DMA);
     if (ret != ESP_OK) {
         std::printf("Failed to initialize spi bus.");
