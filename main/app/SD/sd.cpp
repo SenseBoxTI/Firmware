@@ -55,11 +55,9 @@ esp_err_t CSD::mInit() {
     
     if (ret != ESP_OK) {
         if (ret == ESP_FAIL) {
-            std::printf("Failed to mount filesystem. \n"
-                     "If you want the card to be formatted, enable the .format_if_mount_failed in mount config\n");
+            std::printf("Failed to mount filesystem.\nIf you want the card to be formatted, enable the .format_if_mount_failed in mount config\n");
         } else {
-            std::printf("Failed to initialize the card (%s). \n"
-                     "Make sure SD card lines have pull-up resistors in place.\n", esp_err_to_name(ret));
+            std::printf("Failed to initialize the card (%s).\nMake sure SD card lines have pull-up resistors in place.\n", esp_err_to_name(ret));
         }
         return ret;
     }
