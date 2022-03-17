@@ -16,10 +16,12 @@ void App::init() {
 
     auto& SD = CSD::getInstance();
     auto ret = SD.mInit();
-    if (ret != ESP_OK) {
+    if (ret == ESP_OK) {
         auto file = fopen(MOUNT_POINT "/sd_test.txt", "w");
         fprintf(file, "Testing file write\n");
         fclose(file);
+    } else {
+        std::printf("Failed to init SD: %s\n", esp_err_to_name(ret));
     }
 }
 
@@ -54,6 +56,14 @@ void App::loop() {
 
     fprintf(file, "---------------\n");
     fclose(file);
+
+    auto file_read = fopen(MOUNT_POINT "/sd_test.txt", "r");
+    char ch;
+
+    std::printf("Printing out sd_test.txt:\n");
+    while(fgets(&ch, 1, file_read) != nullptr)
+      std::printf("%c", ch);
+
     // Throw debug error
     throw std::runtime_error("If you see this, everything works!\n");
 }
