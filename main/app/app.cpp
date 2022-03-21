@@ -17,7 +17,7 @@ void App::init() {
 
     auto& SD = CSD::getInstance();
     auto ret = SD.mInit();
-    if (ret == ESP_OK) {
+    if (SD.get_inited()) {
         auto file = fopen(MOUNT_POINT "/sd_test.txt", "w");
         fprintf(file, "Testing file write\n");
         fclose(file);
@@ -59,7 +59,6 @@ void App::loop() {
     fclose(file);
 
     std::printf("Printing out sd_test.txt:\n");
-    
     std::ifstream file_read(MOUNT_POINT "/sd_test.txt", std::ios::out | std::ios::binary);
     char c = file_read.get();
     while (file_read.good()) {

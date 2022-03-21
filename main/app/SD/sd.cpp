@@ -51,7 +51,7 @@ esp_err_t CSD::mInit() {
     slot_config.gpio_cs = static_cast<gpio_num_t>(pin_cs);
     slot_config.host_id = static_cast<spi_host_device_t>(host.slot);
     std::printf("Mounting filesystem\n");
-    ret = esp_vfs_fat_sdspi_mount(mount_point, &host, &slot_config, &mount_config, &card);
+    ret = esp_vfs_fat_sdspi_mount(mount_point, &host, &slot_config, &mount_config, &m_card);
     
     if (ret != ESP_OK) {
         if (ret == ESP_FAIL) {
@@ -63,7 +63,10 @@ esp_err_t CSD::mInit() {
     }
     
     std::printf("Filesystem mounted\n");
-    sdmmc_card_print_info(stdout, card);
+    sdmmc_card_print_info(stdout, m_card);
 
+    m_inited = true;
     return ret;
 }
+
+bool CSD::get_inited() { return m_inited; }
