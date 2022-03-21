@@ -4,6 +4,8 @@
 #include "esp_wpa2.h"
 #include "freertos/task.h"
 
+const int CONNECTED_BIT = BIT0;
+
 #define WIFI_ERR_CHECK(meth)                                    \
     if ((m_error = meth) != ESP_OK) {                           \
         std::printf("Got error: %s", esp_err_to_name(m_error));   \
@@ -17,15 +19,15 @@ CWifi& CWifi::getInstance() {
     return instance;
 }
 
-void CWifi::m_EventHandler(void* apArg, esp_event_base_t aBase, int32_t ald, void* apData) {
-    if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
+void CWifi::m_EventHandler(void* apArg, esp_event_base_t aBase, int32_t aId, void* apData) {
+    if (aBase == WIFI_EVENT && aId == WIFI_EVENT_STA_START) {
         esp_wifi_connect();
-    } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED) {
+    } else if (aBase == WIFI_EVENT && aId == WIFI_EVENT_STA_DISCONNECTED) {
         esp_wifi_connect();
-        xEventGroupClearBits(wifi_event_group, CONNECTED_BIT);
+        xEventGroupClearBits(CWifi::getInstance().m_wifi_event_group, CONNECTED_BIT);
         CWifi::getInstance().m_connected = false;
-    } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
-        xEventGroupSetBits(wifi_event_group, CONNECTED_BIT);
+    } else if (aBase == IP_EVENT && aId == IP_EVENT_STA_GOT_IP) {
+        xEventGroupSetBits(CWifi::getInstance().m_wifi_event_group, CONNECTED_BIT);
         CWifi::getInstance().m_connected = true;
     }
 }

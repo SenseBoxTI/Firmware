@@ -27,7 +27,7 @@ class CWifi {
     esp_netif_t *m_sta_netif = nullptr;
 
         CWifi();
-        static void m_EventHandler(void* apArg, esp_event_base_t aBase, int32_t ald, void* apData);
+        static void m_EventHandler(void* apArg, esp_event_base_t aBase, int32_t aId, void* apData);
 
     public:
         /// @brief get instance of CWifi
