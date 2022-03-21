@@ -1,28 +1,28 @@
 # Add other libs as submodules from our own forked repositories (preferably)
 [submodule "components/arduino"]
 	path = components/arduino
-	url = git://github.com/espressif/arduino-esp32.git
+	url = https://github.com/espressif/arduino-esp32
 [submodule "components/adafruit_scd30"]
 	path = components/adafruit_scd30
-	url = git://github.com/SenseBoxTI/Adafruit_SCD30.git
+	url = https://github.com/SenseBoxTI/Adafruit_SCD30
 [submodule "components/adafruit_ssd1306"]
 	path = components/adafruit_ssd1306
-	url = git://github.com/SenseBoxTI/Adafruit_SSD1306.git
+	url = https://github.com/SenseBoxTI/Adafruit_SSD1306
 [submodule "components/adafruit_sensor"]
 	path = components/adafruit_sensor
-	url = git://github.com/SenseBoxTI/Adafruit_Sensor.git
+	url = https://github.com/SenseBoxTI/Adafruit_Sensor
 [submodule "components/adafruit_gfx_library"]
 	path = components/adafruit_gfx_library
-	url = git://github.com/SenseBoxTI/Adafruit-GFX-Library.git
+	url = https://github.com/SenseBoxTI/Adafruit-GFX-Library
 [submodule "components/adafruit_busio"]
 	path = components/adafruit_busio
-	url = git://github.com/SenseBoxTI/Adafruit_BusIO.git
+	url = https://github.com/SenseBoxTI/Adafruit_BusIO
 [submodule "components/adafruit_tsl2591"]
 	path = components/adafruit_tsl2591
-	url = git://github.com/SenseBoxTI/Adafruit_TSL2591_Library.git
+	url = https://github.com/SenseBoxTI/Adafruit_TSL2591_Library
 [submodule "components/adafruit_pm25aqi"]
 	path = components/adafruit_pm25aqi
-	url = git://github.com/SenseBoxTI/Adafruit_PM25AQI.git
+	url = https://github.com/SenseBoxTI/Adafruit_PM25AQI
 [submodule "components/adafruit_as726x"]
 	path = components/adafruit_as726x
-	url = git://github.com/SenseBoxTI/Adafruit_AS726x
+	url = https://github.com/SenseBoxTI/Adafruit_AS726x
