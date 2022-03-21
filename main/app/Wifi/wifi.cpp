@@ -6,9 +6,10 @@
 
 const int CONNECTED_BIT = BIT0;
 
+        // FIXME: use logger eventually                         
 #define WIFI_ERR_CHECK(meth)                                    \
     if ((m_error = meth) != ESP_OK) {                           \
-        std::printf("Got error: %s", esp_err_to_name(m_error));   \
+        std::printf("Got error: %s", esp_err_to_name(m_error)); \
         return m_error;                                         \
     }
 
@@ -33,6 +34,7 @@ void CWifi::m_EventHandler(void* apArg, esp_event_base_t aBase, int32_t aId, voi
 }
 
 esp_err_t CWifi::mInitWifi(SPeapCredentials aConfig) {
+    // TODO: more verbose logging?
     WIFI_ERR_CHECK(esp_netif_init());
     m_wifi_event_group = xEventGroupCreate();
     WIFI_ERR_CHECK(esp_event_loop_create_default());
@@ -47,6 +49,7 @@ esp_err_t CWifi::mInitWifi(SPeapCredentials aConfig) {
     wifi_config_t wifi_config = {};
     memcpy(wifi_config.sta.ssid, aConfig.m_ssid.c_str(), aConfig.m_ssid.size());
     wifi_config.sta.pmf_cfg.required = false;
+    // FIXME: use logger eventually
     std::printf("Setting WiFi configuration SSID %s...", wifi_config.sta.ssid);
     WIFI_ERR_CHECK( esp_wifi_set_mode(WIFI_MODE_STA) );
     WIFI_ERR_CHECK( esp_wifi_set_config(WIFI_IF_STA, &wifi_config) );
@@ -61,6 +64,7 @@ esp_err_t CWifi::mInitWifi(SPeapCredentials aConfig) {
 }
 
 esp_err_t CWifi::mInitWifi(SWpaCredentials aConfig) {
+    // TODO: more verbose logging?
     WIFI_ERR_CHECK(esp_netif_init());
     m_wifi_event_group = xEventGroupCreate();
     WIFI_ERR_CHECK(esp_event_loop_create_default());
@@ -76,6 +80,7 @@ esp_err_t CWifi::mInitWifi(SWpaCredentials aConfig) {
     memcpy(wifi_config.sta.ssid, aConfig.m_ssid.c_str(), aConfig.m_ssid.size());
     memcpy(wifi_config.sta.ssid, aConfig.m_password.c_str(), aConfig.m_password.size());
     wifi_config.sta.pmf_cfg.required = false;
+    // FIXME: use logger eventually
     std::printf("Setting WiFi configuration SSID %s...", wifi_config.sta.ssid);
     WIFI_ERR_CHECK( esp_wifi_set_mode(WIFI_MODE_STA) );
     WIFI_ERR_CHECK( esp_wifi_set_config(WIFI_IF_STA, &wifi_config) );
