@@ -55,7 +55,7 @@ esp_err_t CWifi::mInitWifi(const WifiCredentials& aConfig) {
     wifi_config_t wifi_config = {};
     memcpy(wifi_config.sta.ssid, mCredentials.ssid.c_str(), mCredentials.ssid.size());
     if (!enterprise) {
-        memcpy(wifi_config.sta.ssid, mCredentials.password.c_str(), mCredentials.password.size());
+        memcpy(wifi_config.sta.password, mCredentials.password.c_str(), mCredentials.password.size());
     }
     wifi_config.sta.pmf_cfg.required = false;
     // FIXME: use logger eventually
