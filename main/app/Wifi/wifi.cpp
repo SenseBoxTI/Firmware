@@ -3,16 +3,19 @@
 #include "esp_wifi.h"
 #include "esp_wpa2.h"
 #include "freertos/task.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/event_groups.h"
+#include "esp_err.h"
 
 const int CONNECTED_BIT = BIT0;
 
 // FIXME: use logger eventually                         
+//#define WIFI_ERR_CHECK(meth) meth
 #define WIFI_ERR_CHECK(meth)                                    \
     if ((error = meth) != ESP_OK) {                           \
         std::printf("Got error: %s", esp_err_to_name(error)); \
         return error;                                         \
     }
-
 CWifi::CWifi() {}
 
 CWifi& CWifi::getInstance() {

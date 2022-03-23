@@ -1,13 +1,12 @@
 #pragma once
 
-#include "esp_err.h"
 #include "esp_netif_types.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/event_groups.h"
 #include "wificredentials.hpp"
 
 #include <string>
 
+typedef void* EventGroupHandle_t;
+typedef int esp_err_t;
 class CWifi {
         EventGroupHandle_t m_EventGroup;
         esp_netif_t* m_StaNetif = nullptr;
@@ -20,10 +19,30 @@ class CWifi {
 
         /// @brief get instance of CWifi
         static CWifi& getInstance();
-
+        
         /// @brief initialize WiFi with given credentials
         esp_err_t mInitWifi(const WifiCredentials& aConfig);
 
         /// @brief get if we are currently connected
         bool mConnected();
 };
+
+/**
+ *
+ *   Example Connecting to PEAP network
+ *   CWifi::getInstance().mInitWifi({
+ *       .ssid = "MySSID",
+ *       .eapId = "MyEAPID",
+ *       .eapUsername = "MyEAPUsername",
+ *       .password = "MyPassword"
+ *   });
+ *   
+ *
+ *   Example Connecting to WPA2 network
+ *   CWifi::getInstance().mInitWifi({
+ *       .ssid = "MySSID",
+ *       .password = "MyPassword"
+ *   });
+ * 
+ * 
+ */ 
