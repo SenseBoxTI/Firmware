@@ -3,6 +3,7 @@
 #include <iostream>
 #include <sensormanager.hpp>
 #include <dbsensor.hpp>
+#include <o2sensor.hpp>
 
 void App::init() {
     std::printf("app.init()\n");
