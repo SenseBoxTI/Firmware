@@ -8,7 +8,8 @@ void App::init() {
     std::printf("app.init()\n");
     auto& sensorManager = CSensorManager::getInstance();
 
-    sensorManager.mAddSensor(new CDbSensor("dbSensor"));
+    // sensorManager.mAddSensor(new CDbSensor("dbSensor"));
+    sensorManager.mAddSensor(new CO2Sensor("O2Sensor"));
 }
 
 void App::loop() {
