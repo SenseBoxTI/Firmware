@@ -2,21 +2,21 @@
 #include <stdexcept>
 #include <iostream>
 #include <sensormanager.hpp>
-#include <dbsensor.hpp>
+#include <adctest.hpp>
 
 void App::init() {
-    std::printf("app.init()\n");
+    std::printf("Sensebox PCB Test Application\n");
     auto& sensorManager = CSensorManager::getInstance();
 
-    sensorManager.mAddSensor(new CDbSensor("dbSensor"));
+    sensorManager.mAddSensor(new CAdcTest("ADC"));
 }
 
 void App::loop() {
-    std::printf("app.loop()\n");
     auto& sensorManager = CSensorManager::getInstance();
 
     auto sensors = sensorManager.mMeasure();
 
+   std::printf("Sensor evaluation:\n");
     // Print all measurements
     for (auto const &sensor: sensors) {
         std::printf("Sensor '%s':\n", sensor.first.c_str());
@@ -30,7 +30,7 @@ void App::loop() {
     }
 
     // Throw debug error
-    throw std::runtime_error("If you see this, everything works!\n");
+    // throw std::runtime_error("If you see this, everything works!\n");
 }
 
 void App::start() {

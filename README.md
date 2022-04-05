@@ -1,10 +1,20 @@
 <br>
 <center>
-<h2><b><i>Sensebox Firmware</i></b></h2>
+<h2><b><i>Sensebox PCB Test Firmware</i></b></h2>
 Data Driven Smart Cities Minor
 </center>
 <br>
 <br>
+
+# Test
+The following describes how to setup and use the tests written inside this firmware. In all cases the PCB is assumed to be on **during** testing.
+## ADC
+Setup:
+1. Connect potentiometer to the ADC ports through the debug header (or MOLEX connector if prepared).
+
+Test:
+1. Look at the values returned by the 'ADC' sensor in the measurements output.
+
 
 ## Development Environment Setup
 ---
