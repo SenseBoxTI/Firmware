@@ -7,6 +7,13 @@
 void App::init() {
     std::printf("app.init()\n");
     auto& sensorManager = CSensorManager::getInstance();
+    // init PEAP network
+    CWifi::getInstance().mInitWifi({
+        .ssid = "",
+        .eapId = "",
+        .eapUsername = "",
+        .password = ""
+    });
 
     sensorManager.mAddSensor(new CDbSensor("dbSensor"));
 }
