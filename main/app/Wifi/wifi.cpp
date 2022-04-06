@@ -1,5 +1,6 @@
 #include "wifi.hpp"
 #include <string.h>
+#include <stdexcept>
 #include "esp_wifi.h"
 #include "esp_wpa2.h"
 #include "freertos/task.h"
@@ -10,12 +11,11 @@
 const int CONNECTED_BIT = BIT0;
 
 // FIXME: use logger eventually
-//#define WIFI_ERR_CHECK(meth) meth
-#define WIFI_ERR_CHECK(meth)                                  \
-    if ((error = meth) != ESP_OK) {                           \
-        std::printf("Got error: %s", esp_err_to_name(error)); \
-        return error;                                         \
+#define WIFI_THROW_ON_ERROR(method)                              \
+    if ((error = method) != ESP_OK) {                       \
+        throw std::runtime_error(esp_err_to_name(error));   \
     }
+
 CWifi::CWifi() {}
 
 CWifi& CWifi::getInstance() {
@@ -38,23 +38,23 @@ void CWifi::m_EventHandler(void* apArg, esp_event_base_t aBase, int32_t aId, voi
     }
 }
 
-esp_err_t CWifi::mInitWifi(const WifiCredentials& aConfig) {
+void CWifi::mInitWifi(const WifiCredentials& aConfig) {
     // TODO: more verbose logging?
     bool enterprise = !aConfig.eapUsername.empty();
     esp_err_t error;
     mCredentials = aConfig;
     
-    WIFI_ERR_CHECK(esp_netif_init());
+    WIFI_THROW_ON_ERROR(esp_netif_init());
     m_EventGroup = xEventGroupCreate();
-    WIFI_ERR_CHECK(esp_event_loop_create_default());
+    WIFI_THROW_ON_ERROR(esp_event_loop_create_default());
     m_StaNetif = esp_netif_create_default_wifi_sta();
     assert(m_StaNetif);
 
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
-    WIFI_ERR_CHECK( esp_wifi_init(&cfg) );
-    WIFI_ERR_CHECK( esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &CWifi::m_EventHandler, NULL) );
-    WIFI_ERR_CHECK( esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &CWifi::m_EventHandler, NULL) );
-    WIFI_ERR_CHECK( esp_wifi_set_storage(WIFI_STORAGE_RAM) );
+    WIFI_THROW_ON_ERROR( esp_wifi_init(&cfg) );
+    WIFI_THROW_ON_ERROR( esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &CWifi::m_EventHandler, NULL) );
+    WIFI_THROW_ON_ERROR( esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &CWifi::m_EventHandler, NULL) );
+    WIFI_THROW_ON_ERROR( esp_wifi_set_storage(WIFI_STORAGE_RAM) );
     wifi_config_t wifi_config = {};
     memcpy(wifi_config.sta.ssid, mCredentials.ssid.c_str(), mCredentials.ssid.size());
     if (!enterprise) {
@@ -63,17 +63,16 @@ esp_err_t CWifi::mInitWifi(const WifiCredentials& aConfig) {
     wifi_config.sta.pmf_cfg.required = false;
     // FIXME: use logger eventually
     std::printf("Setting WiFi configuration SSID %s...", wifi_config.sta.ssid);
-    WIFI_ERR_CHECK( esp_wifi_set_mode(WIFI_MODE_STA) );
-    WIFI_ERR_CHECK( esp_wifi_set_config(WIFI_IF_STA, &wifi_config) );
+    WIFI_THROW_ON_ERROR( esp_wifi_set_mode(WIFI_MODE_STA) );
+    WIFI_THROW_ON_ERROR( esp_wifi_set_config(WIFI_IF_STA, &wifi_config) );
     if (enterprise) {
-        WIFI_ERR_CHECK( esp_wifi_sta_wpa2_ent_set_identity((uint8_t *)mCredentials.eapId.c_str(), mCredentials.eapId.size()) );
+        WIFI_THROW_ON_ERROR( esp_wifi_sta_wpa2_ent_set_identity((uint8_t *)mCredentials.eapId.c_str(), mCredentials.eapId.size()) );
     
-        WIFI_ERR_CHECK( esp_wifi_sta_wpa2_ent_set_username((uint8_t *)mCredentials.eapUsername.c_str(), mCredentials.eapUsername.size()) );
-        WIFI_ERR_CHECK( esp_wifi_sta_wpa2_ent_set_password((uint8_t *)mCredentials.password.c_str(), mCredentials.password.size()) );
-        WIFI_ERR_CHECK( esp_wifi_sta_wpa2_ent_enable() );
+        WIFI_THROW_ON_ERROR( esp_wifi_sta_wpa2_ent_set_username((uint8_t *)mCredentials.eapUsername.c_str(), mCredentials.eapUsername.size()) );
+        WIFI_THROW_ON_ERROR( esp_wifi_sta_wpa2_ent_set_password((uint8_t *)mCredentials.password.c_str(), mCredentials.password.size()) );
+        WIFI_THROW_ON_ERROR( esp_wifi_sta_wpa2_ent_enable() );
     }
-    WIFI_ERR_CHECK( esp_wifi_start() );
-    return ESP_OK;
+    WIFI_THROW_ON_ERROR( esp_wifi_start() );
 }
 
 bool CWifi::mConnected() {

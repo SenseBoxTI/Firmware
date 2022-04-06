@@ -9,13 +9,19 @@ void App::init() {
     std::printf("app.init()\n");
     auto& sensorManager = CSensorManager::getInstance();
     // init PEAP network
-    CWifi::getInstance().mInitWifi({
-        .ssid = "",
-        .eapId = "",
-        .eapUsername = "",
-        .password = ""
-    });
-
+    
+    try {
+        CWifi::getInstance().mInitWifi({
+            .ssid = "",
+            .eapId = "",
+            .eapUsername = "",
+            .password = ""
+        });
+    }
+    catch (const std::runtime_error &e) {
+        std::printf("Error thrown while initing wifi: %s", e.what());
+    }
+    
     sensorManager.mAddSensor(new CDbSensor("dbSensor"));
 }
 

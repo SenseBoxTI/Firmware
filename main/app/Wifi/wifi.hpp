@@ -21,7 +21,7 @@ class CWifi {
         static CWifi& getInstance();
         
         /// @brief initialize WiFi with given credentials
-        esp_err_t mInitWifi(const WifiCredentials& aConfig);
+        void mInitWifi(const WifiCredentials& aConfig);
 
         /// @brief get if we are currently connected
         bool mConnected();
