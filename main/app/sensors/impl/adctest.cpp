@@ -33,7 +33,7 @@ uint32_t CAdcTest::m_SampleADC() {
 SensorOutput CAdcTest::m_MeasureCallback() {
     SensorOutput output;
 
-    char sampleString[64] = { 0 };
+    static char sampleString[64] = { 0 };
     std::snprintf(sampleString, 64, "%d", m_SampleADC());
     output.insert({"mV", sampleString});
 
