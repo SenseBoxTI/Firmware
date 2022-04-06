@@ -10,7 +10,8 @@ SRCS
     "./app/sensors/sensoroutput.cpp"
     "./app/sensors/measurements.cpp"
     # Sensor Impl
-    "./app/sensors/impl/dbsensor.cpp"
+    "./app/sensors/impl/adctest.cpp"
+    "./app/sensors/impl/i2ctest.cpp"
 INCLUDE_DIRS
     # Add directories seperately.
     "./app/"
