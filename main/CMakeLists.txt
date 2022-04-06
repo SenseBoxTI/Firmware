@@ -13,7 +13,7 @@ SRCS
     "./app/sensors/impl/dbsensor.cpp"
     # Wifi
     "./app/Wifi/wifi.cpp"
-    INCLUDE_DIRS
+INCLUDE_DIRS
     # Add directories seperately.
     "./app/"
     # Sensor stack

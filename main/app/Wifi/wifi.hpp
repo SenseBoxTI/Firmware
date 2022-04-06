@@ -26,23 +26,3 @@ class CWifi {
         /// @brief get if we are currently connected
         bool mConnected();
 };
-
-/**
- *
- *   Example Connecting to PEAP network
- *   CWifi::getInstance().mInitWifi({
- *       .ssid = "MySSID",
- *       .eapId = "MyEAPID",
- *       .eapUsername = "MyEAPUsername",
- *       .password = "MyPassword"
- *   });
- *   
- *
- *   Example Connecting to WPA2 network
- *   CWifi::getInstance().mInitWifi({
- *       .ssid = "MySSID",
- *       .password = "MyPassword"
- *   });
- * 
- * 
- */ 
