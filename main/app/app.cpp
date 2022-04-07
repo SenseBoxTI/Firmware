@@ -3,12 +3,17 @@
 #include <iostream>
 #include <sensormanager.hpp>
 #include <adctest.hpp>
+#include <i2ctest.hpp>
+
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
 
 void App::init() {
     std::printf("Sensebox PCB Test Application\n");
     auto& sensorManager = CSensorManager::getInstance();
 
-    sensorManager.mAddSensor(new CAdcTest("ADC"));
+    sensorManager.mAddSensor(new CAdcTest("ADC Test"));
+    sensorManager.mAddSensor(new CI2cTest("I2C Test"));
 }
 
 void App::loop() {
@@ -31,6 +36,7 @@ void App::loop() {
 
     // Throw debug error
     // throw std::runtime_error("If you see this, everything works!\n");
+    vTaskDelay(2000 / portTICK_RATE_MS);
 }
 
 void App::start() {
