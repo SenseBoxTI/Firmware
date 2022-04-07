@@ -25,8 +25,11 @@ SensorOutput CI2cTest::m_MeasureCallback() {
 }
 
 CSensorStatus CI2cTest::m_InitCallback() {
-    if (!scd30.begin()) {
-        return CSensorStatus::Error("SC30 failed to init!");
+    if (!Wire.begin(47, 48)) {
+        return CSensorStatus::Error("TwoWire failed to init!");
+    }
+    if (!scd30.begin(SCD30_I2CADDR_DEFAULT, &Wire, 0)) {
+        return CSensorStatus::Error("SCD30 failed to init!");
     }
     return CSensorStatus::Ok();
 }
