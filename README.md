@@ -10,12 +10,17 @@ Data Driven Smart Cities Minor
 The following describes how to setup and use the tests written inside this firmware. In all cases the PCB is assumed to be on **during** testing.
 ## ADC
 Setup:
-1. Connect potentiometer to the ADC ports through the debug header (or MOLEX connector if prepared).
+1. Connect potentiometer to the ADC ports through the debug header (AUDIO ADC CHANNEL 7, GPIO 8) (or MOLEX connector if prepared).
 
 Test:
-1. Look at the values returned by the 'ADC' sensor in the measurements output.
+1. Look at the values returned by the 'ADCTest' sensor in the measurements output.
 
+## I2C
+Setup:
+1. Connect the SCD30 through the debug header (SDA GPIO 47, SCL GPIO 48) (or MOLEX connector (SDC30) if prepared).
 
+Test:
+2. Look at the values returned by the 'I2CTest' sensor in the measurements output.
 ## Development Environment Setup
 ---
 The installation instructions as given by Espressif are very clear.<br>
