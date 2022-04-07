@@ -7,6 +7,8 @@
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
+#include <dbsensor.hpp>
+#include <wifi.hpp>
 
 void App::init() {
     std::printf("Sensebox PCB Test Application\n");
@@ -14,6 +16,19 @@ void App::init() {
 
     sensorManager.mAddSensor(new CAdcTest("ADC Test"));
     sensorManager.mAddSensor(new CI2cTest("I2C Test"));
+    // init PEAP network
+    
+    try {
+        CWifi::getInstance().mInitWifi({
+            .ssid = "",
+            .eapId = "",
+            .eapUsername = "",
+            .password = ""
+        });
+    }
+    catch (const std::runtime_error &e) {
+        std::printf("Error thrown while initing wifi: %s", e.what());
+    }
 }
 
 void App::loop() {

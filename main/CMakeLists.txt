@@ -12,6 +12,8 @@ SRCS
     # Sensor Impl
     "./app/sensors/impl/adctest.cpp"
     "./app/sensors/impl/i2ctest.cpp"
+    # Wifi
+    "./app/Wifi/wifi.cpp"
 INCLUDE_DIRS
     # Add directories seperately.
     "./app/"
@@ -19,4 +21,6 @@ INCLUDE_DIRS
     "./app/sensors/"
     # Sensor Impl
     "./app/sensors/impl/"
+    # Wifi
+    "./app/Wifi/"
 )
