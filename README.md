@@ -20,7 +20,8 @@ Setup:
 1. Connect the SCD30 through the debug header (SDA GPIO 47, SCL GPIO 48) (or MOLEX connector (SDC30) if prepared).
 
 Test:
-2. Look at the values returned by the 'I2CTest' sensor in the measurements output.
+1. Look at the values returned by the 'I2CTest' sensor in the measurements output.
+
 ## Development Environment Setup
 ---
 The installation instructions as given by Espressif are very clear.<br>
