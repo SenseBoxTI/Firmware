@@ -4,11 +4,10 @@
 #include <sensormanager.hpp>
 #include <adctest.hpp>
 #include <i2ctest.hpp>
+#include <wifitest.hpp>
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
-#include <dbsensor.hpp>
-#include <wifi.hpp>
 
 void App::init() {
     std::printf("Sensebox PCB Test Application\n");
@@ -16,19 +15,7 @@ void App::init() {
 
     sensorManager.mAddSensor(new CAdcTest("ADC Test"));
     sensorManager.mAddSensor(new CI2cTest("I2C Test"));
-    // init PEAP network
-    
-    try {
-        CWifi::getInstance().mInitWifi({
-            .ssid = "",
-            .eapId = "",
-            .eapUsername = "",
-            .password = ""
-        });
-    }
-    catch (const std::runtime_error &e) {
-        std::printf("Error thrown while initing wifi: %s", e.what());
-    }
+    sensorManager.mAddSensor(new CWifiTest("Wifi Test"));
 }
 
 void App::loop() {
@@ -41,7 +28,7 @@ void App::loop() {
     for (auto const &sensor: sensors) {
         std::printf("Sensor '%s':\n", sensor.first.c_str());
         for (auto const &measurement : sensor.second) {
-            std::printf("\t%s\t: %s\n",
+            std::printf("\t%s: %s\n",
                 measurement.first.c_str(),
                 measurement.second.c_str()
             );
