@@ -12,6 +12,7 @@ SRCS
     # Sensor Impl
     "./app/sensors/impl/adctest.cpp"
     "./app/sensors/impl/i2ctest.cpp"
+    "./app/sensors/impl/wifitest.cpp"
     # Wifi
     "./app/Wifi/wifi.cpp"
 INCLUDE_DIRS
