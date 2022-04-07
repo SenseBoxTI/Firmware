@@ -10,7 +10,15 @@ CSensorManager::CSensorManager() {
 
 CSensorStatus CSensorManager::mAddSensor(CSensor* apSensor) {
     auto status = apSensor->mInit();
-    m_Sensors.push_back(apSensor);
+    std::string reason = "";
+
+    if (!status.mIsOk(reason)) {
+        printf("Sensor '%s' failed to initialize.\nReason: %s\n", apSensor->mName.c_str(), reason.c_str());
+    }
+    else {
+        m_Sensors.push_back(apSensor);
+    }
+
     return status;
 }
 
