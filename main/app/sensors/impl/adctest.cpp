@@ -9,7 +9,7 @@ void CAdcTest::m_InitADC() {
     AdcPrintFeatures();
 
     adc1_config_width(ADC_WIDTH_BIT_12);
-    adc1_config_channel_atten(static_cast<adc1_channel_t>(ADC_CHANNEL_6), ADC_ATTEN_11db);
+    adc1_config_channel_atten(static_cast<adc1_channel_t>(ADC_CHANNEL_7), ADC_ATTEN_11db);
 
     m_adcCharacteristics = calloc(1, sizeof(esp_adc_cal_characteristics_t));
     esp_adc_cal_value_t valueType = esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_11db, ADC_WIDTH_BIT_12, 1100, static_cast<esp_adc_cal_characteristics_t*>(m_adcCharacteristics));
@@ -22,7 +22,7 @@ uint32_t CAdcTest::m_SampleADC() {
     uint32_t reading = 0;
 
     for (int i = 0; i < samples; i++) {
-        reading += adc1_get_raw(static_cast<adc1_channel_t>(ADC_CHANNEL_6));
+        reading += adc1_get_raw(static_cast<adc1_channel_t>(ADC_CHANNEL_7));
     }
 
     reading /= samples;
