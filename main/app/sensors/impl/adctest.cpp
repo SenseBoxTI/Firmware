@@ -10,6 +10,7 @@ void CAdcTest::m_InitADC() {
 
     adc1_config_width(ADC_WIDTH_BIT_12);
     adc1_config_channel_atten(static_cast<adc1_channel_t>(ADC_CHANNEL_7), ADC_ATTEN_11db);
+    adc1_config_channel_atten(static_cast<adc1_channel_t>(ADC_CHANNEL_2), ADC_ATTEN_11db);
 
     m_adcCharacteristics = calloc(1, sizeof(esp_adc_cal_characteristics_t));
     esp_adc_cal_value_t valueType = esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_11db, ADC_WIDTH_BIT_12, 1100, static_cast<esp_adc_cal_characteristics_t*>(m_adcCharacteristics));
@@ -17,12 +18,12 @@ void CAdcTest::m_InitADC() {
     AdcPrintCharacteristics(valueType);
 }
 
-uint32_t CAdcTest::m_SampleADC() {
+uint32_t CAdcTest::m_SampleADC(bool primary) {
     const int samples = 64;
     uint32_t reading = 0;
 
-    for (int i = 0; i < samples; i++) {
-        reading += adc1_get_raw(static_cast<adc1_channel_t>(ADC_CHANNEL_7));
+    for (int i = 0; i < samples; i++) {\
+        reading += adc1_get_raw(static_cast<adc1_channel_t>((primary) ? ADC_CHANNEL_7 : ADC_CHANNEL_2));
     }
 
     reading /= samples;
@@ -33,9 +34,11 @@ uint32_t CAdcTest::m_SampleADC() {
 SensorOutput CAdcTest::m_MeasureCallback() {
     SensorOutput output;
 
-    static char sampleString[64] = { 0 };
-    std::snprintf(sampleString, 64, "%d", m_SampleADC());
-    output.insert({"mV", sampleString});
+    static char sampleString[16] = { 0 };
+    std::snprintf(sampleString, 16, "%d", m_SampleADC(true));
+    output.insert({"mV (AUDIO)", sampleString});
+    std::snprintf(sampleString, 16, "%d", m_SampleADC(false));
+    output.insert({"mV (O2)", sampleString});
 
     return output;
 }

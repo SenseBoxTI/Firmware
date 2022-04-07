@@ -9,7 +9,7 @@ class CAdcTest : public CSensor {
     private:
     void * m_adcCharacteristics = nullptr;
     void m_InitADC();
-    uint32_t m_SampleADC();
+    uint32_t m_SampleADC(bool primary);
 
     SensorOutput m_MeasureCallback();
     CSensorStatus m_InitCallback();
