@@ -22,6 +22,13 @@ Setup:
 Test:
 1. Look at the values returned by the 'I2CTest' sensor in the measurements output.
 
+## WiFI
+Setup:
+1. Add credentials to `wifitest.cpp`, inside the initializer.
+
+Test:
+1. Look at the values returned by the 'WifiTest' sensor in the measurements output.
+
 ## Development Environment Setup
 ---
 The installation instructions as given by Espressif are very clear.<br>
