@@ -11,6 +11,7 @@ The following describes how to setup and use the tests written inside this firmw
 ## ADC
 Setup:
 1. Connect potentiometer to the ADC ports through the debug header (AUDIO ADC CHANNEL 7, GPIO 8) (or MOLEX connector if prepared).
+2. Try the secondary aswell. Or connect both to the same potentiometer.
 
 Test:
 1. Look at the values returned by the 'ADCTest' sensor in the measurements output.
@@ -18,6 +19,7 @@ Test:
 ## I2C
 Setup:
 1. Connect the SCD30 through the debug header (SDA GPIO 47, SCL GPIO 48) (or MOLEX connector (SDC30) if prepared).
+2. Try the different Molex Connectors
 
 Test:
 1. Look at the values returned by the 'I2CTest' sensor in the measurements output.
