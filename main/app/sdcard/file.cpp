@@ -43,8 +43,10 @@ bool CFile::mIsOpen() {
 
 std::string CFile::mRead(){
     mOpen(Read);
-    std::string output;
     size_t size = mGetFileLength();
+    if (size <= 0) return "";
+
+    std::string output;
     output.resize(size);
     for (int i = 0; i < size; i++) {
         output[i] = fgetc(m_Ptr);
@@ -64,6 +66,7 @@ void CFile::mAppend(const std::string& aText) {
 
 size_t CFile::mGetFileLength() {
     struct stat stats;
+    memset(&stats, 0, sizeof(struct stat));
     stat(mPath.c_str(), &stats);
     return stats.st_size;
 }
