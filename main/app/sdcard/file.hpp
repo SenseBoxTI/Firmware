@@ -12,18 +12,19 @@ class CFile {
 
     public:
     bool mIsOpen();
-    void mClear();
     std::string mRead();
-    void mWrite(std::string aText);
-    void mAppend(std::string aText);
-    unsigned long long mGetFileLength();
-    CFile(std::string aPath);
+    void mWrite(const std::string& aText);
+    void mAppend(const std::string& aText);
+    size_t mGetFileLength();
+    
+    CFile(const std::string& aPath);
+
     std::string mPath;
     
     private:
     void mOpen(FileMode aMode);
     void mClose();
+
     FileMode m_Mode;
     FILE * m_Ptr;
-
 };

@@ -7,23 +7,19 @@
 #include "esp_vfs_fat.h"
 
 #define SDSPI_DEFAULT_DMA 1
-static constexpr const char* mount_point = MOUNT_POINT;
-static constexpr const int pin_miso = 2;
-static constexpr const int pin_mosi = 15;
-static constexpr const int pin_clk = 14;
-static constexpr const int pin_cs = 13;
+
+// TODO: fix numbers for esp32-s3
+#define PIN_CS 19
+#define PIN_CLK 18
+#define PIN_MOSI 5
+#define PIN_MOSI 17
 
 CSD& CSD::getInstance() {
     static CSD instance = {};
     return instance;
 }
 
-CFile CSD::mGetFile(std::string aPath){
-std::string fullpath = MOUNT_POINT "/" + aPath;
-return CFile(fullpath); 
-}
-
-esp_err_t CSD::mInit() {
+void CSD::mInit() {
     esp_err_t ret;
 
     esp_vfs_fat_sdmmc_mount_config_t mount_config = {
@@ -38,9 +34,9 @@ esp_err_t CSD::mInit() {
     host.max_freq_khz = 5000;
 
     spi_bus_config_t bus_cfg = {
-        .mosi_io_num = pin_mosi,
-        .miso_io_num = pin_miso,
-        .sclk_io_num = pin_clk,
+        .mosi_io_num = PIN_MOSI,
+        .miso_io_num = PIN_MOSI,
+        .sclk_io_num = PIN_CLK,
         .quadwp_io_num = -1,
         .quadhd_io_num = -1,
         .max_transfer_sz = 4000,
@@ -50,28 +46,28 @@ esp_err_t CSD::mInit() {
     ret = spi_bus_initialize((spi_host_device_t)SDSPI_DEFAULT_HOST, &bus_cfg, SDSPI_DEFAULT_DMA);
     if (ret != ESP_OK) {
         std::printf("Failed to initialize spi bus.\n");
-        return ret;
+        throw std::runtime_error(esp_err_to_name(ret));
     }
 
     sdspi_device_config_t slot_config = SDSPI_DEVICE_CONFIG_DEFAULT();
-    slot_config.gpio_cs = static_cast<gpio_num_t>(pin_cs);
+    slot_config.gpio_cs = static_cast<gpio_num_t>(PIN_CS);
     slot_config.host_id = static_cast<spi_host_device_t>(host.slot);
     std::printf("Mounting filesystem\n");
-    ret = esp_vfs_fat_sdspi_mount(mount_point, &host, &slot_config, &mount_config, &card);
+    ret = esp_vfs_fat_sdspi_mount(MOUNT_POINT, &host, &slot_config, &mount_config, &m_Card);
     
     if (ret != ESP_OK) {
         if (ret == ESP_FAIL) {
             std::printf("Failed to mount filesystem. \n"
                      "If you want the card to be formatted, enable the .format_if_mount_failed in mount config\n");
+        } else if (ret == ESP_ERR_INVALID_RESPONSE){
+            std::printf("Failed to initialize the card, make sure there is an SD card inserted / connected.\n");
         } else {
             std::printf("Failed to initialize the card (%s). \n"
                      "Make sure SD card lines have pull-up resistors in place.\n", esp_err_to_name(ret));
         }
-        return ret;
+        throw std::runtime_error(esp_err_to_name(ret));
     }
     
     std::printf("Filesystem mounted\n");
-    sdmmc_card_print_info(stdout, card);
-
-    return ret;
+    sdmmc_card_print_info(stdout, m_Card);
 }

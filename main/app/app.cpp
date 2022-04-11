@@ -12,34 +12,29 @@
 void App::init() {
     std::printf("app.init()\n");
     auto& sensorManager = CSensorManager::getInstance();
-    CFile testfile = CFile("/sdcard/sd_test.txt");
     // init PEAP network
-    
-    // try {
-    //     CWifi::getInstance().mInitWifi({
-    //         .ssid = "",
-    //         .eapId = "",
-    //         .eapUsername = "",
-    //         .password = ""
-    //     });
-    // }
-    // catch (const std::runtime_error &e) {
-    //     std::printf("Error thrown while initing wifi: %s", e.what());
-    // }
+    try {
+        CWifi::getInstance().mInitWifi({
+            .ssid = "",
+            .eapId = "",
+            .eapUsername = "",
+            .password = ""
+        });
+    }
+    catch (const std::runtime_error &e) {
+        std::printf("Error thrown while initing wifi: %s", e.what());
+    }
     
     sensorManager.mAddSensor(new CDbSensor("dbSensor"));
     auto& SD = CSD::getInstance();
-    auto ret = SD.mInit(); 
-    if (ret == ESP_OK) {
-        SD.mGetFile("/sdcard/sd_test.txt");
-        testfile.mWrite("Banaan");
-        testfile.mRead();
-            } else {
-        std::printf("Failed to init SD: %s\n", esp_err_to_name(ret));
+    try {
+        SD.mInit();
+        CFile testfile = CFile(MOUNT_POINT "/test.txt");
+        std::printf("Test file: %s", testfile.mRead().c_str());
     }
-    // CSD::mGetFile("/sdcard/sd_test.txt");
-    // CFile::mWrite("Banaan");
-
+    catch (const std::runtime_error& e) {
+        std::printf("Initializing SD threw error: %s", e.what());
+    }
 }
 
 void App::loop() {

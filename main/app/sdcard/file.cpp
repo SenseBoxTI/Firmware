@@ -7,74 +7,62 @@
 #include "esp_vfs_fat.h"
 
 static const char FileModes[3][2] = {
-"r",
-"w",
-"a"
-}; 
+    "r",
+    "w",
+    "a"
+};
 
-//aPath = "/sdcard/sd_test.txt";
-
-CFile::CFile(std::string aPath) {
-    mPath = aPath;
+CFile::CFile(const std::string& aPath) : mPath(aPath) {
+    m_Ptr = nullptr;
+    m_Mode = FileMode::Write;
 }
 
-void CFile::mOpen(FileMode aMode){
-    if (m_Ptr != NULL){ // wanneer bestaat
-        if (aMode != m_Mode){//wanneer mode niet klopt
-        mClose();
-        m_Ptr = fopen(mPath.c_str(), FileModes[aMode]);
+void CFile::mOpen(FileMode aMode) {
+    if (mIsOpen()){ // when already opened
+        if (!(aMode == m_Mode && aMode == FileMode::Append)) { // when appen don't reopen, else do it
+            mClose();
+            m_Ptr = fopen(mPath.c_str(), FileModes[aMode]);
         }
     }
-    else{ // wanneer niet open
+    else{ // when not opened
+        m_Ptr = fopen(mPath.c_str(), FileModes[aMode]);
+    }
+
     m_Mode = aMode;
-    m_Ptr = fopen(mPath.c_str(), FileModes[aMode]);
-    }
 }
 
-void CFile::mClose(){
-    fclose(m_Ptr);
-    m_Ptr = NULL;
+void CFile::mClose() {
+    if (mIsOpen()) 
+        fclose(m_Ptr);
+    m_Ptr = nullptr;
 }
 
-bool CFile::mIsOpen(){
-    if (m_Ptr != NULL){
-        return true;
-    }
-    else {
-        return false;
-    }
-}
-
-void CFile::mClear(){
-    if (mIsOpen()){ 
-        mClose();
-    }
-    mOpen(Write); // clears entire file 
-    mClose();
+bool CFile::mIsOpen() {
+    return m_Ptr != nullptr;
 }
 
 std::string CFile::mRead(){
-    char ch;
-    std::string output;
     mOpen(Read);
-    std::printf("Printing out sd_test.txt:\n");
-    while(fgets(&ch, 1, m_Ptr) != NULL)
-        output += ch;
+    std::string output;
+    size_t size = mGetFileLength();
+    output.resize(size);
+    for (int i = 0; i < size; i++) {
+        output[i] = fgetc(m_Ptr);
+    }
     return output;
-    
 }
 
-void CFile::mWrite(std::string aText){
+void CFile::mWrite(const std::string& aText) {
     mOpen(Write);
-    fprintf(m_Ptr,"%s",aText.c_str());
+    fprintf(m_Ptr, aText.c_str());
 }
 
-void CFile::mAppend(std::string aText){
+void CFile::mAppend(const std::string& aText) {
     mOpen(Append);
-    fprintf(m_Ptr,"%s",aText.c_str());
+    fprintf(m_Ptr, aText.c_str());
 }
 
-unsigned long long CFile::mGetFileLength(){
+size_t CFile::mGetFileLength() {
     struct stat stats;
     stat(mPath.c_str(), &stats);
     return stats.st_size;
