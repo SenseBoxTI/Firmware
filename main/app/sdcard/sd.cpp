@@ -12,7 +12,7 @@
 #define PIN_CS 19
 #define PIN_CLK 18
 #define PIN_MOSI 5
-#define PIN_MOSI 17
+#define PIN_MISO 17
 
 CSD& CSD::getInstance() {
     static CSD instance = {};
@@ -35,7 +35,7 @@ void CSD::mInit() {
 
     spi_bus_config_t bus_cfg = {
         .mosi_io_num = PIN_MOSI,
-        .miso_io_num = PIN_MOSI,
+        .miso_io_num = PIN_MISO,
         .sclk_io_num = PIN_CLK,
         .quadwp_io_num = -1,
         .quadhd_io_num = -1,
