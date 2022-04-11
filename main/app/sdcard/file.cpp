@@ -73,3 +73,9 @@ void CFile::mAppend(std::string aText){
     mOpen(Append);
     fprintf(m_Ptr,"%s",aText.c_str());
 }
+
+unsigned long long CFile::mGetFileLength(){
+    struct stat stats;
+    stat(mPath.c_str(), &stats);
+    return stats.st_size;
+}

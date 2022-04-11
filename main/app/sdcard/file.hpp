@@ -16,9 +16,10 @@ class CFile {
     std::string mRead();
     void mWrite(std::string aText);
     void mAppend(std::string aText);
+    unsigned long long mGetFileLength();
     CFile(std::string aPath);
     std::string mPath;
-
+    
     private:
     void mOpen(FileMode aMode);
     void mClose();
