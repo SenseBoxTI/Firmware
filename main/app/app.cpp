@@ -22,7 +22,7 @@ void App::init() {
         });
     }
     catch (const std::runtime_error &e) {
-        std::printf("Error thrown while initing wifi: %s", e.what());
+        std::printf("Error thrown while initing wifi: %s\n", e.what());
     }
     
     sensorManager.mAddSensor(new CDbSensor("dbSensor"));
