@@ -7,12 +7,13 @@
 #include "esp_vfs_fat.h"
 
 #define SDSPI_DEFAULT_DMA 1
+#define TRANSFER_SIZE 4000
+#define SPI_FREQ 5000
 
-// TODO: fix numbers for esp32-s3
-#define PIN_CS 19
-#define PIN_CLK 18
-#define PIN_MOSI 5
-#define PIN_MISO 17
+#define PIN_CS 10   //CD pin
+#define PIN_CLK 30  //SCK pin
+#define PIN_MOSI 37 
+#define PIN_MISO 31 
 
 CSD& CSD::getInstance() {
     static CSD instance = {};
@@ -31,7 +32,7 @@ void CSD::mInit() {
     std::printf("Initializing SD card\n");
     std::printf("Using SPI peripheral\n");
     sdmmc_host_t host = SDSPI_HOST_DEFAULT();
-    host.max_freq_khz = 5000;
+    host.max_freq_khz = SPI_FREQ;
 
     spi_bus_config_t bus_cfg = {
         .mosi_io_num = PIN_MOSI,
@@ -39,7 +40,7 @@ void CSD::mInit() {
         .sclk_io_num = PIN_CLK,
         .quadwp_io_num = -1,
         .quadhd_io_num = -1,
-        .max_transfer_sz = 4000,
+        .max_transfer_sz = TRANSFER_SIZE,
     };
 
     std::printf("Initializing bus\n");
