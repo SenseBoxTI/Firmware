@@ -6,14 +6,14 @@
 #include <iostream>
 #include "esp_vfs_fat.h"
 
-#define SDSPI_DEFAULT_DMA 1
+#define SDSPI_DEFAULT_DMA 3
 #define TRANSFER_SIZE 4000
 #define SPI_FREQ 5000
 
-#define PIN_CS 10   //CD pin
-#define PIN_CLK 30  //SCK pin
-#define PIN_MOSI 37 
-#define PIN_MISO 31 
+#define PIN_CS   4  // CD pin
+#define PIN_CLK  2  // SCK pin
+#define PIN_MOSI 3
+#define PIN_MISO 1
 
 CSd& CSd::getInstance() {
     static CSd instance = {};
@@ -55,7 +55,7 @@ void CSd::mInit() {
     slot_config.host_id = static_cast<spi_host_device_t>(host.slot);
     std::printf("Mounting filesystem\n");
     ret = esp_vfs_fat_sdspi_mount(MOUNT_POINT, &host, &slot_config, &mount_config, &m_Card);
-    
+
     if (ret != ESP_OK) {
         if (ret == ESP_FAIL) {
             std::printf("Failed to mount filesystem. \n"
@@ -68,7 +68,7 @@ void CSd::mInit() {
         }
         throw std::runtime_error(esp_err_to_name(ret));
     }
-    
+
     std::printf("Filesystem mounted\n");
     sdmmc_card_print_info(stdout, m_Card);
 }
