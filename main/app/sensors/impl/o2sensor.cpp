@@ -32,10 +32,16 @@ uint32_t CO2Sensor::m_SampleADC() {
 
 SensorOutput CO2Sensor::m_MeasureCallback() {
     SensorOutput output;
+    // voltage range 0 - 3089, see O2 doc
+    // sensor range 0 - 25%
+    const float ratio = 25.0f / 3089.0f;
 
-    char sampleString[64] = { 0 };
-    std::snprintf(sampleString, 64, "%d", m_SampleADC());
-    output.insert({"V", sampleString});
+    // TODO config file implementation
+
+    static char sampleString[8] = { 0 };
+    std::snprintf(sampleString, 8, "%.4f", static_cast<float>(m_SampleADC()) * ratio);
+
+    output.insert({"O2%", sampleString});
 
     return output;
 }
