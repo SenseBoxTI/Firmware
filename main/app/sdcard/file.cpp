@@ -17,23 +17,21 @@ CFile::CFile(const std::string& aPath) : mPath(aPath) {
     m_Mode = FileMode::Write;
 }
 
-void CFile::mOpen(FileMode aMode) {
-    if (mIsOpen()){ // when already opened
+void CFile::m_Open(FileMode aMode) {
+    if (mIsOpen()) { // when already opened
         if (!(aMode == m_Mode && aMode == FileMode::Append)) { // when appen don't reopen, else do it
-            mClose();
+            m_Close();
             m_Ptr = fopen(mPath.c_str(), FileModes[aMode]);
         }
-    }
-    else{ // when not opened
+    } else { // when not opened
         m_Ptr = fopen(mPath.c_str(), FileModes[aMode]);
     }
 
     m_Mode = aMode;
 }
 
-void CFile::mClose() {
-    if (mIsOpen()) 
-        fclose(m_Ptr);
+void CFile::m_Close() {
+    if (mIsOpen()) fclose(m_Ptr);
     m_Ptr = nullptr;
 }
 
@@ -41,26 +39,24 @@ bool CFile::mIsOpen() {
     return m_Ptr != nullptr;
 }
 
-std::string CFile::mRead(){
-    mOpen(Read);
+std::string CFile::mRead() {
     size_t size = mGetFileLength();
     if (size <= 0) return "";
+    m_Open(Read);
 
     std::string output;
     output.resize(size);
-    for (int i = 0; i < size; i++) {
-        output[i] = fgetc(m_Ptr);
-    }
+    for (int i = 0; i < size; i++) output[i] = fgetc(m_Ptr);
     return output;
 }
 
 void CFile::mWrite(const std::string& aText) {
-    mOpen(Write);
+    m_Open(Write);
     fprintf(m_Ptr, aText.c_str());
 }
 
 void CFile::mAppend(const std::string& aText) {
-    mOpen(Append);
+    m_Open(Append);
     fprintf(m_Ptr, aText.c_str());
 }
 
