@@ -6,6 +6,7 @@ enum FileMode { //enumerate for filemode fopen
     Read,
     Write,
     Append,
+    Closed
 };
 
 class CFile {
@@ -14,13 +15,14 @@ class CFile {
 
     CFile(const std::string& aPath);
 
-    bool mIsOpen();
     std::string mRead();
     void mWrite(const std::string& aText);
     void mAppend(const std::string& aText);
     size_t mGetFileLength();
 
     private:
+    CFile();
+    bool m_IsOpen();
     void m_Open(FileMode aMode);
     void m_Close();
 
