@@ -26,11 +26,10 @@ void App::init() {
     }
 
     sensorManager.mAddSensor(new CDbSensor("dbSensor"));
+
     auto& SD = CSd::getInstance();
     try {
         SD.mInit();
-        CFile testfile = CFile(MOUNT_POINT "/test.txt");
-        std::printf("Test file: %s", testfile.mRead().c_str());
     }
     catch (const std::runtime_error& e) {
         std::printf("Initializing SD threw error: %s", e.what());
