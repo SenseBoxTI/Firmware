@@ -27,5 +27,5 @@ class CFile {
     void m_Close();
 
     FileMode m_Mode;
-    FILE* m_Ptr;
+    FILE* m_File;
 };

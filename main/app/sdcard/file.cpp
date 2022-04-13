@@ -16,13 +16,13 @@ static const char FileModes[3][2] = {
 CFile::CFile(const std::string& aPath)
 :   mPath(aPath),
     m_Mode(Closed),
-    m_Ptr(nullptr)
+    m_File(nullptr)
 {}
 
 void CFile::m_Open(FileMode aMode) {
     if (m_IsOpen()) m_Close();
 
-    m_Ptr = fopen(mPath.c_str(), FileModes[aMode]);
+    m_File = fopen(mPath.c_str(), FileModes[aMode]);
 
     if (!m_IsOpen()) throw std::runtime_error("File does not exist and cannot be created\n");
 
@@ -30,13 +30,13 @@ void CFile::m_Open(FileMode aMode) {
 }
 
 void CFile::m_Close() {
-    if (m_IsOpen()) fclose(m_Ptr);
-    m_Ptr = nullptr;
+    if (m_IsOpen()) fclose(m_File);
+    m_File = nullptr;
     m_Mode = Closed;
 }
 
 bool CFile::m_IsOpen() {
-    return m_Ptr != nullptr;
+    return m_File != nullptr;
 }
 
 std::string CFile::mRead() {
@@ -47,7 +47,7 @@ std::string CFile::mRead() {
 
     std::string output;
     output.resize(size);
-    for (int i = 0; i < size; i++) output[i] = fgetc(m_Ptr);
+    for (int i = 0; i < size; i++) output[i] = fgetc(m_File);
 
     m_Close();
 
@@ -57,7 +57,7 @@ std::string CFile::mRead() {
 void CFile::mWrite(const std::string& aText) {
     m_Open(Write);
 
-    fprintf(m_Ptr, aText.c_str());
+    fprintf(m_File, aText.c_str());
 
     m_Close();
 }
@@ -65,7 +65,7 @@ void CFile::mWrite(const std::string& aText) {
 void CFile::mAppend(const std::string& aText) {
     m_Open(Append);
 
-    fprintf(m_Ptr, aText.c_str());
+    fprintf(m_File, aText.c_str());
 
     m_Close();
 }
