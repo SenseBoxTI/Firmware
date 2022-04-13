@@ -15,12 +15,12 @@
 #define PIN_MOSI 37 
 #define PIN_MISO 31 
 
-CSD& CSD::getInstance() {
-    static CSD instance = {};
+CSd& CSd::getInstance() {
+    static CSd instance = {};
     return instance;
 }
 
-void CSD::mInit() {
+void CSd::mInit() {
     esp_err_t ret;
 
     esp_vfs_fat_sdmmc_mount_config_t mount_config = {

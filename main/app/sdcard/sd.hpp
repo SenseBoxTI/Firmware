@@ -4,10 +4,10 @@
 
 #define MOUNT_POINT "/sdcard"
 
-class CSD {
+class CSd {
     sdmmc_card_t * m_Card;
     public:
         
-        static CSD& getInstance();
+        static CSd& getInstance();
         void mInit();
 };
