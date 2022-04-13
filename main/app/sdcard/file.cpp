@@ -30,7 +30,12 @@ void CFile::m_Open(FileMode aMode) {
 }
 
 void CFile::m_Close() {
-    if (m_IsOpen()) fclose(m_File);
+    if (m_IsOpen())
+    {
+        if (fclose(m_File) < 0) {
+            throw std::runtime_error("Failed to close file properly");
+        }
+    }
     m_File = nullptr;
     m_Mode = Closed;
 }
