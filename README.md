@@ -24,6 +24,13 @@ Setup:
 Test:
 1. Look at the values returned by the 'I2CTest' sensor in the measurements output.
 
+## UART
+Setup:
+1. Connect the UART through the pin header.
+
+Test:
+1. Look at the PM25 readout from the I2CTest sensor.
+
 ## WiFI
 Setup:
 1. Add credentials to `wifitest.cpp`, inside the initializer.

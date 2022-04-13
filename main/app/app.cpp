@@ -2,9 +2,11 @@
 #include <stdexcept>
 #include <iostream>
 #include <sensormanager.hpp>
+
 #include <adctest.hpp>
 #include <i2ctest.hpp>
 #include <wifitest.hpp>
+#include <uarttest.hpp>
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -15,6 +17,7 @@ void App::init() {
 
     sensorManager.mAddSensor(new CAdcTest("ADC Test"));
     sensorManager.mAddSensor(new CI2cTest("I2C Test"));
+    sensorManager.mAddSensor(new CUartTest("UART Test"));
     sensorManager.mAddSensor(new CWifiTest("Wifi Test"));
 }
 
