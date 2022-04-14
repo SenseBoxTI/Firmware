@@ -14,6 +14,7 @@ SRCS
     "./app/sensors/impl/i2ctest.cpp"
     "./app/sensors/impl/wifitest.cpp"
     "./app/sensors/impl/uarttest.cpp"
+    "./app/sensors/impl/sdtest.cpp"
     # Wifi
     "./app/Wifi/wifi.cpp"
     # SDCard
@@ -30,5 +31,4 @@ INCLUDE_DIRS
     "./app/Wifi/"
     #
     "./app/sdcard/"
-    
 )

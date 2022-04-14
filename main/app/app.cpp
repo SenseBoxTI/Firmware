@@ -18,8 +18,10 @@ void App::init() {
 
     sensorManager.mAddSensor(new CAdcTest("ADC Test"));
     sensorManager.mAddSensor(new CI2cTest("I2C Test"));
+    // TODO : RESETS ESP32, Havent tried connecting hardware yet
     sensorManager.mAddSensor(new CUartTest("UART Test"));
     sensorManager.mAddSensor(new CWifiTest("Wifi Test"));
+    sensorManager.mAddSensor(new CSdTest("SD Test"));
 }
 
 void App::loop() {
@@ -40,7 +42,7 @@ void App::loop() {
         std::printf("\n");
     }
     // Throw debug error
-    // throw std::runtime_error("If you see this, everything works!\n");
+    throw std::runtime_error("If you see this, everything works!");
     vTaskDelay(2000 / portTICK_RATE_MS);
 }
 
@@ -54,7 +56,7 @@ void App::start() {
             "Ah shucks!\n"
             "FATAL unhandled runtime exception occured!\n"
             "Famous lasts words:\n"
-            "%s",
+            "%s\n",
             e.what()
         );
     }
