@@ -4,8 +4,8 @@
 #include <Adafruit_PM25AQI.h>
 
 Adafruit_PM25AQI pm25aqi;
-#define RX_PIN 31
-#define TX_PIN 32
+#define RX_GPIO 28
+#define TX_GPIO 29
 
 SensorOutput CUartTest::m_MeasureCallback() {
     SensorOutput output;
@@ -24,7 +24,7 @@ SensorOutput CUartTest::m_MeasureCallback() {
 
 CSensorStatus CUartTest::m_InitCallback() {
 
-    Serial2.begin(9600, SERIAL_8N1,  RX_PIN, TX_PIN);
+    Serial2.begin(9600, SERIAL_8N1,  RX_GPIO, TX_GPIO);
 
     if (!pm25aqi.begin_UART(&Serial2)) {
         return CSensorStatus::Error("Failed to init.");
