@@ -21,8 +21,9 @@ void App::init() {
 
     auto& log = CLog::getInstance();
     log.mInit();
-    auto logger = log.mScope("app.init()");
-    logger.mDebug("App is being inited\n");
+
+    auto logger = log.mScope("app.init");
+    logger.mDebug("App is being inited");
 
     auto& sensorManager = CSensorManager::getInstance();
     // init PEAP network
@@ -45,22 +46,23 @@ void App::init() {
 
 void App::loop() {
     auto& sensorManager = CSensorManager::getInstance();
-    auto logger = CLog::getInstance().mScope("app.loop()");
+    auto logger = CLog::getInstance().mScope("app.loop");
     logger.mInfo("Hello World");
 
     auto sensors = sensorManager.mMeasure();
 
     // Print all measurements
     for (auto const &sensor: sensors) {
-        logger.mInfo("Sensor '%s':\n", sensor.first.c_str());
+        logger.mInfo("Sensor '%s':", sensor.first.c_str());
         for (auto const &measurement : sensor.second) {
-            logger.mInfo("\t%s\t: %s\n",
+            logger.mInfo("\t%s\t: %s",
                 measurement.first.c_str(),
                 measurement.second.c_str()
             );
         }
         logger.mInfo("");
     }
+
     // Throw debug error
     logger.mThrow("If you see this, everything works!");
 }
@@ -70,12 +72,12 @@ void App::start() {
         this->init();
         while (true) this->loop();
     }
-    catch (const std::runtime_error &e) {
+    catch (const std::runtime_error& e) {
         std::printf(
             "Ah shucks!\n"
             "FATAL unhandled runtime exception occured!\n"
             "Famous lasts words:\n"
-            "%s",
+            "%s\n",
             e.what()
         );
     }
