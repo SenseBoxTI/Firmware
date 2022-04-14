@@ -10,7 +10,15 @@
 
 
 void App::init() {
-    // log init is first
+    // Initialize SD
+    auto& SD = CSd::getInstance();
+    try {
+        SD.mInit();
+    }
+    catch (const std::runtime_error& e) {
+        std::printf("Initializing SD threw error: %s\n", e.what());
+    }
+
     auto& log = CLog::getInstance();
     log.mInit();
     auto logger = log.mScope("app.init()");
@@ -33,13 +41,6 @@ void App::init() {
     logger.mDebug("Adding sensors...");
     sensorManager.mAddSensor(new CDbSensor("dbSensor"));
     logger.mDebug("Sensors added, app is inited!");
-    auto& SD = CSd::getInstance();
-    try {
-        SD.mInit();
-    }
-    catch (const std::runtime_error& e) {
-        std::printf("Initializing SD threw error: %s\n", e.what());
-    }
 }
 
 void App::loop() {
