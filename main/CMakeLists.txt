@@ -16,6 +16,10 @@ SRCS
     # SDCard
     "./app/sdcard/file.cpp"
     "./app/sdcard/sd.cpp"
+    # Logger
+    "./app/logger/log.cpp"
+    "./app/logger/logscope.cpp"
+    "./app/logger/logtype.cpp"
 INCLUDE_DIRS
     # Add directories seperately.
     "./app/"
@@ -25,7 +29,9 @@ INCLUDE_DIRS
     "./app/sensors/impl/"
     # Wifi
     "./app/Wifi/"
-    #
+    # SDCard
     "./app/sdcard/"
-    
+    # Logger
+    "./app/logger/"
+
 )
