@@ -28,10 +28,8 @@ CLog& CLog::getInstance()
     return instance;
 }
 
-void CLog::mInit()
-{
-    
-}
+
+void CLog::mInit() {}
 
 void CLog::mWriteLog(const char* scope, const std::string& aText, LogType aType)
 {
@@ -43,11 +41,7 @@ void CLog::mWriteLog(const char* scope, const std::string& aText, LogType aType)
     memset(timestr, 0, sizeof(timestr));
     strftime(timestr, sizeof(timestr), "[ %d/%m/%Y | %H:%M:%S ]", &timeinfo);
     // print to serial
-    std::printf("%c ", logIds[uint8_t(aType)]);
-    std::printf(timestr);
-    std::printf(" (%s) ", scope);
-    std::printf(aText.c_str());
-    std::printf("\n");
+    std::printf("%c %s (%s) %s\n", logIds[uint8_t(aType)], timestr, scope, aText.c_str());
     
     // print to logfile
     try {
@@ -61,9 +55,9 @@ void CLog::mWriteLog(const char* scope, const std::string& aText, LogType aType)
         if (m_Log.mGetFileLength() > MAX_FILE_BYTE_SIZE) m_RotateLogFile();
     }
     catch (const std::runtime_error& e) {
-        std::printf("Failed to write log to file\n");
+        // Removed because clutter on serial log
+        //std::printf("E %s (CLog.mWriteLog) Failed to write log to file: %s\n", timestr, e.what());
     }
-    std::printf("End of log\n");
 }
 
 CLogScope CLog::mScope(const char* aScope)
