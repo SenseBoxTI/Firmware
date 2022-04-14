@@ -4,13 +4,18 @@
 #include <sensormanager.hpp>
 #include <dbsensor.hpp>
 #include <wifi.hpp>
+#include <log.hpp>
 #include <file.hpp>
 #include <sd.hpp>
-#include <sys/unistd.h>
 
 
 void App::init() {
-    std::printf("app.init()\n");
+    // log init is first
+    auto& log = CLog::getInstance();
+    log.mInit();
+    auto logger = log.mScope("app.init()");
+    logger.mDebug("App is being inited\n");
+
     auto& sensorManager = CSensorManager::getInstance();
     // init PEAP network
     try {
@@ -22,39 +27,41 @@ void App::init() {
         });
     }
     catch (const std::runtime_error &e) {
-        std::printf("Error thrown while initing wifi: %s\n", e.what());
+        logger.mError("Error thrown while initing wifi: %s", e.what());
     }
-
+    
+    logger.mDebug("Adding sensors...");
     sensorManager.mAddSensor(new CDbSensor("dbSensor"));
-
+    logger.mDebug("Sensors added, app is inited!");
     auto& SD = CSd::getInstance();
     try {
         SD.mInit();
     }
     catch (const std::runtime_error& e) {
-        std::printf("Initializing SD threw error: %s", e.what());
+        std::printf("Initializing SD threw error: %s\n", e.what());
     }
 }
 
 void App::loop() {
-    std::printf("app.loop()\n");
     auto& sensorManager = CSensorManager::getInstance();
+    auto logger = CLog::getInstance().mScope("app.loop()");
+    logger.mInfo("Hello World");
 
     auto sensors = sensorManager.mMeasure();
 
     // Print all measurements
     for (auto const &sensor: sensors) {
-        std::printf("Sensor '%s':\n", sensor.first.c_str());
+        logger.mInfo("Sensor '%s':\n", sensor.first.c_str());
         for (auto const &measurement : sensor.second) {
-            std::printf("\t%s\t: %s\n",
+            logger.mInfo("\t%s\t: %s\n",
                 measurement.first.c_str(),
                 measurement.second.c_str()
             );
         }
-        std::printf("\n");
+        logger.mInfo("");
     }
     // Throw debug error
-    throw std::runtime_error("If you see this, everything works!\n");
+    logger.mThrow("If you see this, everything works!");
 }
 
 void App::start() {
