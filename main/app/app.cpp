@@ -7,6 +7,7 @@
 #include <i2ctest.hpp>
 #include <wifitest.hpp>
 #include <uarttest.hpp>
+#include <sdtest.hpp>
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -38,7 +39,6 @@ void App::loop() {
         }
         std::printf("\n");
     }
-
     // Throw debug error
     // throw std::runtime_error("If you see this, everything works!\n");
     vTaskDelay(2000 / portTICK_RATE_MS);
