@@ -4,13 +4,36 @@
 #include <sensormanager.hpp>
 #include <dbsensor.hpp>
 #include <o2sensor.hpp>
+#include <wifi.hpp>
+#include <file.hpp>
+#include <sd.hpp>
 
 void App::init() {
     std::printf("app.init()\n");
     auto& sensorManager = CSensorManager::getInstance();
+    // init PEAP network
+    try {
+        CWifi::getInstance().mInitWifi({
+            .ssid = "",
+            .eapId = "",
+            .eapUsername = "",
+            .password = ""
+        });
+    }
+    catch (const std::runtime_error &e) {
+        std::printf("Error thrown while initing wifi: %s\n", e.what());
+    }
 
-    // sensorManager.mAddSensor(new CDbSensor("dbSensor"));
     sensorManager.mAddSensor(new CO2Sensor("O2Sensor"));
+    sensorManager.mAddSensor(new CDbSensor("dbSensor"));
+
+    auto& SD = CSd::getInstance();
+    try {
+        SD.mInit();
+    }
+    catch (const std::runtime_error& e) {
+        std::printf("Initializing SD threw error: %s", e.what());
+    }
 }
 
 void App::loop() {
@@ -30,7 +53,6 @@ void App::loop() {
         }
         std::printf("\n");
     }
-
     // Throw debug error
     throw std::runtime_error("If you see this, everything works!\n");
 }

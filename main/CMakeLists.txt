@@ -12,6 +12,11 @@ SRCS
     # Sensor Impl
     "./app/sensors/impl/dbsensor.cpp"
     "./app/sensors/impl/o2sensor.cpp"
+    # Wifi
+    "./app/Wifi/wifi.cpp"
+    # SDCard
+    "./app/sdcard/file.cpp"
+    "./app/sdcard/sd.cpp"
 INCLUDE_DIRS
     # Add directories seperately.
     "./app/"
@@ -19,4 +24,9 @@ INCLUDE_DIRS
     "./app/sensors/"
     # Sensor Impl
     "./app/sensors/impl/"
+    # Wifi
+    "./app/Wifi/"
+    #
+    "./app/sdcard/"
+    
 )
