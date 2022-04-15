@@ -13,11 +13,11 @@ class CFile {
     public:
     std::string mPath;
 
-    CFile(const std::string& aPath);
+    CFile(const std::string& arPath);
 
     std::string mRead();
-    void mWrite(const std::string& aText);
-    void mAppend(const std::string& aText);
+    void mWrite(const std::string& arText);
+    void mAppend(const std::string& arText);
     size_t mGetFileLength();
 
     private:

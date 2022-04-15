@@ -13,8 +13,8 @@ static const char FileModes[3][2] = {
     "a"
 };
 
-CFile::CFile(const std::string& aPath)
-:   mPath(aPath),
+CFile::CFile(const std::string& arPath)
+:   mPath(arPath),
     m_Mode(Closed),
     m_File(nullptr)
 {}
@@ -59,18 +59,18 @@ std::string CFile::mRead() {
     return output;
 }
 
-void CFile::mWrite(const std::string& aText) {
+void CFile::mWrite(const std::string& arText) {
     m_Open(Write);
 
-    fprintf(m_File, aText.c_str());
+    fprintf(m_File, arText.c_str());
 
     m_Close();
 }
 
-void CFile::mAppend(const std::string& aText) {
+void CFile::mAppend(const std::string& arText) {
     m_Open(Append);
 
-    fprintf(m_File, aText.c_str());
+    fprintf(m_File, arText.c_str());
 
     m_Close();
 }
