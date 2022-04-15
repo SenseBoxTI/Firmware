@@ -2,6 +2,8 @@
 #include <stdexcept>
 #include <iostream>
 
+#define MOUNT_POINT "/sdcard"
+
 enum FileMode { //enumerate for filemode fopen
     Read,
     Write,
@@ -9,8 +11,14 @@ enum FileMode { //enumerate for filemode fopen
     Closed
 };
 
+enum SdState { //enumerate for filemode fopen
+    Unitizialized,
+    Ready,
+    Unavailable
+};
+
 class CFile {
-    public:
+public:
     std::string mPath;
 
     CFile(const std::string& arPath);
@@ -22,18 +30,22 @@ class CFile {
     CFile(const CFile& arOther) = delete;
     CFile(CFile&& arrOther);
 
+    static void mInitSd();
+    static SdState getSdState();
+
     std::string mRead();
     void mWrite(const std::string& arText);
     void mAppend(const std::string& arText);
     size_t mGetFileLength();
-
-    private:
     ~CFile();
+
+private:
+    static SdState m_SdState;
 
     bool m_IsOpen();
     void m_Open(FileMode aMode);
     void m_Close();
 
     FileMode m_Mode;
-    FILE* m_File;
+    FILE* mp_File;
 };

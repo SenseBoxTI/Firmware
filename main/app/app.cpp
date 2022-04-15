@@ -5,9 +5,6 @@
 #include <dbsensor.hpp>
 #include <wifi.hpp>
 #include <file.hpp>
-#include <sd.hpp>
-#include <sys/unistd.h>
-
 
 void App::init() {
     std::printf("app.init()\n");
@@ -27,9 +24,8 @@ void App::init() {
 
     sensorManager.mAddSensor(new CDbSensor("dbSensor"));
 
-    auto& SD = CSd::getInstance();
     try {
-        SD.mInit();
+        CFile::mInitSd();
     }
     catch (const std::runtime_error& e) {
         std::printf("Initializing SD threw error: %s", e.what());
