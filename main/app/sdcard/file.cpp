@@ -24,7 +24,7 @@ void CFile::m_Open(FileMode aMode) {
 
     m_File = fopen(mPath.c_str(), FileModes[aMode]);
 
-    if (!m_IsOpen()) throw std::runtime_error("File does not exist and cannot be created\n");
+    if (!m_IsOpen()) throw std::runtime_error("File does not exist and cannot be created");
 
     m_Mode = aMode;
 }
