@@ -9,10 +9,10 @@ class CLog {
         CFile m_Log;
         void m_RotateLogFile();
         CLog();
-        CLog(CLog&& other) = delete;
+        CLog(CLog&& rrOther) = delete;
     public:
         static CLog& getInstance();
         void mInit();
-        void mWriteLog(const char* scope, const std::string& aText, LogType aType);
-        CLogScope mScope(const char* aScope);
+        void mWriteLog(const char* apScope, const std::string& arText, LogType aType);
+        CLogScope mScope(const char* apScope);
 };
