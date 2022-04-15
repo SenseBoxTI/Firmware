@@ -3,11 +3,10 @@
 #include <iostream>
 #include <sensormanager.hpp>
 #include <dbsensor.hpp>
+#include <o2sensor.hpp>
 #include <wifi.hpp>
 #include <file.hpp>
 #include <sd.hpp>
-#include <sys/unistd.h>
-
 
 void App::init() {
     std::printf("app.init()\n");
@@ -25,6 +24,7 @@ void App::init() {
         std::printf("Error thrown while initing wifi: %s\n", e.what());
     }
 
+    sensorManager.mAddSensor(new CO2Sensor("O2Sensor"));
     sensorManager.mAddSensor(new CDbSensor("dbSensor"));
 
     auto& SD = CSd::getInstance();

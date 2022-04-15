@@ -11,6 +11,7 @@ SRCS
     "./app/sensors/measurements.cpp"
     # Sensor Impl
     "./app/sensors/impl/dbsensor.cpp"
+    "./app/sensors/impl/o2sensor.cpp"
     # Wifi
     "./app/Wifi/wifi.cpp"
     # SDCard
