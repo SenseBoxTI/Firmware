@@ -3,6 +3,7 @@
 #include <iostream>
 #include <sensormanager.hpp>
 #include <dbsensor.hpp>
+#include <o2sensor.hpp>
 #include <wifi.hpp>
 #include <file.hpp>
 
@@ -22,6 +23,7 @@ void App::init() {
         std::printf("Error thrown while initing wifi: %s\n", e.what());
     }
 
+    sensorManager.mAddSensor(new CO2Sensor("O2Sensor"));
     sensorManager.mAddSensor(new CDbSensor("dbSensor"));
 
     try {
