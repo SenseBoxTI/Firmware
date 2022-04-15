@@ -14,6 +14,13 @@ class CFile {
     std::string mPath;
 
     CFile(const std::string& arPath);
+    CFile() = delete;
+
+    CFile& operator=(const CFile& arOther) = delete;
+    CFile& operator=(CFile&& arrOther);
+
+    CFile(const CFile& arOther) = delete;
+    CFile(CFile&& arrOther);
 
     std::string mRead();
     void mWrite(const std::string& arText);
@@ -21,7 +28,8 @@ class CFile {
     size_t mGetFileLength();
 
     private:
-    CFile();
+    ~CFile();
+
     bool m_IsOpen();
     void m_Open(FileMode aMode);
     void m_Close();

@@ -83,3 +83,24 @@ size_t CFile::mGetFileLength() {
 
     return stats.st_size;
 }
+
+CFile::CFile(CFile &&arrOther) {
+    mp_File = arrOther.m_File;
+    arrOther.mp_File = nullptr;
+
+    mPath = arrOther.mPath;
+}
+
+CFile & CFile::operator=(CFile &&arrOther) {
+    mp_File = arrOther.m_File;
+    arrOther.mp_File = nullptr;
+
+    mPath = arrOther.mPath;
+
+    return *this;
+}
+
+CFile::~CFile() {
+    m_Close();
+}
+
