@@ -182,3 +182,7 @@ void CFile::mInitSd() {
     m_SdState = Ready;
     sdmmc_card_print_info(stdout, sdCard);
 }
+
+SdState CFile::getSdState() {
+    return m_SdState;
+}
