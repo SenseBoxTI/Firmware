@@ -1,4 +1,5 @@
 #include "log.hpp"
+#include <time.hpp>
 
 #define LOG_FILE_FORMAT "%d_log.txt"
 #define MAX_FILE_BYTE_SIZE (1024 * 1000)
@@ -23,7 +24,6 @@ static const char* ansiColors[4] = {
 
 bool currentFile = false;
 void CLog::m_RotateLogFile() {
-    // TODO: properly make new log files
     m_Log = CFile(string_vformat(LOG_FILE_FORMAT, (currentFile ^= 1)));
     m_Log.mWrite("");
 }
@@ -38,11 +38,7 @@ CLog& CLog::getInstance() {
 void CLog::mInit() {}
 
 void CLog::mWriteLog(const char* apScope, const std::string& arText, LogType aType) {
-    // TODO: eventually 
-    time_t rawtime;
-    time (&rawtime);
-    struct tm timeinfo = *localtime(&rawtime);
-
+    auto timeinfo = CTime::mGetTime();
     std::string time = string_vformat("[ %02d/%02d/%4d | %02d:%02d:%02d ]",
         timeinfo.tm_mday,
         timeinfo.tm_mon + 1, // tm mon 0-11
