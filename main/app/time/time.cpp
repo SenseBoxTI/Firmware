@@ -50,6 +50,15 @@ struct tm CTime::mGetTime() {
     return *localtime(&rawtime);
 }
 
+time_t CTime::mGetUnixTime() {
+    if (!mb_IsInitialized) throw std::runtime_error("Time was not initialized first.");
+
+    time_t rawtime; // unix timestamp value
+    time(&rawtime);
+
+    return rawtime;
+}
+
 std::string CTime::mGetTimeString() {
     char strftime_buf[32];
 
