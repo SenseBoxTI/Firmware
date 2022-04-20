@@ -6,6 +6,7 @@
 #include <o2sensor.hpp>
 #include <wifi.hpp>
 #include <file.hpp>
+#include <time.hpp>
 
 void App::init() {
     std::printf("app.init()\n");
@@ -32,6 +33,16 @@ void App::init() {
     catch (const std::runtime_error& e) {
         std::printf("Initializing SD threw error: %s", e.what());
     }
+
+    try {
+        CTime::mInitTime("pool.ntp.org");
+    }
+    catch (const std::runtime_error& e) {
+        std::printf("Initializing NTP threw error: %s", e.what());
+    }
+
+    std::string time = CTime::mGetTimeString();
+    std::printf("System has started.\nThe current time is: %s\n\n", time.c_str());
 }
 
 void App::loop() {
