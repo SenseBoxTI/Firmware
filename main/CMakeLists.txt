@@ -11,11 +11,11 @@ SRCS
     "./app/sensors/measurements.cpp"
     # Sensor Impl
     "./app/sensors/impl/dbsensor.cpp"
+    "./app/sensors/impl/o2sensor.cpp"
     # Wifi
     "./app/Wifi/wifi.cpp"
     # SDCard
     "./app/sdcard/file.cpp"
-    "./app/sdcard/sd.cpp"
     # Logger
     "./app/logger/log.cpp"
     "./app/logger/logscope.cpp"
@@ -33,5 +33,5 @@ INCLUDE_DIRS
     "./app/sdcard/"
     # Logger
     "./app/logger/"
-
+    
 )

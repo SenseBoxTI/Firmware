@@ -3,11 +3,10 @@
 #include <iostream>
 #include <sensormanager.hpp>
 #include <dbsensor.hpp>
+#include <o2sensor.hpp>
 #include <wifi.hpp>
 #include <log.hpp>
 #include <file.hpp>
-#include <sd.hpp>
-
 
 void App::init() {
     // Initialize SD
@@ -41,7 +40,15 @@ void App::init() {
     
     logger.mDebug("Adding sensors...");
     sensorManager.mAddSensor(new CDbSensor("dbSensor"));
+    sensorManager.mAddSensor(new CO2Sensor("O2Sensor"));
     logger.mDebug("Sensors added, app is inited!");
+
+    try {
+        CFile::mInitSd();
+    }
+    catch (const std::runtime_error& e) {
+        std::printf("Initializing SD threw error: %s", e.what());
+    }
 }
 
 void App::loop() {
