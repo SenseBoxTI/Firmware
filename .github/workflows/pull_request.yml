@@ -13,8 +13,14 @@ jobs:
       image: espressif/idf:release-v4.4
 
     steps:
-      - uses: actions/checkout@v2
-      - run: git submodule update --init --recursive
+      - name: Trust Repo
+        run: git config --global --add safe.directory /__w/Firmware/Firmware
+        
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        with:
+          submodules: 'true'
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       # Runs the build command
       - name: Build using idf.py
