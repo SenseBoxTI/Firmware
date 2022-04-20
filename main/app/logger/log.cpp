@@ -1,6 +1,6 @@
 #include "log.hpp"
 
-#define LOG_FILE_FORMAT "/sdcard/%d_log.txt"
+#define LOG_FILE_FORMAT "%d_log.txt"
 #define MAX_FILE_BYTE_SIZE (1024 * 1000)
 
 extern std::string string_vformat(const char* apFormat, ...);
@@ -51,8 +51,8 @@ void CLog::mWriteLog(const char* apScope, const std::string& arText, LogType aTy
         timeinfo.tm_min,
         timeinfo.tm_sec
     );
-
-    std::string toPrint = string_vformat("%c %s (%s) %s%s\n",
+    
+    std::string toPrint = string_vformat("%c %s (%s) %s",
         logIds[uint8_t(aType)],
         time.c_str(),
         apScope,
@@ -65,7 +65,7 @@ void CLog::mWriteLog(const char* apScope, const std::string& arText, LogType aTy
     // print to logfile
     if (CFile::getSdState() == SdState::Ready) {
         try {
-            m_Log.mAppend(toPrint);
+            m_Log.mAppend(toPrint + "\n");
 
             // File size check, if too big rotate the log file
             if (m_Log.mGetFileLength() > MAX_FILE_BYTE_SIZE) m_RotateLogFile();
