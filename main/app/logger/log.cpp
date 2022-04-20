@@ -65,14 +65,13 @@ void CLog::mWriteLog(const char* apScope, const std::string& arText, LogType aTy
     // print to logfile
     if (CFile::getSdState() == SdState::Ready) {
         try {
-            m_Log.mAppend(toPrint + "\n");
-
+            m_Log.mAppend(toPrint);
+            m_Log.mAppend("\r\n");
             // File size check, if too big rotate the log file
             if (m_Log.mGetFileLength() > MAX_FILE_BYTE_SIZE) m_RotateLogFile();
         }
         catch (const std::runtime_error& e) {
-            // Removed because clutter on serial log
-            std::printf("%sE %s (CLog.mWriteLog) Failed to write log to file: %s%s\n", ansiColors[3], time.c_str(), e.what(), resetStyle);
+            std::printf("%sE %s (CLog.mWriteLog) Failed to write log to file: %s%s\r\n", ansiColors[3], time.c_str(), e.what(), resetStyle);
         }
     }
 }
