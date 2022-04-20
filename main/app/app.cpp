@@ -9,20 +9,20 @@
 #include <file.hpp>
 
 void App::init() {
-    // Initialize SD
-    auto& SD = CSd::getInstance();
-    try {
-        SD.mInit();
-    }
-    catch (const std::runtime_error& e) {
-        std::printf("Initializing SD threw error: %s\n", e.what());
-    }
-
+    // Initialize Logger
     auto& log = CLog::getInstance();
     log.mInit();
-
+    
     auto logger = log.mScope("app.init");
     logger.mDebug("App is being inited");
+
+    // Initialize SD
+    try {
+        CFile::mInitSd();
+    }
+    catch (const std::runtime_error& e) {
+        logger.mError("Initializing SD threw error: %s", e.what());
+    }
 
     auto& sensorManager = CSensorManager::getInstance();
     // init PEAP network
@@ -37,18 +37,11 @@ void App::init() {
     catch (const std::runtime_error &e) {
         logger.mError("Error thrown while initing wifi: %s", e.what());
     }
-    
+
     logger.mDebug("Adding sensors...");
     sensorManager.mAddSensor(new CDbSensor("dbSensor"));
     sensorManager.mAddSensor(new CO2Sensor("O2Sensor"));
     logger.mDebug("Sensors added, app is inited!");
-
-    try {
-        CFile::mInitSd();
-    }
-    catch (const std::runtime_error& e) {
-        std::printf("Initializing SD threw error: %s", e.what());
-    }
 }
 
 void App::loop() {
