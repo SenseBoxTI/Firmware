@@ -12,6 +12,8 @@ SRCS
     # Sensor Impl
     "./app/sensors/impl/dbsensor.cpp"
     "./app/sensors/impl/o2sensor.cpp"
+    # Time
+    "./app/time/time.cpp"
     # Wifi
     "./app/Wifi/wifi.cpp"
     # SDCard
@@ -27,6 +29,8 @@ INCLUDE_DIRS
     "./app/sensors/"
     # Sensor Impl
     "./app/sensors/impl/"
+    # Time
+    "./app/time/"
     # Wifi
     "./app/Wifi/"
     # SDCard

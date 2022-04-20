@@ -7,6 +7,7 @@
 #include <wifi.hpp>
 #include <log.hpp>
 #include <file.hpp>
+#include <time.hpp>
 
 void App::init() {
     // Initialize Logger
@@ -16,6 +17,7 @@ void App::init() {
     auto logger = log.mScope("app.init");
     logger.mDebug("App is being inited");
 
+    logger.mInfo("Initializing SD");
     // Initialize SD
     try {
         CFile::mInitSd();
@@ -24,7 +26,7 @@ void App::init() {
         logger.mError("Initializing SD threw error: %s", e.what());
     }
 
-    auto& sensorManager = CSensorManager::getInstance();
+    logger.mInfo("Initializing Wifi");
     // init PEAP network
     try {
         CWifi::getInstance().mInitWifi({
@@ -38,10 +40,21 @@ void App::init() {
         logger.mError("Error thrown while initing wifi: %s", e.what());
     }
 
+    logger.mInfo("Initializing Time");
+    try {
+        CTime::mInitTime("pool.ntp.org");
+    }
+    catch (const std::runtime_error& e) {
+        logger.mError("Initializing NTP threw error: %s", e.what());
+    }
+
+    auto& sensorManager = CSensorManager::getInstance();
+
     logger.mDebug("Adding sensors...");
     sensorManager.mAddSensor(new CDbSensor("dbSensor"));
     sensorManager.mAddSensor(new CO2Sensor("O2Sensor"));
-    logger.mDebug("Sensors added, app is inited!");
+    
+    logger.mInfo("System has started.\nThe current time is: %s\n\n", CTime::mGetTimeString().c_str());
 }
 
 void App::loop() {
