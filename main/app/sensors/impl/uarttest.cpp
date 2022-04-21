@@ -27,8 +27,8 @@ SensorOutput CUartTest::m_MeasureCallback() {
 
 CSensorStatus CUartTest::m_InitCallback() {
 
-    gpio_set_level(RESET_GPIO, 1);
-    gpio_set_level(SET_GPIO, 1);
+    gpio_set_level(static_cast<gpio_num_t>(RESET_GPIO), 1);
+    gpio_set_level(static_cast<gpio_num_t>(SET_GPIO), 1);
 
     Serial2.begin(9600, SERIAL_8N1,  RX_GPIO, TX_GPIO);
 
