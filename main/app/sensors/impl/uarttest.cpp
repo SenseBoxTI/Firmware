@@ -2,10 +2,13 @@
 
 #include <stdexcept>
 #include <Adafruit_PM25AQI.h>
+#include <driver/gpio.h>
 
 Adafruit_PM25AQI pm25aqi;
+#define RESET_GPIO 27
 #define RX_GPIO 28
 #define TX_GPIO 29
+#define SET_GPIO 30
 
 SensorOutput CUartTest::m_MeasureCallback() {
     SensorOutput output;
@@ -23,6 +26,9 @@ SensorOutput CUartTest::m_MeasureCallback() {
 }
 
 CSensorStatus CUartTest::m_InitCallback() {
+
+    gpio_set_level(RESET_GPIO, 1);
+    gpio_set_level(SET_GPIO, 1);
 
     Serial2.begin(9600, SERIAL_8N1,  RX_GPIO, TX_GPIO);
 
