@@ -15,7 +15,7 @@ void App::init() {
     log.mInit();
 
     auto logger = log.mScope("app.init");
-    logger.mDebug("App is being inited");
+    logger.mDebug("Application is starting");
 
     logger.mInfo("Initializing SD");
     // Initialize SD

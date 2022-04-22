@@ -22,13 +22,16 @@ static const char* ansiColors[4] = {
     "\x1b[38;5;196m"
 };
 
+// TODO rotate log file using timestamps
 bool currentFile = false;
 void CLog::m_RotateLogFile() {
     m_Log = CFile(string_vformat(LOG_FILE_FORMAT, (currentFile ^= 1)));
     m_Log.mWrite("");
 }
 
-CLog::CLog() : m_Log(string_vformat(LOG_FILE_FORMAT, currentFile)) {}
+CLog::CLog()
+:   m_Log(string_vformat(LOG_FILE_FORMAT, currentFile))
+{}
 
 CLog& CLog::getInstance() {
     static CLog instance = {};

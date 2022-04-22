@@ -7,9 +7,8 @@ std::string string_vformat(const char* apFormat, va_list aArgs) {
     // get size
     size_t size = vsnprintf(nullptr, 0, apFormat, aArgs) + 1;
     // error
-    if (size <= 0)
-        return "";
-    
+    if (size <= 0) return "";
+
     // put scope into result
     std::string result;
     result.resize(size);
@@ -26,7 +25,9 @@ std::string string_vformat(const char* apFormat, ...) {
     return result;
 }
 
-CLogScope::CLogScope(const char* apScope) : m_Scope(apScope) {}
+CLogScope::CLogScope(const char* apScope)
+:   m_Scope(apScope)
+{}
 
 void CLogScope::mInfo(const char* apFormat, ...) {
     va_list a_list;
