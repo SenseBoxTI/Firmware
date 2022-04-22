@@ -5,12 +5,28 @@
 #include <dbsensor.hpp>
 #include <o2sensor.hpp>
 #include <wifi.hpp>
+#include <log.hpp>
 #include <file.hpp>
 #include <time.hpp>
 
 void App::init() {
-    std::printf("app.init()\n");
-    auto& sensorManager = CSensorManager::getInstance();
+    // Initialize Logger
+    auto& log = CLog::getInstance();
+    log.mInit();
+
+    auto logger = log.mScope("app.init");
+    logger.mDebug("Application is starting");
+
+    logger.mInfo("Initializing SD");
+    // Initialize SD
+    try {
+        CFile::mInitSd();
+    }
+    catch (const std::runtime_error& e) {
+        logger.mError("Initializing SD threw error: %s", e.what());
+    }
+
+    logger.mInfo("Initializing Wifi");
     // init PEAP network
     try {
         CWifi::getInstance().mInitWifi({
@@ -21,49 +37,46 @@ void App::init() {
         });
     }
     catch (const std::runtime_error &e) {
-        std::printf("Error thrown while initing wifi: %s\n", e.what());
+        logger.mError("Error thrown while initing wifi: %s", e.what());
     }
 
-    sensorManager.mAddSensor(new CO2Sensor("O2Sensor"));
-    sensorManager.mAddSensor(new CDbSensor("dbSensor"));
-
-    try {
-        CFile::mInitSd();
-    }
-    catch (const std::runtime_error& e) {
-        std::printf("Initializing SD threw error: %s", e.what());
-    }
-
+    logger.mInfo("Initializing Time");
     try {
         CTime::mInitTime("pool.ntp.org");
     }
     catch (const std::runtime_error& e) {
-        std::printf("Initializing NTP threw error: %s", e.what());
+        logger.mError("Initializing NTP threw error: %s", e.what());
     }
 
-    std::string time = CTime::mGetTimeString();
-    std::printf("System has started.\nThe current time is: %s\n\n", time.c_str());
+    auto& sensorManager = CSensorManager::getInstance();
+
+    logger.mDebug("Adding sensors...");
+    sensorManager.mAddSensor(new CDbSensor("dbSensor"));
+    sensorManager.mAddSensor(new CO2Sensor("O2Sensor"));
+
+    logger.mInfo("System has started.\nThe current time is: %s\n\n", CTime::mGetTimeString().c_str());
 }
 
 void App::loop() {
-    std::printf("app.loop()\n");
     auto& sensorManager = CSensorManager::getInstance();
+    auto logger = CLog::getInstance().mScope("app.loop");
+    logger.mInfo("Hello World");
 
     auto sensors = sensorManager.mMeasure();
 
     // Print all measurements
     for (auto const &sensor: sensors) {
-        std::printf("Sensor '%s':\n", sensor.first.c_str());
+        logger.mInfo("Sensor '%s':", sensor.first.c_str());
         for (auto const &measurement : sensor.second) {
-            std::printf("\t%s\t: %s\n",
+            logger.mInfo("\t%s\t: %s",
                 measurement.first.c_str(),
                 measurement.second.c_str()
             );
         }
-        std::printf("\n");
+        logger.mInfo("");
     }
-    // Throw debug error
-    throw std::runtime_error("If you see this, everything works!\n");
+
+    throw std::runtime_error("If you see this, everything works!");
 }
 
 void App::start() {
@@ -71,12 +84,12 @@ void App::start() {
         this->init();
         while (true) this->loop();
     }
-    catch (const std::runtime_error &e) {
+    catch (const std::runtime_error& e) {
         std::printf(
             "Ah shucks!\n"
             "FATAL unhandled runtime exception occured!\n"
             "Famous lasts words:\n"
-            "%s",
+            "%s\n",
             e.what()
         );
     }
