@@ -10,5 +10,4 @@ class CLogScope {
         void mWarn(const char* apFormat, ...);
         void mError(const char* apFormat, ...);
         void mDebug(const char* apFormat, ...);
-        void mThrow(const char* apFormat, ...);
 };

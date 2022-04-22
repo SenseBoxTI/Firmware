@@ -13,7 +13,7 @@ void App::init() {
     // Initialize Logger
     auto& log = CLog::getInstance();
     log.mInit();
-    
+
     auto logger = log.mScope("app.init");
     logger.mDebug("App is being inited");
 
@@ -53,7 +53,7 @@ void App::init() {
     logger.mDebug("Adding sensors...");
     sensorManager.mAddSensor(new CDbSensor("dbSensor"));
     sensorManager.mAddSensor(new CO2Sensor("O2Sensor"));
-    
+
     logger.mInfo("System has started.\nThe current time is: %s\n\n", CTime::mGetTimeString().c_str());
 }
 
@@ -76,8 +76,7 @@ void App::loop() {
         logger.mInfo("");
     }
 
-    // Throw debug error
-    logger.mThrow("If you see this, everything works!");
+    throw std::runtime_error("If you see this, everything works!");
 }
 
 void App::start() {

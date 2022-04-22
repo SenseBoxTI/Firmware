@@ -55,12 +55,3 @@ void CLogScope::mDebug(const char* apFormat, ...) {
     CLog::getInstance().mWriteLog(m_Scope, string_vformat(apFormat, a_list), ::LogType::Debug);
     va_end(a_list);
 }
-
-void CLogScope::mThrow(const char* apFormat, ...) {
-    va_list a_list;
-    va_start(a_list, apFormat);
-    std::string result = string_vformat(apFormat, a_list);
-    va_end(a_list);
-    CLog::getInstance().mWriteLog(m_Scope, result, ::LogType::Error);
-    throw std::runtime_error(result);
-}
