@@ -8,6 +8,8 @@
 #include <stdexcept>
 #include "sdmmc_cmd.h"
 
+#include <logscope.hpp>
+
 #define SDSPI_DEFAULT_DMA 3
 #define TRANSFER_SIZE 4000
 #define SPI_FREQ 5000
@@ -16,6 +18,8 @@
 #define PIN_CLK  2  // SCK pin
 #define PIN_MOSI 3
 #define PIN_MISO 1
+
+static CLogScope logger{"file"};
 
 static const char FileModes[3][2] = {
     "r",
@@ -138,8 +142,8 @@ void CFile::mInitSd() {
         .allocation_unit_size = 16 * 1024
     };
 
-    std::printf("Initializing SD card\n");
-    std::printf("Using SPI peripheral\n");
+    logger.mInfo("Initializing SD card");
+    logger.mDebug("Using SPI peripheral");
     sdmmc_host_t host = SDSPI_HOST_DEFAULT();
     host.max_freq_khz = SPI_FREQ;
 
@@ -152,33 +156,33 @@ void CFile::mInitSd() {
         .max_transfer_sz = TRANSFER_SIZE,
     };
 
-    std::printf("Initializing bus\n");
+    logger.mDebug("Initializing bus");
     ret = spi_bus_initialize((spi_host_device_t)SDSPI_DEFAULT_HOST, &bus_cfg, SDSPI_DEFAULT_DMA);
     if (ret != ESP_OK) {
-        std::printf("Failed to initialize spi bus.\n");
+        logger.mError("Failed to initialize spi bus.");
         throw std::runtime_error(esp_err_to_name(ret));
     }
 
     sdspi_device_config_t slot_config = SDSPI_DEVICE_CONFIG_DEFAULT();
     slot_config.gpio_cs = static_cast<gpio_num_t>(PIN_CS);
     slot_config.host_id = static_cast<spi_host_device_t>(host.slot);
-    std::printf("Mounting filesystem\n");
+    logger.mDebug("Mounting filesystem");
     ret = esp_vfs_fat_sdspi_mount(MOUNT_POINT, &host, &slot_config, &mount_config, &sdCard);
 
     if (ret != ESP_OK) {
         if (ret == ESP_FAIL) {
-            std::printf("Failed to mount filesystem.\n"
-                    "If you want the card to be formatted, enable the .format_if_mount_failed in mount config\n");
+            logger.mError("Failed to mount filesystem.");
+            logger.mError("If you want the card to be formatted, enable the .format_if_mount_failed in mount config");
         } else if (ret == ESP_ERR_INVALID_RESPONSE){
-            std::printf("Failed to initialize the card, make sure there is an SD card inserted / connected.\n");
+            logger.mError("Failed to initialize the card, make sure there is an SD card inserted / connected.");
         } else {
-            std::printf("Failed to initialize the card (%s).\n"
-                    "Make sure SD card lines have pull-up resistors in place.\n", esp_err_to_name(ret));
+            logger.mError("Failed to initialize the card (%s).");
+            logger.mError("Make sure SD card lines have pull-up resistors in place.", esp_err_to_name(ret));
         }
         throw std::runtime_error(esp_err_to_name(ret));
     }
 
-    std::printf("Filesystem mounted\n");
+    logger.mDebug("Filesystem mounted");
     m_SdState = Ready;
     sdmmc_card_print_info(stdout, sdCard);
 }

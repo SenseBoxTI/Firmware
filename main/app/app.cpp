@@ -9,12 +9,12 @@
 #include <file.hpp>
 #include <time.hpp>
 
+static CLogScope logger{"app"};
+
 void App::init() {
     // Initialize Logger
     auto& log = CLog::getInstance();
     log.mInit();
-
-    auto logger = log.mScope("app.init");
     logger.mDebug("Application is starting");
 
     logger.mInfo("Initializing SD");
@@ -54,14 +54,12 @@ void App::init() {
     sensorManager.mAddSensor(new CDbSensor("dbSensor"));
     sensorManager.mAddSensor(new CO2Sensor("O2Sensor"));
 
-    logger.mInfo("System has started.\nThe current time is: %s\n\n", CTime::mGetTimeString().c_str());
+    logger.mInfo("System has started.");
+    logger.mInfo("The current time is: %s", CTime::mGetTimeString().c_str());
 }
 
 void App::loop() {
     auto& sensorManager = CSensorManager::getInstance();
-    auto logger = CLog::getInstance().mScope("app.loop");
-    logger.mInfo("Hello World");
-
     auto sensors = sensorManager.mMeasure();
 
     // Print all measurements
@@ -85,12 +83,9 @@ void App::start() {
         while (true) this->loop();
     }
     catch (const std::runtime_error& e) {
-        std::printf(
-            "Ah shucks!\n"
-            "FATAL unhandled runtime exception occured!\n"
-            "Famous lasts words:\n"
-            "%s\n",
-            e.what()
-        );
+            logger.mError("Ah shucks!");
+            logger.mError("FATAL unhandled runtime exception occured!");
+            logger.mError("Famous lasts words:");
+            logger.mError(e.what());
     }
 }

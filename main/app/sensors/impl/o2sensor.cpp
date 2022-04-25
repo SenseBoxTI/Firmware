@@ -1,6 +1,9 @@
 #include "o2sensor.hpp"
 
 #include <esp_adc_cal.h>
+#include <logscope.hpp>
+
+static CLogScope logger{"o2sensor"};
 
 void AdcPrintFeatures();
 void AdcPrintCharacteristics(esp_adc_cal_value_t aValType);
@@ -52,20 +55,15 @@ CSensorStatus CO2Sensor::m_InitCallback() {
 }
 
 void AdcPrintFeatures() {
-    std::printf(
-        "ADC Feature     | Supported\n"
-        "                |          \n"
-        "eFuse two point | %s\n"
-        "eFuse Vref      | %s\n"
-        "\n",
-        esp_adc_cal_check_efuse(ESP_ADC_CAL_VAL_EFUSE_TP) ? "No" : "Yes",
-        esp_adc_cal_check_efuse(ESP_ADC_CAL_VAL_EFUSE_VREF) ? "No" : "Yes"
-    );
+        logger.mInfo("ADC Feature     | Supported");
+        logger.mInfo("                |          ");
+        logger.mInfo("eFuse two point | %s", esp_adc_cal_check_efuse(ESP_ADC_CAL_VAL_EFUSE_TP) ? "No" : "Yes");
+        logger.mInfo("eFuse Vref      | %s", esp_adc_cal_check_efuse(ESP_ADC_CAL_VAL_EFUSE_VREF) ? "No" : "Yes");
 }
 
 void AdcPrintCharacteristics(esp_adc_cal_value_t aValType) {
-    std::printf(
-        "Characterized by using %s\n",
+    logger.mInfo(
+        "Characterized by using %s",
         (aValType == ESP_ADC_CAL_VAL_EFUSE_TP) ? "Two Point Value" :
         (aValType == ESP_ADC_CAL_VAL_EFUSE_VREF) ? "eFuse Vref" :
         "Default Vref"
