@@ -41,7 +41,20 @@ CLog& CLog::getInstance() {
 void CLog::mInit() {}
 
 void CLog::mWriteLog(const char* apScope, const std::string& arText, LogType aType) {
-    auto timeinfo = CTime::mGetTime();
+    struct tm timeinfo;
+    try {
+        timeinfo = CTime::mGetTime();
+    }
+    catch (const std::runtime_error& e) {
+        timeinfo.tm_mday = 0;
+        timeinfo.tm_mon = 0;
+        timeinfo.tm_year = 70;
+        timeinfo.tm_hour = 0;
+        timeinfo.tm_min = 0;
+        timeinfo.tm_sec = 0;
+        timeinfo.tm_isdst = 0;
+    }
+
     std::string time = string_vformat("[ %02d/%02d/%4d | %02d:%02d:%02d ]",
         timeinfo.tm_mday,
         timeinfo.tm_mon + 1, // tm mon 0-11
