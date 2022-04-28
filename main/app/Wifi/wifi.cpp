@@ -8,6 +8,9 @@
 #include "freertos/event_groups.h"
 #include "esp_err.h"
 
+#include <logscope.hpp>
+
+static CLogScope logger{"wifi"};
 const int CONNECTED_BIT = BIT0;
 
 // FIXME: use logger eventually
@@ -39,7 +42,7 @@ void CWifi::m_EventHandler(void* apArg, esp_event_base_t aBase, int32_t aId, voi
 }
 
 void CWifi::mInitWifi(const WifiCredentials& aConfig) {
-    // TODO: more verbose logging?
+    logger.mInfo("Initializing WiFi");
     bool enterprise = !aConfig.eapUsername.empty();
     esp_err_t error;
     mCredentials = aConfig;
@@ -61,8 +64,7 @@ void CWifi::mInitWifi(const WifiCredentials& aConfig) {
         memcpy(wifi_config.sta.password, mCredentials.password.c_str(), mCredentials.password.size());
     }
     wifi_config.sta.pmf_cfg.required = false;
-    // FIXME: use logger eventually
-    std::printf("Setting WiFi configuration SSID %s...", wifi_config.sta.ssid);
+    logger.mInfo("Setting WiFi configuration SSID %s...", wifi_config.sta.ssid);
     WIFI_THROW_ON_ERROR( esp_wifi_set_mode(WIFI_MODE_STA) );
     WIFI_THROW_ON_ERROR( esp_wifi_set_config(WIFI_IF_STA, &wifi_config) );
     if (enterprise) {

@@ -41,8 +41,11 @@ CLog& CLog::getInstance() {
 void CLog::mInit() {}
 
 void CLog::mWriteLog(const char* apScope, const std::string& arText, LogType aType) {
-    auto timeinfo = CTime::mGetTime();
-    std::string time = string_vformat("[ %02d/%02d/%4d | %02d:%02d:%02d ]",
+    // Get time string
+    std::string timeString;
+    try {
+        struct tm timeinfo = CTime::mGetTime();
+        timeString = string_vformat("[ %02d/%02d/%4d | %02d:%02d:%02d ]",
         timeinfo.tm_mday,
         timeinfo.tm_mon + 1, // tm mon 0-11
         timeinfo.tm_year + 1900, // tm years since 1900
@@ -50,10 +53,14 @@ void CLog::mWriteLog(const char* apScope, const std::string& arText, LogType aTy
         timeinfo.tm_min,
         timeinfo.tm_sec
     );
+    }
+    catch (const std::runtime_error& e) {
+        timeString = "[  TIME  UNINITIALIZED  ]";
+    }
     
     std::string toPrint = string_vformat("%c %s (%s) %s",
         logIds[uint8_t(aType)],
-        time.c_str(),
+        timeString.c_str(),
         apScope,
         arText.c_str()
     );
@@ -70,7 +77,7 @@ void CLog::mWriteLog(const char* apScope, const std::string& arText, LogType aTy
             if (m_Log.mGetFileLength() > MAX_FILE_BYTE_SIZE) m_RotateLogFile();
         }
         catch (const std::runtime_error& e) {
-            std::printf("%sE %s (CLog.mWriteLog) Failed to write log to file: %s%s\r\n", ansiColors[3], time.c_str(), e.what(), resetStyle);
+            std::printf("%sE %s (CLog.mWriteLog) Failed to write log to file: %s%s\r\n", ansiColors[3], timeString.c_str(), e.what(), resetStyle);
         }
     }
 }

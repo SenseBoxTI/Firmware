@@ -3,7 +3,9 @@
 #include <string.h>
 #include "esp_sntp.h"
 #include <stdexcept>
+#include <logscope.hpp>
 
+static CLogScope logger{"time"};
 #define TIMEZONE "CET-1CEST,M3.4.0/2,M10.4.0/2" //timezone NL
 
 bool CTime::mb_IsInitialized = false;
@@ -14,14 +16,15 @@ void CTime::mInitTime(const char* apNtpServer) {
     int retry = 0;
     const int retry_count = 15;
 
+    logger.mInfo("Waiting for wifi to connect...");
     while (!wifi.mConnected() && ++retry < retry_count) {
-        std::printf("Waiting for wifi to connect...\n");
+        logger.mDebug("Waiting... (%d/%d)", retry, retry_count);
         vTaskDelay(2000 / portTICK_PERIOD_MS);
     }
 
     if (!wifi.mConnected()) throw std::runtime_error("Need a active internet connection to get the time.");
 
-    std::printf("Initializing SNTP\n");
+    logger.mDebug("Initializing SNTP");
     sntp_servermode_dhcp(1);
     sntp_setoperatingmode(SNTP_OPMODE_POLL);
     sntp_setservername(1, apNtpServer);
@@ -30,8 +33,9 @@ void CTime::mInitTime(const char* apNtpServer) {
 
     retry = 0;
 
+    logger.mInfo("Waiting for system time to be set...");
     while (sntp_get_sync_status() == SNTP_SYNC_STATUS_RESET && ++retry < retry_count) {
-        std::printf("Waiting for system time to be set... (%d/%d)\n", retry, retry_count);
+        logger.mDebug("Waiting...  (%d/%d)", retry, retry_count);
         vTaskDelay(2000 / portTICK_PERIOD_MS);
     }
 
