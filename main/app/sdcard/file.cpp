@@ -105,14 +105,14 @@ bool CFile::mExists() {
 
 void CFile::mRename(const std::string& arNewName) {
     if (!mExists()) return;
+
     std::string oldPath = mPath;
     mPath = mPath.substr(0, mPath.find_last_of('/') + 1) + arNewName;
     rename(oldPath.c_str(), mPath.c_str());
 }
 
 void CFile::mDelete() {
-    if (mExists())
-        remove(mPath.c_str());
+    if (mExists()) remove(mPath.c_str());
 }
 
 size_t CFile::mGetFileLength() {
