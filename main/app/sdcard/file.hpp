@@ -36,6 +36,9 @@ public:
     std::string mRead();
     void mWrite(const std::string& arText);
     void mAppend(const std::string& arText);
+    void mRename(const std::string& arNewName);
+    void mDelete();
+    bool mExists();
     size_t mGetFileLength();
     ~CFile();
 

@@ -18,6 +18,7 @@ SRCS
     "./app/Wifi/wifi.cpp"
     # SDCard
     "./app/sdcard/file.cpp"
+    "./app/sdcard/dir.cpp"
     # Logger
     "./app/logger/log.cpp"
     "./app/logger/logscope.cpp"
