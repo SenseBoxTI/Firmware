@@ -22,6 +22,8 @@ SRCS
     "./app/logger/log.cpp"
     "./app/logger/logscope.cpp"
     "./app/logger/logtype.cpp"
+    # MQTT
+    "./app/mqtt/mqtt.cpp"
 INCLUDE_DIRS
     # Add directories seperately.
     "./app/"
@@ -37,5 +39,6 @@ INCLUDE_DIRS
     "./app/sdcard/"
     # Logger
     "./app/logger/"
-    
+    # MQTT
+    "./app/mqtt"
 )
