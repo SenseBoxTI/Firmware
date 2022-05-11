@@ -32,10 +32,9 @@ std::vector<CFile> CDir::mListFiles()
     return result;
 }
 
-void CDir::m_Ensure()
+void CDir::mEnsure()
 {
     errno = 0;
-    logger.mDebug("Ensuring Directory %s", m_MountPath().c_str());
     if (mkdir(m_MountPath().c_str(), S_IRWXU) == -1)
     {
         switch (errno) {
@@ -53,7 +52,7 @@ void CDir::m_Ensure()
 
 void CDir::m_Open()
 {
-    m_Ensure();
+    mEnsure();
     m_Close();
     m_Dir = opendir(m_MountPath().c_str());
     if (!m_Dir) throw std::runtime_error("Could not open directory");
@@ -70,6 +69,6 @@ std::string CDir::m_MountPath() {
 }
 
 CFile CDir::mFile(const std::string& arFileName) {
-    m_Ensure();
+    mEnsure();
     return CFile(mPath + "/" + arFileName);
 }
