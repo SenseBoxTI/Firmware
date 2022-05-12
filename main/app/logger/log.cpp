@@ -26,7 +26,7 @@ void CLog::m_RotateLogFile() {
 }
 
 CLog::CLog()
-:   m_Log(CDir(LOG_DIR).mFile("latest.log"))
+:   m_Log(LOG_DIR "/latest.log")
 {}
 
 CLog& CLog::getInstance() {
