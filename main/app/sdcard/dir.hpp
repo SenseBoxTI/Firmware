@@ -11,10 +11,10 @@ class CDir {
 
         std::vector<CFile> mListFiles();
         CFile mFile(const std::string& arFileName);
+        void mEnsure();
     private:
         void m_Open();
         void m_Close();
-        void m_Ensure();
         std::string m_MountPath();
 
         DIR* m_Dir;
