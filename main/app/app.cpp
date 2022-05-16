@@ -53,6 +53,7 @@ void App::init() {
     logger.mDebug("Adding sensors...");
     sensorManager.mAddSensor(new CDbSensor("dbSensor"));
     sensorManager.mAddSensor(new CO2Sensor("O2Sensor"));
+    sensorManager.mAddSensor(new CScdSensor("SCDSensor"));
 
     logger.mInfo("System has started.");
     logger.mInfo("The current time is: %s", CTime::mGetTimeString().c_str());
