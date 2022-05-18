@@ -4,6 +4,7 @@
 #include <sensormanager.hpp>
 #include <dbsensor.hpp>
 #include <o2sensor.hpp>
+#include <scdsensor.hpp>
 #include <wifi.hpp>
 #include <log.hpp>
 #include <file.hpp>
