@@ -5,6 +5,7 @@
 #include <dbsensor.hpp>
 #include <o2sensor.hpp>
 #include <scdsensor.hpp>
+#include <lightintensitysensor.hpp>
 #include <wifi.hpp>
 #include <log.hpp>
 #include <file.hpp>
@@ -55,6 +56,7 @@ void App::init() {
     sensorManager.mAddSensor(new CDbSensor("dbSensor"));
     sensorManager.mAddSensor(new CO2Sensor("O2Sensor"));
     sensorManager.mAddSensor(new CScdSensor("SCDSensor"));
+    sensorManager.mAddSensor(new CLightIntensitySensor("LightIntensitySensor"));
 
     logger.mInfo("System has started.");
     logger.mInfo("The current time is: %s", CTime::mGetTimeString().c_str());
