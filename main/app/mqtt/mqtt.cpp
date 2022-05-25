@@ -14,61 +14,112 @@
 #include "esp_ota_ops.h"
 #include <sys/param.h>
 #include <logscope.hpp>
+#include <string>
+#include <sstream>
+#include <file.hpp>
+
+#define MQTT_URL "mqtts://test.ddss-sensebox.nl"
 
 static CLogScope logger{"mqtt"};
 
-void CMqtt::m_EventHandler(void* aArgs, esp_event_base_t aBase, int32_t aId, void* aData) {
+CMqtt::CMqtt(const char* acpClientId, const char* acpAssetId)
+:   mcp_ClientId(acpClientId),  // we can probably hardcore this
+    mcp_AssetId(acpAssetId),    // this should be unique, config file
+    mb_Provisioned(false)
+{
+    ESP_ERROR_CHECK(nvs_flash_init());
+    ESP_ERROR_CHECK(esp_netif_init());
+    ESP_ERROR_CHECK(esp_event_loop_create_default());
+
+    std::stringstream subscribeTopic;
+
+    subscribeTopic << "provisioning/" << mcp_AssetId << "/response";
+    mcp_SubscribeTopic = subscribeTopic.str().c_str();
+
+    CFile certFile("ca-cert.pem");
+    m_Cert = certFile.mRead();
+    const char* cert = m_Cert.c_str();
+
+    const esp_mqtt_client_config_t mqtt_cfg = {
+        .host = MQTT_URL, // get this from the config file
+        .user_context = this,
+        .cert_pem = cert // the certificate as const char*
+    };
+
+    m_Client = esp_mqtt_client_init(&mqtt_cfg);
+    /* The last argument may be used to pass data to the event handler, in this example mqtt_event_handler */
+    esp_mqtt_client_register_event(m_Client, MQTT_EVENT_ANY, m_EventHandler, NULL);
+    esp_mqtt_client_start(m_Client);
+}
+
+void CMqtt::mSendMeasurement(const char* acpAttribute, const char* acpValue) {
+    if (!mb_Connected || !mb_Provisioned) return;
+
+    std::stringstream topic;
+    topic << mcp_Realm << '/' << mcp_ClientId << "/writeattributevalue/" << acpAttribute << '/' << mcp_AssetId;
+
+    int msg_id = esp_mqtt_client_publish(m_Client, topic.str().c_str(), acpValue, sizeof(acpValue), 0, 0);
+    logger.mInfo("binary sent with msg_id=%d", msg_id);
+}
+
+void CMqtt::m_SendCustom(const char* acpTopic, const char* acpMsg) {
+    int msg_id = esp_mqtt_client_publish(m_Client, acpTopic, acpMsg, sizeof(acpMsg), 0, 0);
+    logger.mInfo("binary sent with msg_id=%d", msg_id);
+}
+
+void CMqtt::m_Subscribe(const char* acpTopic) {
+    esp_mqtt_client_subscribe(m_Client, acpTopic, 0);
+}
+
+void CMqtt::m_Unsubscribe(const char* acpTopic) {
+    esp_mqtt_client_unsubscribe(m_Client, acpTopic);
+}
+
+void CMqtt::m_EventHandler(void* apArgs, esp_event_base_t aBase, int32_t aId, void* apData) {
     logger.mDebug("Event dispatched from event loop base=%s, event_id=%d", aBase, aId);
-    esp_mqtt_event_handle_t event = static_cast<esp_mqtt_event_handle_t>(aData);
+    esp_mqtt_event_handle_t event = static_cast<esp_mqtt_event_handle_t>(apData);
     esp_mqtt_client_handle_t client = event->client;
+
+    CMqtt& self = *static_cast<CMqtt*>(event->user_context);
+
     int msg_id;
-    switch ((esp_mqtt_event_id_t)aId) {
+    switch (static_cast<esp_mqtt_event_id_t>(aId)) {
     case MQTT_EVENT_CONNECTED:
-        logger.mInfo("MQTT_EVENT_CONNECTED");
-        msg_id = esp_mqtt_client_subscribe(client, "/topic/qos0", 0);
-        logger.mInfo("sent subscribe successful, msg_id=%d", msg_id);
+        self.mb_Connected = true;
 
-        msg_id = esp_mqtt_client_subscribe(client, "/topic/qos1", 1);
-        logger.mInfo("sent subscribe successful, msg_id=%d", msg_id);
-
-        msg_id = esp_mqtt_client_unsubscribe(client, "/topic/qos1");
-        logger.mInfo("sent unsubscribe successful, msg_id=%d", msg_id);
+        if (!self.mb_Provisioned) self.m_RequestProvision();
         break;
     case MQTT_EVENT_DISCONNECTED:
-        logger.mInfo("MQTT_EVENT_DISCONNECTED");
+        self.mb_Connected = false;
+
+        logger.mWarn("MQTT_EVENT_DISCONNECTED");
         break;
 
     case MQTT_EVENT_SUBSCRIBED:
-        logger.mInfo("MQTT_EVENT_SUBSCRIBED, msg_id=%d", event->msg_id);
-        msg_id = esp_mqtt_client_publish(client, "/topic/qos0", "data", 0, 0, 0);
-        logger.mInfo("sent publish successful, msg_id=%d", msg_id);
+        logger.mDebug("MQTT_EVENT_SUBSCRIBED, msg_id=%d", event->msg_id);
         break;
     case MQTT_EVENT_UNSUBSCRIBED:
-        logger.mInfo("MQTT_EVENT_UNSUBSCRIBED, msg_id=%d", event->msg_id);
+        logger.mDebug("MQTT_EVENT_UNSUBSCRIBED, msg_id=%d", event->msg_id);
         break;
     case MQTT_EVENT_PUBLISHED:
-        logger.mInfo("MQTT_EVENT_PUBLISHED, msg_id=%d", event->msg_id);
+        logger.mDebug("MQTT_EVENT_PUBLISHED, msg_id=%d", event->msg_id);
         break;
-    case MQTT_EVENT_DATA:
-        logger.mInfo("MQTT_EVENT_DATA");
-        printf("TOPIC=%.*s\r\n", event->topic_len, event->topic);
-        printf("DATA=%.*s\r\n", event->data_len, event->data);
-        if (strncmp(event->data, "send binary please", event->data_len) == 0) {
-            logger.mInfo("Sending the binary");
-            m_SendBinary(client);
+    case MQTT_EVENT_DATA: {
+        if (strcmp(self.mcp_SubscribeTopic, event->topic)) {
+            self.m_OnProvisionResponse(event->data, event->data_len);
         }
-        break;
+    }
     case MQTT_EVENT_ERROR:
-        logger.mInfo("MQTT_EVENT_ERROR");
+        logger.mError("MQTT_EVENT_ERROR");
         if (event->error_handle->error_type == MQTT_ERROR_TYPE_TCP_TRANSPORT) {
-            logger.mInfo("Last error code reported from esp-tls: 0x%x", event->error_handle->esp_tls_last_esp_err);
-            logger.mInfo("Last tls stack error number: 0x%x", event->error_handle->esp_tls_stack_err);
-            logger.mInfo("Last captured errno : %d (%s)",  event->error_handle->esp_transport_sock_errno,
-                    strerror(event->error_handle->esp_transport_sock_errno));
+            logger.mError("Last error code reported from esp-tls: 0x%x", event->error_handle->esp_tls_last_esp_err);
+            logger.mError("Last tls stack error number: 0x%x", event->error_handle->esp_tls_stack_err);
+            logger.mError("Last captured errno : %d (%s)",  event->error_handle->esp_transport_sock_errno,
+                          strerror(event->error_handle->esp_transport_sock_errno));
         } else if (event->error_handle->error_type == MQTT_ERROR_TYPE_CONNECTION_REFUSED) {
-            logger.mInfo("Connection refused error: 0x%x", event->error_handle->connect_return_code);
+            logger.mError("Connection refused error: 0x%x", event->error_handle->connect_return_code);
         } else {
-            logger.mWarn("Unknown error type: 0x%x", event->error_handle->error_type);
+            logger.mError("Unknown error type: 0x%x", event->error_handle->error_type);
         }
         break;
     default:
@@ -77,13 +128,64 @@ void CMqtt::m_EventHandler(void* aArgs, esp_event_base_t aBase, int32_t aId, voi
     }
 }
 
-void CMqtt::m_SendBinary(esp_mqtt_client_handle_t aClient) {
-    spi_flash_mmap_handle_t out_handle;
-    const void *binary_address;
-    const esp_partition_t *partition = esp_ota_get_running_partition();
-    esp_partition_mmap(partition, 0, partition->size, SPI_FLASH_MMAP_DATA, &binary_address, &out_handle);
-    // sending only the configured portion of the partition (if it's less than the partition size)
-    // int binary_size = MIN(CONFIG_BROKER_BIN_SIZE_TO_SEND, partition->size);
-    int msg_id = esp_mqtt_client_publish(aClient, "/topic/binary", reinterpret_cast<const char *>(binary_address), partition->size, 0, 0);
-    logger.mInfo("binary sent with msg_id=%d", msg_id);
+void CMqtt::m_RequestProvision() {
+    std::stringstream publishTopic, publishData;
+    publishTopic << "provisioning/" << mcp_AssetId << "/request";
+
+    publishData << "{\"type\":\"x509\",\"cert\":\"" << m_Cert << "\"}";
+    auto publishDataStr = publishData.str();
+
+    m_Subscribe(mcp_SubscribeTopic);
+
+    m_SendCustom(publishTopic.str().c_str(), publishDataStr.c_str());
+}
+
+void CMqtt::m_OnProvisionResponse(const char* acpData, int aLen) {
+    const cJSON *type = NULL;
+    const cJSON *realm = NULL;
+    const cJSON *error = NULL;
+
+    m_Unsubscribe(mcp_SubscribeTopic);
+
+    int status = 0;
+    cJSON* data = cJSON_ParseWithLength(acpData, aLen);
+    if (data == NULL) {
+        const char *error_ptr = cJSON_GetErrorPtr();
+        if (error_ptr != NULL) logger.mWarn("Error before: %s\n", error_ptr);
+        m_JsonError(data, "Error parsing provisioning JSON");
+    }
+
+    type = cJSON_GetObjectItemCaseSensitive(data, "type");
+    if (cJSON_IsString(type) && (type->valuestring != NULL)) {
+        if (strcmp(type->valuestring, "error")) {
+            error = cJSON_GetObjectItemCaseSensitive(data, "error");
+            if (cJSON_IsString(error) && (error->valuestring != NULL)) {
+                std::string errorMsg("Could not provision device: ");
+                errorMsg.append(error->valuestring);
+
+                m_JsonError(data, errorMsg.c_str());
+            } else {
+                m_JsonError(data, "Could not parse provisioning response.error");
+            }
+        }
+
+        realm = cJSON_GetObjectItemCaseSensitive(data, "realm");
+
+        if (cJSON_IsString(realm) && (realm->valuestring != NULL)) {
+            mcp_Realm = realm->valuestring;
+        } else {
+            m_JsonError(data, "Could not parse provisioning response.realm");
+        }
+    } else {
+        m_JsonError(data, "Could not parse provisioning response.type");
+    }
+
+    cJSON_Delete(data);
+
+    mb_Provisioned = true;
+}
+
+void CMqtt::m_JsonError(cJSON* aJsonObject, const char* aError) {
+    cJSON_Delete(aJsonObject);
+    throw std::runtime_error(aError);
 }
