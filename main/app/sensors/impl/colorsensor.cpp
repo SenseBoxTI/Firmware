@@ -6,7 +6,7 @@
 Adafruit_AS726x ams;
 
 float calibratedValues[AS726x_NUM_CHANNELS];
-float offsets[AS726x_NUM_CHANNELS] = {0};
+float offsets[AS726x_NUM_CHANNELS];
 
 constexpr const char* colors[] = {
     "MAGENTA",
@@ -14,15 +14,7 @@ constexpr const char* colors[] = {
     "GREEN",
     "YELLOW",
     "ORANGE",
-    "RED"};
-
-enum ColorEnum {
-    MAGENTA,
-    BLUE,
-    GREEN,
-    YELLOW,
-    ORANGE,
-    RED
+    "RED"
 };
 
 SensorOutput CColorSpectrumSensor::m_MeasureCallback() {
@@ -52,12 +44,12 @@ CSensorStatus CColorSpectrumSensor::m_InitCallback() {
 
     ams.setConversionType(MODE_2);
 
-    offsets[MAGENTA] = 0.0f;
-    offsets[BLUE] = 0.0f;
-    offsets[GREEN] = 0.0f;
-    offsets[YELLOW] = 0.0f;
-    offsets[ORANGE] = 0.0f;
-    offsets[RED] = 0.0f;
+    offsets[0] = 0.0f; // MAGENTA
+    offsets[1] = 0.0f; // BLUE
+    offsets[2] = 0.0f; // GREEN
+    offsets[3] = 0.0f; // YELLOW
+    offsets[4] = 0.0f; // ORANGE
+    offsets[5] = 0.0f; // RED
 
     return CSensorStatus::Ok();
 }
