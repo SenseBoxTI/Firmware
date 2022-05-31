@@ -3,7 +3,7 @@
 #include <Adafruit_AS726x.h>
 #include <Wire.h>
 
-Adafruit_AS726x ams;
+Adafruit_AS726x as726x;
 
 float calibratedValues[AS726x_NUM_CHANNELS];
 float offsets[AS726x_NUM_CHANNELS];
@@ -19,8 +19,8 @@ constexpr const char* colors[] = {
 
 SensorOutput CColorSpectrumSensor::m_MeasureCallback() {
     SensorOutput output;
-    if (ams.dataReady()) {
-        ams.readCalibratedValues(calibratedValues);
+    if (as726x.dataReady()) {
+        as726x.readCalibratedValues(calibratedValues);
 
         for (int i = 0; i < AS726x_NUM_CHANNELS; i++) {
             output.insert({colors[i], std::to_string(calibratedValues[i] + offsets[i])});
@@ -38,11 +38,11 @@ CSensorStatus CColorSpectrumSensor::m_InitCallback() {
         return CSensorStatus::Error("TwoWire failed to init!");
     }
 
-    if (!ams.begin(&Wire)) {
+    if (!as726x.begin(&Wire)) {
         return CSensorStatus::Error("Could not begin color spectrum sensor!");
     }
 
-    ams.setConversionType(MODE_2);
+    as726x.setConversionType(MODE_2);
 
     offsets[0] = 0.0f; // MAGENTA
     offsets[1] = 0.0f; // BLUE
