@@ -59,7 +59,7 @@ idf.py menuconfig
 `sdkconfig` can be used to enable and disable certain components to speed up compilation time when they are not in use in your branch or fork.
 
 ## Sensebox Configuration
-
+---
 To configure things in an existing sensebox, you should put a `config.toml` file in the root of your sd card. This will let you configure certain offsets / credentials without having to compile a new binary.
 
 ### Configuration example:
