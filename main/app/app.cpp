@@ -11,6 +11,7 @@
 #include <log.hpp>
 #include <file.hpp>
 #include <time.hpp>
+#include <config.hpp>
 
 static CLogScope logger{"app"};
 
@@ -29,6 +30,9 @@ void App::init() {
         logger.mError("Initializing SD threw error: %s", e.what());
     }
 
+    auto& config = CConfig::getInstance();
+    config.mRead("/sdcard/config.toml");
+    
     logger.mInfo("Initializing Wifi");
     // init PEAP network
     try {
