@@ -9,12 +9,12 @@ class CConfig {
 
         void mRead(const std::string& ar_FilePath);
 
-        [[nodiscard]] inline toml::Value& operator[](const std::string& key) { return m_config[key]; }
+        [[nodiscard]] inline toml::Value& operator[](const std::string& key) { return m_Config[key]; }
 
         template<typename T>
-        [[nodiscard]] inline T get(const std::string& key) { return m_config.get<T>(key); }
+        [[nodiscard]] inline T get(const std::string& key) { return m_Config.get<T>(key); }
 
     private:
-        toml::Value m_config;
+        toml::Value m_Config;
         CConfig();
 };

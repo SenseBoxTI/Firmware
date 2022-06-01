@@ -17,5 +17,5 @@ void CConfig::mRead(const std::string& ar_FilePath) {
         throw std::runtime_error(parsedFile.errorReason);
     }
     
-    m_config = parsedFile.value;
+    m_Config = parsedFile.value;
 }

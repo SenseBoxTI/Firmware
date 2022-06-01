@@ -36,7 +36,7 @@ void App::init() {
     logger.mInfo("Initializing Wifi");
     // init PEAP network
     try {
-        auto& wifiConfig = config["WiFi"];
+        auto& wifiConfig = config["wifi"];
 
         WifiCredentials credentials = {
             .ssid = wifiConfig.get<std::string>("ssid"),
