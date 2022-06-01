@@ -15,35 +15,37 @@
 #include <sys/param.h>
 #include <logscope.hpp>
 #include <string>
-#include <sstream>
 #include <file.hpp>
 
 #define MQTT_URL "mqtts://test.ddss-sensebox.nl"
 
 static CLogScope logger{"mqtt"};
 
-CMqtt::CMqtt(const char* acpClientId, const char* acpAssetId)
-:   mcp_ClientId(acpClientId),  // we can probably hardcore this
-    mcp_AssetId(acpAssetId),    // this should be unique, config file
-    mb_Provisioned(false)
-{
+CMqtt::CMqtt()
+:   mb_Provisioned(false),
+    mb_Connected(false),
+    mb_SendAttributes(false)
+{}
+
+CMqtt& CMqtt::getInstance() {
+    static CMqtt instance = {};
+    return instance;
+}
+
+void CMqtt::mInit(const char* acpDeviceId, const char* acpAccessToken) {
+    mcp_DeviceId = acpDeviceId;
+    mcp_AccessToken = acpAccessToken;
+
     ESP_ERROR_CHECK(nvs_flash_init());
-    ESP_ERROR_CHECK(esp_netif_init());
-    ESP_ERROR_CHECK(esp_event_loop_create_default());
 
-    std::stringstream subscribeTopic;
-
-    subscribeTopic << "provisioning/" << mcp_AssetId << "/response";
-    mcp_SubscribeTopic = subscribeTopic.str().c_str();
-
-    CFile certFile("ca-cert.pem");
-    m_Cert = certFile.mRead();
-    const char* cert = m_Cert.c_str();
+    mcp_SubscribeTopic = "/provision/response";
 
     const esp_mqtt_client_config_t mqtt_cfg = {
-        .host = MQTT_URL, // get this from the config file
+        .uri = MQTT_URL, // get this from the config file
+        .client_id = NULL,
+        .username = "provision",
         .user_context = this,
-        .cert_pem = cert // the certificate as const char*
+        .skip_cert_common_name_check = true
     };
 
     m_Client = esp_mqtt_client_init(&mqtt_cfg);
@@ -52,13 +54,35 @@ CMqtt::CMqtt(const char* acpClientId, const char* acpAssetId)
     esp_mqtt_client_start(m_Client);
 }
 
-void CMqtt::mSendMeasurement(const char* acpAttribute, const char* acpValue) {
+void CMqtt::mSendMeasurements(Measurements& arValues) {
     if (!mb_Connected || !mb_Provisioned) return;
 
-    std::stringstream topic;
-    topic << mcp_Realm << '/' << mcp_ClientId << "/writeattributevalue/" << acpAttribute << '/' << mcp_AssetId;
+    std::string topic("v1/devices/me/telemetry");
 
-    int msg_id = esp_mqtt_client_publish(m_Client, topic.str().c_str(), acpValue, sizeof(acpValue), 0, 0);
+    if (!mb_SendAttributes) {
+        topic = "v1/devices/me/attributes";
+        mb_SendAttributes = true;
+    }
+
+    cJSON* obj = cJSON_CreateObject(); 
+    if (obj == NULL) throw std::runtime_error("Could not create measurements object");
+
+    for (auto el : arValues) {
+        for (auto p : el.second) {
+            if (cJSON_GetObjectItemCaseSensitive(obj, p.first.c_str()) == NULL) {
+                cJSON_AddStringToObject(obj, p.first.c_str(), p.second.c_str());
+            }
+
+            // else get average value?
+        }
+    }
+
+    const char* publishData = cJSON_Print(obj);
+    if (publishData == NULL) m_JsonError(obj, "Could not print json object");
+
+    cJSON_Delete(obj);
+
+    int msg_id = esp_mqtt_client_publish(m_Client, topic.c_str(), publishData, sizeof(publishData), 0, 0);
     logger.mInfo("binary sent with msg_id=%d", msg_id);
 }
 
@@ -76,13 +100,11 @@ void CMqtt::m_Unsubscribe(const char* acpTopic) {
 }
 
 void CMqtt::m_EventHandler(void* apArgs, esp_event_base_t aBase, int32_t aId, void* apData) {
-    logger.mDebug("Event dispatched from event loop base=%s, event_id=%d", aBase, aId);
+    logger.mDebug("Event dispatched from event loop base=%s, event_id=%d", static_cast<const char*>(aBase), aId);
     esp_mqtt_event_handle_t event = static_cast<esp_mqtt_event_handle_t>(apData);
-    esp_mqtt_client_handle_t client = event->client;
 
     CMqtt& self = *static_cast<CMqtt*>(event->user_context);
 
-    int msg_id;
     switch (static_cast<esp_mqtt_event_id_t>(aId)) {
     case MQTT_EVENT_CONNECTED:
         self.mb_Connected = true;
@@ -108,6 +130,7 @@ void CMqtt::m_EventHandler(void* apArgs, esp_event_base_t aBase, int32_t aId, vo
         if (strcmp(self.mcp_SubscribeTopic, event->topic)) {
             self.m_OnProvisionResponse(event->data, event->data_len);
         }
+        break;
     }
     case MQTT_EVENT_ERROR:
         logger.mError("MQTT_EVENT_ERROR");
@@ -129,25 +152,41 @@ void CMqtt::m_EventHandler(void* apArgs, esp_event_base_t aBase, int32_t aId, vo
 }
 
 void CMqtt::m_RequestProvision() {
-    std::stringstream publishTopic, publishData;
-    publishTopic << "provisioning/" << mcp_AssetId << "/request";
+    const char* publishTopic = "/provision/request";
+    const char* publishData;
 
-    publishData << "{\"type\":\"x509\",\"cert\":\"" << m_Cert << "\"}";
-    auto publishDataStr = publishData.str();
+    cJSON* obj = cJSON_CreateObject();
+    if (obj == NULL) throw std::runtime_error("Could not create provisioning object");
+
+    if (cJSON_AddStringToObject(obj, "deviceName", mcp_DeviceId) == NULL) {
+        m_JsonError(obj, "Could not create deviceName for provisioning object");
+    }
+    if (cJSON_AddStringToObject(obj, "provisionDeviceKey", "z8dxc1fxq1a9q46ly2ah") == NULL) {
+        m_JsonError(obj, "Could not create provisionDeviceKey for provisioning object");
+    }
+    if (cJSON_AddStringToObject(obj, "provisionDeviceSecret", "g9fxitfpd3yl78ztmqpw") == NULL) {
+        m_JsonError(obj, "Could not create provisionDeviceSecret for provisioning object");
+    }
+    if (cJSON_AddStringToObject(obj, "credentialsType", "ACCESS_TOKEN") == NULL) {
+        m_JsonError(obj, "Could not create credentialsType for provisioning object");
+    }
+    if (cJSON_AddStringToObject(obj, "token", mcp_AccessToken) == NULL) {
+        m_JsonError(obj, "Could not create token for provisioning object");
+    }
+
+    publishData = cJSON_Print(obj);
+    if (publishData == NULL) m_JsonError(obj, "Could not print json object");
+
+    cJSON_Delete(obj);
 
     m_Subscribe(mcp_SubscribeTopic);
 
-    m_SendCustom(publishTopic.str().c_str(), publishDataStr.c_str());
+    m_SendCustom(publishTopic, publishData);
 }
 
 void CMqtt::m_OnProvisionResponse(const char* acpData, int aLen) {
-    const cJSON *type = NULL;
-    const cJSON *realm = NULL;
-    const cJSON *error = NULL;
-
     m_Unsubscribe(mcp_SubscribeTopic);
 
-    int status = 0;
     cJSON* data = cJSON_ParseWithLength(acpData, aLen);
     if (data == NULL) {
         const char *error_ptr = cJSON_GetErrorPtr();
@@ -155,32 +194,45 @@ void CMqtt::m_OnProvisionResponse(const char* acpData, int aLen) {
         m_JsonError(data, "Error parsing provisioning JSON");
     }
 
-    type = cJSON_GetObjectItemCaseSensitive(data, "type");
-    if (cJSON_IsString(type) && (type->valuestring != NULL)) {
-        if (strcmp(type->valuestring, "error")) {
-            error = cJSON_GetObjectItemCaseSensitive(data, "error");
-            if (cJSON_IsString(error) && (error->valuestring != NULL)) {
-                std::string errorMsg("Could not provision device: ");
-                errorMsg.append(error->valuestring);
-
-                m_JsonError(data, errorMsg.c_str());
+    cJSON* status = cJSON_GetObjectItemCaseSensitive(data, "status");
+    if (cJSON_IsString(status) && (status->valuestring != NULL)) {
+        if (strcmp(status->valuestring, "SUCCESS") == 0) {
+            logger.mInfo("Provisioned new device");
             } else {
-                m_JsonError(data, "Could not parse provisioning response.error");
+            cJSON* errorMsg = cJSON_GetObjectItemCaseSensitive(data, "errorMsg");
+            if (cJSON_IsString(errorMsg) && (errorMsg->valuestring != NULL)) {
+                if (strcmp(errorMsg->valuestring, "Failed to provision device!") == 0) {
+                    logger.mInfo("Device was already provisioned");
+                } else {
+                    std::string error("Could not provision device: ");
+                    error.append(errorMsg->valuestring);
+
+                    throw std::runtime_error(error);
+            }
+        } else {
+                m_JsonError(data, "Could not parse provision errorMsg");
             }
         }
-
-        realm = cJSON_GetObjectItemCaseSensitive(data, "realm");
-
-        if (cJSON_IsString(realm) && (realm->valuestring != NULL)) {
-            mcp_Realm = realm->valuestring;
-        } else {
-            m_JsonError(data, "Could not parse provisioning response.realm");
-        }
     } else {
-        m_JsonError(data, "Could not parse provisioning response.type");
+        m_JsonError(data, "Could not parse provision status");
     }
 
     cJSON_Delete(data);
+
+    esp_mqtt_client_disconnect(m_Client);
+
+    const esp_mqtt_client_config_t mqtt_cfg = {
+        .uri = MQTT_URL, // get this from the config file
+        .client_id = NULL,
+        .username = mcp_AccessToken,
+        .user_context = this,
+        .skip_cert_common_name_check = true
+    };
+
+    m_Client = esp_mqtt_client_init(&mqtt_cfg);
+    /* The last argument may be used to pass data to the event handler, in this example mqtt_event_handler */
+    esp_mqtt_client_register_event(m_Client, MQTT_EVENT_ANY, m_EventHandler, NULL);
+    esp_mqtt_client_start(m_Client);
 
     mb_Provisioned = true;
 }
