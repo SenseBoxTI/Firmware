@@ -57,3 +57,34 @@ The project can be configured using the `sdkconfig` file, which can be easily ed
 idf.py menuconfig
 ```
 `sdkconfig` can be used to enable and disable certain components to speed up compilation time when they are not in use in your branch or fork.
+
+## Sensebox Configuration
+
+To configure things in an existing sensebox, you should put a `config.toml` file in the root of your sd card. This will let you configure certain offsets / credentials without having to compile a new binary.
+
+### Configuration example:
+
+```toml
+[wifi]
+ssid = ""
+eapId = ""
+eapUsername = ""
+password = ""
+
+[calibration]
+    [scd30]
+    temperatureOffset = 0
+
+    [colorspectrum]
+    magentaOffset = 0
+    blueOffset = 0
+    greenOffset = 0
+    yellowOffset = 0
+    orangeOffset = 0
+    redOffset = 0
+
+    [lightintensity]
+    intensityOffset = 0
+```
+
+------
