@@ -36,12 +36,16 @@ void App::init() {
     logger.mInfo("Initializing Wifi");
     // init PEAP network
     try {
-        CWifi::getInstance().mInitWifi({
-            .ssid = "",
-            .eapId = "",
-            .eapUsername = "",
-            .password = ""
-        });
+        auto& wifiConfig = config["WiFi"];
+
+        WifiCredentials credentials = {
+            .ssid = wifiConfig.get<std::string>("ssid"),
+            .eapId = wifiConfig.get<std::string>("eapId"),
+            .eapUsername = wifiConfig.get<std::string>("eapUsername"),
+            .password = wifiConfig.get<std::string>("password")
+        };
+
+        CWifi::getInstance().mInitWifi(credentials);
     }
     catch (const std::runtime_error &e) {
         logger.mError("Error thrown while initing wifi: %s", e.what());
