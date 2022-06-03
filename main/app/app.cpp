@@ -11,6 +11,7 @@
 #include <log.hpp>
 #include <file.hpp>
 #include <time.hpp>
+#include <config.hpp>
 
 static CLogScope logger{"app"};
 
@@ -29,15 +30,22 @@ void App::init() {
         logger.mError("Initializing SD threw error: %s", e.what());
     }
 
+    auto& config = CConfig::getInstance();
+    config.mRead("/sdcard/config.toml");
+    
     logger.mInfo("Initializing Wifi");
     // init PEAP network
     try {
-        CWifi::getInstance().mInitWifi({
-            .ssid = "",
-            .eapId = "",
-            .eapUsername = "",
-            .password = ""
-        });
+        auto& wifiConfig = config["wifi"];
+
+        WifiCredentials credentials = {
+            .ssid = wifiConfig.get<std::string>("ssid"),
+            .eapId = wifiConfig.get<std::string>("eapId"),
+            .eapUsername = wifiConfig.get<std::string>("eapUsername"),
+            .password = wifiConfig.get<std::string>("password")
+        };
+
+        CWifi::getInstance().mInitWifi(credentials);
     }
     catch (const std::runtime_error &e) {
         logger.mError("Error thrown while initing wifi: %s", e.what());

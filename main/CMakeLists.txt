@@ -26,6 +26,8 @@ SRCS
     "./app/logger/log.cpp"
     "./app/logger/logscope.cpp"
     "./app/logger/logtype.cpp"
+    # Config
+    "./app/config/config.cpp"
 INCLUDE_DIRS
     # Add directories seperately.
     "./app/"
@@ -41,5 +43,6 @@ INCLUDE_DIRS
     "./app/sdcard/"
     # Logger
     "./app/logger/"
-    
+    # Config
+    "./app/config/"
 )

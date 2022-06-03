@@ -26,3 +26,6 @@
 [submodule "components/adafruit_as726x"]
 	path = components/adafruit_as726x
 	url = https://github.com/SenseBoxTI/Adafruit_AS726x
+[submodule "components/tinytoml"]
+	path = components/tinytoml
+	url = https://github.com/SenseBoxTI/tinytoml
