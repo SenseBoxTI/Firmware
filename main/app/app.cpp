@@ -4,11 +4,15 @@
 #include <sensormanager.hpp>
 #include <dbsensor.hpp>
 #include <o2sensor.hpp>
+#include <scdsensor.hpp>
+#include <colorsensor.hpp>
+#include <lightintensitysensor.hpp>
 #include <wifi.hpp>
 #include <log.hpp>
 #include <file.hpp>
 #include <time.hpp>
 #include <mqtt.hpp>
+#include <config.hpp>
 
 static CLogScope logger{"app"};
 
@@ -27,15 +31,22 @@ void App::init() {
         logger.mError("Initializing SD threw error: %s", e.what());
     }
 
+    auto& config = CConfig::getInstance();
+    config.mRead("/sdcard/config.toml");
+    
     logger.mInfo("Initializing Wifi");
     // init PEAP network
     try {
-        CWifi::getInstance().mInitWifi({
-            .ssid = "",
-            .eapId = "",
-            .eapUsername = "",
-            .password = ""
-        });
+        auto& wifiConfig = config["wifi"];
+
+        WifiCredentials credentials = {
+            .ssid = wifiConfig.get<std::string>("ssid"),
+            .eapId = wifiConfig.get<std::string>("eapId"),
+            .eapUsername = wifiConfig.get<std::string>("eapUsername"),
+            .password = wifiConfig.get<std::string>("password")
+        };
+
+        CWifi::getInstance().mInitWifi(credentials);
     }
     catch (const std::runtime_error &e) {
         logger.mError("Error thrown while initing wifi: %s", e.what());
@@ -54,6 +65,9 @@ void App::init() {
     logger.mDebug("Adding sensors...");
     sensorManager.mAddSensor(new CDbSensor("dbSensor"));
     sensorManager.mAddSensor(new CO2Sensor("O2Sensor"));
+    sensorManager.mAddSensor(new CScdSensor("SCDSensor"));
+    sensorManager.mAddSensor(new CColorSpectrumSensor("ColorSpectrumSensor"));
+    sensorManager.mAddSensor(new CLightIntensitySensor("LightIntensitySensor"));
 
     logger.mInfo("System has started.");
     logger.mInfo("The current time is: %s", CTime::mGetTimeString().c_str());

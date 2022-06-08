@@ -1,17 +1,13 @@
 #include "log.hpp"
+#include <dir.hpp>
 #include <time.hpp>
 
-#define LOG_FILE_FORMAT "%d_log.txt"
+#define LOG_DIR "logs"
 #define MAX_FILE_BYTE_SIZE (1024 * 1000)
 
 extern std::string string_vformat(const char* apFormat, ...);
 
-static constexpr const char logIds[4] = {
-    'D',
-    'I',
-    'W',
-    'E'
-};
+static constexpr const char logIds[4] = {'D', 'I', 'W', 'E'};
 
 static const char* resetStyle = "\x1b[0m";
 
@@ -23,19 +19,25 @@ static const char* ansiColors[4] = {
 };
 
 // TODO rotate log file using timestamps
-bool currentFile = false;
 void CLog::m_RotateLogFile() {
-    m_Log = CFile(string_vformat(LOG_FILE_FORMAT, (currentFile ^= 1)));
+    m_Log.mRename(string_vformat("%u.log", CTime::mGetUnixTime()));
+    m_Log = CDir(LOG_DIR).mFile("latest.log");
     m_Log.mWrite("");
 }
 
 CLog::CLog()
-:   m_Log(string_vformat(LOG_FILE_FORMAT, currentFile))
+:   m_Log(LOG_DIR "/latest.log")
 {}
 
 CLog& CLog::getInstance() {
-    static CLog instance = {};
-    return instance;
+    try {
+        static CLog instance = {};
+        return instance;
+    }
+    catch(const std::runtime_error& e) {
+        std::printf(e.what());
+        throw e;
+    }
 }
 
 void CLog::mInit() {}
@@ -71,13 +73,21 @@ void CLog::mWriteLog(const char* apScope, const std::string& arText, LogType aTy
     // print to logfile
     if (CFile::getSdState() == SdState::Ready) {
         try {
+            CDir(LOG_DIR).mEnsure();
             m_Log.mAppend(toPrint);
             m_Log.mAppend("\r\n");
             // File size check, if too big rotate the log file
-            if (m_Log.mGetFileLength() > MAX_FILE_BYTE_SIZE) m_RotateLogFile();
+            try {
+                if (m_Log.mGetFileLength() > MAX_FILE_BYTE_SIZE) m_RotateLogFile();
+            }
+            catch (const std::runtime_error& e) {
+                std::printf("%sE %s (log) Failed to rotate log file: %s%s\r\n", ansiColors[3], timeString.c_str(), e.what(), resetStyle);
+                m_Log.mAppend(string_vformat("E %s (log) Failed to rotate log file: %s\r\n", timeString.c_str(), e.what()));
+
+            }
         }
         catch (const std::runtime_error& e) {
-            std::printf("%sE %s (CLog.mWriteLog) Failed to write log to file: %s%s\r\n", ansiColors[3], timeString.c_str(), e.what(), resetStyle);
+            std::printf("%sE %s (log) Failed to write log to file: %s%s\r\n", ansiColors[3], timeString.c_str(), e.what(), resetStyle);
         }
     }
 }

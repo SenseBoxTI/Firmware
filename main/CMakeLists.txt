@@ -12,18 +12,24 @@ SRCS
     # Sensor Impl
     "./app/sensors/impl/dbsensor.cpp"
     "./app/sensors/impl/o2sensor.cpp"
+    "./app/sensors/impl/scdsensor.cpp"
+    "./app/sensors/impl/colorsensor.cpp"
+    "./app/sensors/impl/lightintensitysensor.cpp"
     # Time
     "./app/time/time.cpp"
     # Wifi
     "./app/Wifi/wifi.cpp"
     # SDCard
     "./app/sdcard/file.cpp"
+    "./app/sdcard/dir.cpp"
     # Logger
     "./app/logger/log.cpp"
     "./app/logger/logscope.cpp"
     "./app/logger/logtype.cpp"
     # MQTT
     "./app/mqtt/mqtt.cpp"
+    # Config
+    "./app/config/config.cpp"
 INCLUDE_DIRS
     # Add directories seperately.
     "./app/"
@@ -41,4 +47,6 @@ INCLUDE_DIRS
     "./app/logger/"
     # MQTT
     "./app/mqtt"
+    # Config
+    "./app/config/"
 )
