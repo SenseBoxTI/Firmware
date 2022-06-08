@@ -83,12 +83,12 @@ void App::init() {
 
 void App::loop() {
     auto& sensorManager = CSensorManager::getInstance();
-    auto sensors = sensorManager.mMeasure();
+    auto measurements = sensorManager.mMeasure();
 
     // Print all measurements
-    for (auto const &sensor: sensors) {
-        logger.mInfo("Sensor '%s':", sensor.first.c_str());
-        for (auto const &measurement : sensor.second) {
+    for (auto const &measurement: measurements) {
+        logger.mInfo("Sensor '%s':", measurement.first.c_str());
+        for (auto const &measurement : measurement.second) {
             logger.mInfo("\t%s\t: %s",
                 measurement.first.c_str(),
                 measurement.second.c_str()
