@@ -111,12 +111,17 @@ void CMqtt::m_EventHandler(void* apArgs, esp_event_base_t aBase, int32_t aId, vo
 
         if (!self.mb_Provisioned) self.m_RequestProvision();
         break;
-    case MQTT_EVENT_DISCONNECTED:
+    case MQTT_EVENT_DISCONNECTED: {
         self.mb_Connected = false;
-
         logger.mWarn("MQTT_EVENT_DISCONNECTED");
-        break;
 
+        if (self.mb_Provisioned) {
+            vTaskDelay(1000 / portTICK_PERIOD_MS);
+            self.m_Reconnect();
+        }
+
+        break;
+    }
     case MQTT_EVENT_SUBSCRIBED:
         logger.mDebug("MQTT_EVENT_SUBSCRIBED, msg_id=%d", event->msg_id);
         break;
@@ -221,20 +226,15 @@ void CMqtt::m_OnProvisionResponse(const char* acpData, int aLen) {
 
     esp_mqtt_client_disconnect(m_Client);
 
-    const esp_mqtt_client_config_t mqtt_cfg = {
-        .uri = MQTT_URL, // get this from the config file
-        .client_id = NULL,
-        .username = mcp_AccessToken,
-        .user_context = this,
-        .skip_cert_common_name_check = true
-    };
+    mb_Provisioned = true;
+}
 
+void CMqtt::m_Reconnect() {
+    const esp_mqtt_client_config_t mqtt_cfg = m_GetClientConfig(mcp_AccessToken);
     m_Client = esp_mqtt_client_init(&mqtt_cfg);
     /* The last argument may be used to pass data to the event handler, in this example mqtt_event_handler */
     esp_mqtt_client_register_event(m_Client, MQTT_EVENT_ANY, m_EventHandler, NULL);
     esp_mqtt_client_start(m_Client);
-
-    mb_Provisioned = true;
 }
 
 void CMqtt::m_JsonError(cJSON* aJsonObject, const char* aError) {

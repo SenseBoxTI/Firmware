@@ -19,6 +19,7 @@ private:
     void m_RequestProvision();
     void m_OnProvisionResponse(const char* acpData, int aLen);
     void m_JsonError(cJSON* aJsonObject, const char* aError);
+    void m_Reconnect();
 
     esp_mqtt_client_handle_t m_Client;
     const char* mcp_DeviceId;
