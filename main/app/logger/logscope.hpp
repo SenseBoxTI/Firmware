@@ -1,6 +1,8 @@
 #pragma once
 #include <string.h>
 
+#define DEBUG_ENABLED 0
+
 class CLogScope {
 private:
     const char* m_Scope;
