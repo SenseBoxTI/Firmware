@@ -66,10 +66,10 @@ To configure things in an existing sensebox, you should put a `config.toml` file
 
 ```toml
 [wifi]
-ssid = ""
-eapId = ""
-eapUsername = ""
-password = ""
+    ssid = ""
+    eapId = ""
+    eapUsername = ""
+    password = ""
 
 [calibration]
     [scd30]
@@ -85,6 +85,10 @@ password = ""
 
     [lightintensity]
     intensityOffset = 0
+
+[mqtt]
+    deviceId = ""
+    accessToken = ""
 ```
 
 ------
