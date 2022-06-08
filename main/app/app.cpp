@@ -60,6 +60,14 @@ void App::init() {
         logger.mError("Initializing NTP threw error: %s", e.what());
     }
 
+    auto& mqttConfig = config["mqtt"];
+
+    std::string deviceId = mqttConfig.get<std::string>("deviceId");
+    std::string accessToken = mqttConfig.get<std::string>("accessToken");
+
+    auto& mqtt = CMqtt::getInstance();
+    mqtt.mInit(deviceId, accessToken);
+
     auto& sensorManager = CSensorManager::getInstance();
 
     logger.mDebug("Adding sensors...");

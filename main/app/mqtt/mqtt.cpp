@@ -52,9 +52,9 @@ CMqtt& CMqtt::getInstance() {
     return instance;
 }
 
-void CMqtt::mInit(const char* acpDeviceId, const char* acpAccessToken) {
-    mcp_DeviceId = acpDeviceId;
-    mcp_AccessToken = acpAccessToken;
+void CMqtt::mInit(const std::string& acrDeviceId, const std::string& acrAccessToken) {
+    mcp_DeviceId = acrDeviceId;
+    mcp_AccessToken = acrAccessToken;
 
     ESP_ERROR_CHECK(nvs_flash_init());
 
@@ -184,7 +184,7 @@ void CMqtt::m_RequestProvision() {
     cJSON* obj = cJSON_CreateObject();
     if (obj == NULL) throw std::runtime_error("Could not create provisioning object");
 
-    if (cJSON_AddStringToObject(obj, "deviceName", mcp_DeviceId) == NULL) {
+    if (cJSON_AddStringToObject(obj, "deviceName", mcp_DeviceId.c_str()) == NULL) {
         m_JsonError(obj, "Could not create deviceName for provisioning object");
     }
     if (cJSON_AddStringToObject(obj, "provisionDeviceKey", PROVISION_KEY) == NULL) {
@@ -196,7 +196,7 @@ void CMqtt::m_RequestProvision() {
     if (cJSON_AddStringToObject(obj, "credentialsType", "ACCESS_TOKEN") == NULL) {
         m_JsonError(obj, "Could not create credentialsType for provisioning object");
     }
-    if (cJSON_AddStringToObject(obj, "token", mcp_AccessToken) == NULL) {
+    if (cJSON_AddStringToObject(obj, "token", mcp_AccessToken.c_str()) == NULL) {
         m_JsonError(obj, "Could not create token for provisioning object");
     }
 
@@ -264,7 +264,7 @@ esp_mqtt_client_config_t CMqtt::m_GetClientConfig(const char* aUsername) {
 }
 
 void CMqtt::m_Reconnect() {
-    const esp_mqtt_client_config_t mqtt_cfg = m_GetClientConfig(mcp_AccessToken);
+    const esp_mqtt_client_config_t mqtt_cfg = m_GetClientConfig(mcp_AccessToken.c_str());
     m_Client = esp_mqtt_client_init(&mqtt_cfg);
     /* The last argument may be used to pass data to the event handler, in this example mqtt_event_handler */
     esp_mqtt_client_register_event(m_Client, MQTT_EVENT_ANY, m_EventHandler, NULL);
