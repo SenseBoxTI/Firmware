@@ -84,6 +84,7 @@ void App::init() {
 void App::loop() {
     auto& sensorManager = CSensorManager::getInstance();
     auto measurements = sensorManager.mMeasure();
+    auto& mqtt = CMqtt::getInstance();
 
     // Print all measurements
     for (auto const &measurement: measurements) {
@@ -97,7 +98,9 @@ void App::loop() {
         logger.mInfo("");
     }
 
-    throw std::runtime_error("If you see this, everything works!");
+    mqtt.mSendMeasurements(measurements);
+
+    vTaskDelay(5 * 1000 / portTICK_PERIOD_MS);
 }
 
 void App::start() {
