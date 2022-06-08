@@ -118,6 +118,7 @@ void CMqtt::m_EventHandler(void* apArgs, esp_event_base_t aBase, int32_t aId, vo
 
     CMqtt& self = *static_cast<CMqtt*>(event->user_context);
 
+    try {
     switch (static_cast<esp_mqtt_event_id_t>(aId)) {
     case MQTT_EVENT_CONNECTED:
         self.mb_Connected = true;
@@ -170,6 +171,9 @@ void CMqtt::m_EventHandler(void* apArgs, esp_event_base_t aBase, int32_t aId, vo
     default:
         logger.mInfo("Other event id:%d", event->event_id);
         break;
+        }
+    } catch (const std::runtime_error& err) {
+        logger.mError(err.what());
     }
 }
 
