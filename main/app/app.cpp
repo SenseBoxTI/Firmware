@@ -8,6 +8,7 @@
 #include <log.hpp>
 #include <file.hpp>
 #include <time.hpp>
+#include <mqtt.hpp>
 
 static CLogScope logger{"app"};
 
