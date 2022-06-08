@@ -101,7 +101,7 @@ void CMqtt::mSendMeasurements(Measurements& arValues) {
 }
 
 void CMqtt::m_SendCustom(const char* acpTopic, const char* acpMsg) {
-    int msg_id = esp_mqtt_client_publish(m_Client, acpTopic, acpMsg, sizeof(acpMsg), 0, 0);
+    int msg_id = esp_mqtt_client_publish(m_Client, acpTopic, acpMsg, strlen(acpMsg), 0, 0);
     logger.mInfo("binary sent with msg_id=%d", msg_id);
 }
 
