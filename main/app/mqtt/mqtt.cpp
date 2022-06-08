@@ -22,6 +22,23 @@
 #define PROVISION_KEY ""
 #define PROVISION_SECRET ""
 
+// public key
+#define MQTT_TLS_CERT \
+"-----BEGIN CERTIFICATE-----\n" \
+"MIICFzCCAb2gAwIBAgIUEoiTWh4AEEYq+uvJvf8azjDIjtQwCgYIKoZIzj0EAwIw\n" \
+"YTELMAkGA1UEBhMCTkwxFjAUBgNVBAgMDU5vb3JkLUhvbGxhbmQxEDAOBgNVBAcM\n" \
+"B0Fsa21hYXIxDTALBgNVBAoMBEREU1MxGTAXBgNVBAMMEGRkc3Mtc2Vuc2Vib3gu\n" \
+"bmwwHhcNMjIwNjAxMTQxNDQ0WhcNMjMwNjAxMTQxNDQ0WjBhMQswCQYDVQQGEwJO\n" \
+"TDEWMBQGA1UECAwNTm9vcmQtSG9sbGFuZDEQMA4GA1UEBwwHQWxrbWFhcjENMAsG\n" \
+"A1UECgwERERTUzEZMBcGA1UEAwwQZGRzcy1zZW5zZWJveC5ubDBZMBMGByqGSM49\n" \
+"AgEGCCqGSM49AwEHA0IABCn2NFpxwn+2xDQo30NgflYLvbK7wsJGHpmD6GU7gIgk\n" \
+"wxfPbholHq1yKFyFUOp8RD4Bh/upIbBrZ7Qjpkd4dzOjUzBRMB0GA1UdDgQWBBSH\n" \
+"myR1dTSlIceMaeUzqlRJ6fYPPzAfBgNVHSMEGDAWgBSHmyR1dTSlIceMaeUzqlRJ\n" \
+"6fYPPzAPBgNVHRMBAf8EBTADAQH/MAoGCCqGSM49BAMCA0gAMEUCIQCt3cbj6sUC\n" \
+"OYnFQSSGD7LZgLQeRvRQ5Cm3HJZpRwZqBAIgL981nWhPEf4p2BYsIAt6xsO6i7eC\n" \
+"LiNPVRT2RvZKS58=\n" \
+"-----END CERTIFICATE-----"
+
 static CLogScope logger{"mqtt"};
 
 CMqtt::CMqtt()
@@ -43,13 +60,7 @@ void CMqtt::mInit(const char* acpDeviceId, const char* acpAccessToken) {
 
     mcp_SubscribeTopic = "/provision/response";
 
-    const esp_mqtt_client_config_t mqtt_cfg = {
-        .uri = MQTT_URL, // get this from the config file
-        .client_id = NULL,
-        .username = "provision",
-        .user_context = this,
-        .skip_cert_common_name_check = true
-    };
+    const esp_mqtt_client_config_t mqtt_cfg = m_GetClientConfig("provision");
 
     m_Client = esp_mqtt_client_init(&mqtt_cfg);
     /* The last argument may be used to pass data to the event handler, in this example mqtt_event_handler */
@@ -230,6 +241,19 @@ void CMqtt::m_OnProvisionResponse(const char* acpData, int aLen) {
     esp_mqtt_client_disconnect(m_Client);
 
     mb_Provisioned = true;
+}
+
+esp_mqtt_client_config_t CMqtt::m_GetClientConfig(const char* aUsername) {
+    esp_mqtt_client_config_t config = {
+        .uri = MQTT_URL,
+        .client_id = NULL,
+        .username = aUsername,
+        .disable_auto_reconnect = true, // done in the event handler
+        .user_context = this,
+        .cert_pem = MQTT_TLS_CERT,
+        .skip_cert_common_name_check = true,
+    };
+    return config;
 }
 
 void CMqtt::m_Reconnect() {
