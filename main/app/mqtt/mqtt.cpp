@@ -96,8 +96,7 @@ void CMqtt::mSendMeasurements(Measurements& arValues) {
 
     cJSON_Delete(obj);
 
-    int msg_id = esp_mqtt_client_publish(m_Client, topic.c_str(), publishData, sizeof(publishData), 0, 0);
-    logger.mInfo("binary sent with msg_id=%d", msg_id);
+    m_SendCustom(topic.c_str(), publishData);
 }
 
 void CMqtt::m_SendCustom(const char* acpTopic, const char* acpMsg) {
