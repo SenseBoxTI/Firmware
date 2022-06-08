@@ -19,6 +19,9 @@
 
 #define MQTT_URL "mqtts://test.ddss-sensebox.nl"
 
+#define PROVISION_KEY ""
+#define PROVISION_SECRET ""
+
 static CLogScope logger{"mqtt"};
 
 CMqtt::CMqtt()
@@ -166,10 +169,10 @@ void CMqtt::m_RequestProvision() {
     if (cJSON_AddStringToObject(obj, "deviceName", mcp_DeviceId) == NULL) {
         m_JsonError(obj, "Could not create deviceName for provisioning object");
     }
-    if (cJSON_AddStringToObject(obj, "provisionDeviceKey", "z8dxc1fxq1a9q46ly2ah") == NULL) {
+    if (cJSON_AddStringToObject(obj, "provisionDeviceKey", PROVISION_KEY) == NULL) {
         m_JsonError(obj, "Could not create provisionDeviceKey for provisioning object");
     }
-    if (cJSON_AddStringToObject(obj, "provisionDeviceSecret", "g9fxitfpd3yl78ztmqpw") == NULL) {
+    if (cJSON_AddStringToObject(obj, "provisionDeviceSecret", PROVISION_SECRET) == NULL) {
         m_JsonError(obj, "Could not create provisionDeviceSecret for provisioning object");
     }
     if (cJSON_AddStringToObject(obj, "credentialsType", "ACCESS_TOKEN") == NULL) {
