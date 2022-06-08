@@ -145,7 +145,7 @@ void CMqtt::m_EventHandler(void* apArgs, esp_event_base_t aBase, int32_t aId, vo
         logger.mDebug("MQTT_EVENT_PUBLISHED, msg_id=%d", event->msg_id);
         break;
     case MQTT_EVENT_DATA: {
-        if (strcmp(self.mcp_SubscribeTopic, event->topic)) {
+        if (strcmp(self.mcp_SubscribeTopic, event->topic) == 0) {
             self.m_OnProvisionResponse(event->data, event->data_len);
         }
         break;
