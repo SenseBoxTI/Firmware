@@ -86,18 +86,6 @@ void App::loop() {
     auto measurements = sensorManager.mMeasure();
     auto& mqtt = CMqtt::getInstance();
 
-    // Print all measurements
-    for (auto const &measurement: measurements) {
-        logger.mInfo("Sensor '%s':", measurement.first.c_str());
-        for (auto const &measurement : measurement.second) {
-            logger.mInfo("\t%s\t: %s",
-                measurement.first.c_str(),
-                measurement.second.c_str()
-            );
-        }
-        logger.mInfo("");
-    }
-
     mqtt.mSendMeasurements(measurements);
 
     vTaskDelay(5 * 1000 / portTICK_PERIOD_MS);
