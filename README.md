@@ -19,6 +19,23 @@ source <esp-idf-directory>/export.sh
 You are now able to use `idf.py`
 <br><br>
 
+## Cloning the project
+___
+
+To clone the project, it needs to be cloned with submodules. To do this effectively the following command should be used:
+
+```bash
+git clone https://github.com/SenseBoxTI/Firmware.git --recursive
+```
+
+In case you don't want to clone the project with submodules, but do end up needing them, you should be able to do it like this:
+
+```bash
+git clone https://github.com/SenseBoxTI/Firmware.git
+cd ./Firmware/
+git submodule update --init
+```
+
 ## Building and flashing
 ---
 To build the project, run the following command:
@@ -37,13 +54,13 @@ idf.py -p <port> flash
 ```sh
 ├── CMakeLists.txt          # project, esp-idf path
 ├── components              # holds libraries to include
-│   ├── <adafruit libs>     # (TODO) libraries for some of the sensors
+│   ├── <adafruit libs>     # libraries for some of the sensors
 │   └── Arduino             # arduino esp32 core
 ├── main                    # source directory
 │   ├── app                 # the sensebox implementation 
 │   │   ├── app.cpp/hpp     # application wrapper
-│   │   ├── <sensors>       # (TODO) sensor implementations
-│   │   └── <core>          # (TODO) core component implementations (SD card, etc)
+│   │   ├── <sensors>       # sensor implementations
+│   │   └── <core>          # core component implementations (SD card, etc)
 │   ├── CMakeLists.txt      # source include
 │   └── main.cpp            # main file (contains app_main(), must be a C function)
 └── README.md               # The README you're currently reading
