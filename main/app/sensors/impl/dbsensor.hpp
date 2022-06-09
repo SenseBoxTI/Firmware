@@ -7,6 +7,9 @@ class CDbSensor : public CSensor {
     using CSensor::CSensor;
 
     private:
+    void * m_AdcCharacteristics = nullptr;
+
+    uint32_t m_SampleADC();
     SensorOutput m_MeasureCallback();
     CSensorStatus m_InitCallback();
 };
