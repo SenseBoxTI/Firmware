@@ -11,6 +11,7 @@
 #include <log.hpp>
 #include <file.hpp>
 #include <time.hpp>
+#include <mqtt.hpp>
 #include <config.hpp>
 
 static CLogScope logger{"app"};
@@ -59,6 +60,14 @@ void App::init() {
         logger.mError("Initializing NTP threw error: %s", e.what());
     }
 
+    auto& mqttConfig = config["mqtt"];
+
+    std::string deviceId = mqttConfig.get<std::string>("deviceId");
+    std::string accessToken = mqttConfig.get<std::string>("accessToken");
+
+    auto& mqtt = CMqtt::getInstance();
+    mqtt.mInit(deviceId, accessToken);
+
     auto& sensorManager = CSensorManager::getInstance();
 
     logger.mDebug("Adding sensors...");
@@ -74,21 +83,12 @@ void App::init() {
 
 void App::loop() {
     auto& sensorManager = CSensorManager::getInstance();
-    auto sensors = sensorManager.mMeasure();
+    auto measurements = sensorManager.mMeasure();
+    auto& mqtt = CMqtt::getInstance();
 
-    // Print all measurements
-    for (auto const &sensor: sensors) {
-        logger.mInfo("Sensor '%s':", sensor.first.c_str());
-        for (auto const &measurement : sensor.second) {
-            logger.mInfo("\t%s\t: %s",
-                measurement.first.c_str(),
-                measurement.second.c_str()
-            );
-        }
-        logger.mInfo("");
-    }
+    mqtt.mSendMeasurements(measurements);
 
-    throw std::runtime_error("If you see this, everything works!");
+    vTaskDelay(5 * 1000 / portTICK_PERIOD_MS);
 }
 
 void App::start() {

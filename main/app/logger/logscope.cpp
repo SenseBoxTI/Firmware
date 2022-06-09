@@ -51,6 +51,8 @@ void CLogScope::mError(const char* apFormat, ...) {
 }
 
 void CLogScope::mDebug(const char* apFormat, ...) {
+    if (!DEBUG_ENABLED) return;
+
     va_list a_list;
     va_start(a_list, apFormat);
     CLog::getInstance().mWriteLog(m_Scope, string_vformat(apFormat, a_list), ::LogType::Debug);

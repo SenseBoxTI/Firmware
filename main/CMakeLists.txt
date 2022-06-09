@@ -26,6 +26,8 @@ SRCS
     "./app/logger/log.cpp"
     "./app/logger/logscope.cpp"
     "./app/logger/logtype.cpp"
+    # MQTT
+    "./app/mqtt/mqtt.cpp"
     # Config
     "./app/config/config.cpp"
 INCLUDE_DIRS
@@ -43,6 +45,8 @@ INCLUDE_DIRS
     "./app/sdcard/"
     # Logger
     "./app/logger/"
+    # MQTT
+    "./app/mqtt"
     # Config
     "./app/config/"
 )
