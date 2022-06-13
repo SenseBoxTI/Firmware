@@ -12,5 +12,4 @@ CSensorStatus CSensor::mInit() {
 
 CSensor::CSensor(std::string aName) {
     mName = aName;
-    m_Cooldown = 0.0f;
 }

@@ -11,7 +11,6 @@ class CSensor {
     CSensor(std::string aName);
 
     private:
-    float m_Cooldown;
     SensorOutput m_LastMeasurement;
     CSensorStatus m_Status;
     virtual CSensorStatus m_InitCallback() = 0;
