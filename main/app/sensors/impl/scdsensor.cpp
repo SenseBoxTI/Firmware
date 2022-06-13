@@ -6,13 +6,11 @@ Adafruit_SCD30 scd30 = Adafruit_SCD30();
 SensorOutput CScdSensor::m_MeasureCallback() {
     SensorOutput output;
 
-    if (scd30.dataReady()) return output;
-
-    scd30.read();
-
-    output.emplace("temperature", scd30.temperature);
-    output.emplace("relative_humidity", scd30.relative_humidity);
-    output.emplace("CO2", scd30.CO2);
+    if (scd30.dataReady() && scd30.read()) {
+        output.emplace("temperature", scd30.temperature);
+        output.emplace("relative_humidity", scd30.relative_humidity);
+        output.emplace("CO2", scd30.CO2);
+    }
 
     return output;
 }
