@@ -130,5 +130,8 @@ void App::start() {
 
         auto& mqtt = CMqtt::getInstance();
         mqtt.mDisconnect();
+
+        auto& wifi = CWifi::getInstance();
+        wifi.mDisconnect();
     }
 }

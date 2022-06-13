@@ -26,6 +26,7 @@ public:
 
     /// @brief get if we are currently connected
     bool mConnected();
+    void mDisconnect();
 
 private:
     EventGroupHandle_t m_EventGroup;

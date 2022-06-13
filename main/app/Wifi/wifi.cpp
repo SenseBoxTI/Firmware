@@ -93,3 +93,6 @@ void CWifi::mAttachOnDisconnect(WifiCb aFunc) {
     m_ConnectCbs.push_back(aFunc);
 }
 
+void CWifi::mDisconnect() {
+    esp_wifi_disconnect();
+}
