@@ -4,8 +4,17 @@
 #include <stdexcept>
 
 SensorOutput CSensor::mGetResults() {
-    m_LastMeasurement = m_GetResultsCallback();
-    return m_LastMeasurement;
+    if (m_MeasurementCnt == 0) {
+        throw std::runtime_error("Sensor " + mName + " did not make any measurements within the set interval of " + std::to_string(SEND_INTERVAL_US / 1000000) + " seconds.");
+    }
+
+    SensorOutput output;
+    for (auto& el : m_MeasurementTotal) output[el.first] = el.second / m_MeasurementCnt;
+
+    m_MeasurementCnt = 0;
+    m_MeasurementTotal.clear();
+
+    return output;
 }
 
 CSensorStatus CSensor::mInit() {
