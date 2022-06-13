@@ -52,12 +52,7 @@ void CMqtt::mInit(const std::string& acrDeviceId, const std::string& acrAccessTo
 void CMqtt::mSendMeasurements(Measurements& arValues) {
     if (!mb_Connected || !mb_Provisioned) return;
 
-    std::string topic("v1/devices/me/telemetry");
-
-    if (!mb_SendAttributes) {
-        topic = "v1/devices/me/attributes";
-        mb_SendAttributes = true;
-    }
+    const char* topic = "v1/devices/me/telemetry";
 
     cJSON* obj = cJSON_CreateObject(); 
     if (obj == NULL) throw std::runtime_error("Could not create measurements object");
@@ -69,8 +64,6 @@ void CMqtt::mSendMeasurements(Measurements& arValues) {
             if (cJSON_GetObjectItemCaseSensitive(obj, p.first.c_str()) == NULL) {
                 cJSON_AddNumberToObject(obj, p.first.c_str(), static_cast<double>(p.second));
             }
-
-            // else get average value?
         }
     }
 
@@ -79,7 +72,16 @@ void CMqtt::mSendMeasurements(Measurements& arValues) {
 
     cJSON_Delete(obj);
 
-    m_SendCustom(topic.c_str(), publishData);
+    m_SendCustom(topic, publishData);
+
+    if (!mb_SendAttributes) m_SendAttributes(publishData); // also send the data as telemetry
+}
+
+void CMqtt::m_SendAttributes(const char* apData) {
+    const char* topic = "v1/devices/me/attributes";
+    m_SendCustom(topic, apData);
+
+    mb_SendAttributes = true;
 }
 
 void CMqtt::mDisconnect() {

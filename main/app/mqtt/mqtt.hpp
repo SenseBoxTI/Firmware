@@ -16,6 +16,7 @@ private:
     CMqtt();
     static void m_EventHandler(void* apArgs, esp_event_base_t aBase, int32_t aId, void* apData);
     void m_SendCustom(const char* acpTopic, const char* acpMsg);
+    void m_SendAttributes(const char* apData);
     void m_Subscribe(const char* acpTopic);
     void m_Unsubscribe(const char* acpTopic);
     void m_RequestProvision();
