@@ -1,5 +1,7 @@
 #pragma once
 
+#define DEBUG_ENABLED 1
+
 #define MQTT_URL "mqtts://test.ddss-sensebox.nl"
 
 #define PROVISION_KEY ""
