@@ -1,6 +1,7 @@
 #include "lightintensitysensor.hpp"
 
 #include <Adafruit_TSL2591.h>
+#include <CConfig.hpp>
 
 Adafruit_TSL2591 tsl = Adafruit_TSL2591(2591);
 
@@ -22,6 +23,8 @@ SensorOutput CLightIntensitySensor::m_MeasureCallback() {
 }
 
 CSensorStatus CLightIntensitySensor::m_InitCallback() {
+    m_MeasureInterval = TSL2591_MEASURE_INTERVAL_US;
+
     if (!Wire.begin(47, 48)) {
         return CSensorStatus::Error("TwoWire failed to init!");
     }

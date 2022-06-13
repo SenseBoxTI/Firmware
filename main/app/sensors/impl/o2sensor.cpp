@@ -2,6 +2,7 @@
 
 #include <esp_adc_cal.h>
 #include <logscope.hpp>
+#include <CConfig.hpp>
 
 static CLogScope logger{"o2sensor"};
 
@@ -42,7 +43,10 @@ SensorOutput CO2Sensor::m_MeasureCallback() {
 }
 
 CSensorStatus CO2Sensor::m_InitCallback() {
+    m_MeasureInterval = MIX8410_MEASURE_INTERVAL_US;
+
     m_InitADC();
+
     return CSensorStatus::Ok();
 }
 

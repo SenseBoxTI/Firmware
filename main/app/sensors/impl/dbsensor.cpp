@@ -1,6 +1,8 @@
 #include "dbsensor.hpp"
 #include <esp_adc_cal.h>
 
+#include <CConfig.hpp>
+
 uint32_t CDbSensor::m_SampleADC() {
     const int samples = 64;
     uint32_t reading = 0;
@@ -19,6 +21,8 @@ SensorOutput CDbSensor::m_MeasureCallback() {
 }
 
 CSensorStatus CDbSensor::m_InitCallback() {
+    m_MeasureInterval = MAX4466_MEASURE_INTERVAL_US;
+
     adc1_config_width(ADC_WIDTH_BIT_12);
     adc1_config_channel_atten(static_cast<adc1_channel_t>(ADC_CHANNEL_7), ADC_ATTEN_11db);
 

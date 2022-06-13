@@ -3,6 +3,8 @@
 #include <Adafruit_AS726x.h>
 #include <Wire.h>
 
+#include <CConfig.hpp>
+
 Adafruit_AS726x as726x;
 
 float calibratedValues[AS726x_NUM_CHANNELS];
@@ -32,6 +34,8 @@ SensorOutput CColorSpectrumSensor::m_MeasureCallback() {
 }
 
 CSensorStatus CColorSpectrumSensor::m_InitCallback() {
+    m_MeasureInterval = AS7262_MEASURE_INTERVAL_US;
+
     if (!Wire.begin(47, 48)) {
         return CSensorStatus::Error("TwoWire failed to init!");
     }

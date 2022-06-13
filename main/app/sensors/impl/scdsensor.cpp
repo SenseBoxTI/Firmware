@@ -1,6 +1,8 @@
 #include "scdsensor.hpp"
 #include <Adafruit_SCD30.h>
 
+#include <CConfig.hpp>
+
 Adafruit_SCD30 scd30 = Adafruit_SCD30();
 
 SensorOutput CScdSensor::m_MeasureCallback() {
@@ -16,6 +18,8 @@ SensorOutput CScdSensor::m_MeasureCallback() {
 }
 
 CSensorStatus CScdSensor::m_InitCallback() {
+    m_MeasureInterval = SCD30_MEASURE_INTERVAL_US;
+
     if (!Wire.begin(47, 48)) {
         return CSensorStatus::Error("TwoWire failed to init!");
     }
@@ -25,7 +29,7 @@ CSensorStatus CScdSensor::m_InitCallback() {
         scd30.setTemperatureOffset(0);
         scd30.setMeasurementInterval(2);
         return CSensorStatus::Ok();
-    }
-    else 
+    } else {
         return CSensorStatus::Error("SCD30 failed to init!");
+    }
 }
