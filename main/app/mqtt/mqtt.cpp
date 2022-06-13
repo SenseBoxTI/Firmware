@@ -47,6 +47,17 @@ void CMqtt::mInit(const std::string& acrDeviceId, const std::string& acrAccessTo
     /* The last argument may be used to pass data to the event handler, in this example mqtt_event_handler */
     esp_mqtt_client_register_event(m_Client, MQTT_EVENT_ANY, m_EventHandler, NULL);
     esp_mqtt_client_start(m_Client);
+
+    logger.mDebug("Initializing MQTT");
+
+    uint8_t retry = 0;
+    const uint8_t retryCnt = 15;
+    while (!mb_Connected && ++retry <= retryCnt) {
+        logger.mDebug("Waiting...  (%d/%d)", retry, retryCnt);
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
+    }
+
+    if (retry == retryCnt) throw std::runtime_error("Could not connect to MQTT server.");
 }
 
 void CMqtt::mSendMeasurements(Measurements& arValues) {

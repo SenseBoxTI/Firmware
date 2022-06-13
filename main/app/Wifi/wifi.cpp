@@ -79,6 +79,17 @@ void CWifi::mInitWifi(const WifiCredentials& aConfig) {
         WIFI_THROW_ON_ERROR( esp_wifi_sta_wpa2_ent_enable() );
     }
     WIFI_THROW_ON_ERROR( esp_wifi_start() );
+
+    logger.mDebug("Initializing WiFi");
+
+    uint8_t retry = 0;
+    const uint8_t retryCnt = 15;
+    while (mIp.ip.addr == 0 && ++retry <= retryCnt) {
+        logger.mDebug("Waiting...  (%d/%d)", retry, retryCnt);
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
+    }
+
+    if (retry == retryCnt) throw std::runtime_error("Could not connect to WiFi.");
 }
 
 bool CWifi::mConnected() {

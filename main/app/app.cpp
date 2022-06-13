@@ -52,7 +52,9 @@ void App::init() {
         CWifi::getInstance().mInitWifi(credentials);
     }
     catch (const std::runtime_error &e) {
-        logger.mError("Error thrown while initing wifi: %s", e.what());
+        logger.mError("Initializing WiFi threw error: %s", e.what());
+
+        throw std::runtime_error(e); // or do some flashy things with the LED
     }
 
     logger.mInfo("Initializing Time");
@@ -61,15 +63,24 @@ void App::init() {
     }
     catch (const std::runtime_error& e) {
         logger.mError("Initializing NTP threw error: %s", e.what());
+
+        throw std::runtime_error(e); // or do some flashy things with the LED
     }
 
-    auto& mqttConfig = config["mqtt"];
+    try {
+        auto& mqttConfig = config["mqtt"];
 
-    std::string deviceId = mqttConfig.get<std::string>("deviceId");
-    std::string accessToken = mqttConfig.get<std::string>("accessToken");
+        std::string deviceId = mqttConfig.get<std::string>("deviceId");
+        std::string accessToken = mqttConfig.get<std::string>("accessToken");
 
-    auto& mqtt = CMqtt::getInstance();
-    mqtt.mInit(deviceId, accessToken);
+        auto& mqtt = CMqtt::getInstance();
+        mqtt.mInit(deviceId, accessToken);
+    }
+    catch (const std::runtime_error& e) {
+        logger.mError("Initializing MQTT threw error: %s", e.what());
+
+        throw std::runtime_error(e); // or do some flashy things with the LED
+    }
 
     auto& sensorManager = CSensorManager::getInstance();
 
