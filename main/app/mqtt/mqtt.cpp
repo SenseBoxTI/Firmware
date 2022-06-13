@@ -16,28 +16,8 @@
 #include <logscope.hpp>
 #include <string>
 #include <file.hpp>
-
-#define MQTT_URL "mqtts://test.ddss-sensebox.nl"
-
-#define PROVISION_KEY ""
-#define PROVISION_SECRET ""
-
-// public key
-#define MQTT_TLS_CERT \
-"-----BEGIN CERTIFICATE-----\n" \
-"MIICFzCCAb2gAwIBAgIUEoiTWh4AEEYq+uvJvf8azjDIjtQwCgYIKoZIzj0EAwIw\n" \
-"YTELMAkGA1UEBhMCTkwxFjAUBgNVBAgMDU5vb3JkLUhvbGxhbmQxEDAOBgNVBAcM\n" \
-"B0Fsa21hYXIxDTALBgNVBAoMBEREU1MxGTAXBgNVBAMMEGRkc3Mtc2Vuc2Vib3gu\n" \
-"bmwwHhcNMjIwNjAxMTQxNDQ0WhcNMjMwNjAxMTQxNDQ0WjBhMQswCQYDVQQGEwJO\n" \
-"TDEWMBQGA1UECAwNTm9vcmQtSG9sbGFuZDEQMA4GA1UEBwwHQWxrbWFhcjENMAsG\n" \
-"A1UECgwERERTUzEZMBcGA1UEAwwQZGRzcy1zZW5zZWJveC5ubDBZMBMGByqGSM49\n" \
-"AgEGCCqGSM49AwEHA0IABCn2NFpxwn+2xDQo30NgflYLvbK7wsJGHpmD6GU7gIgk\n" \
-"wxfPbholHq1yKFyFUOp8RD4Bh/upIbBrZ7Qjpkd4dzOjUzBRMB0GA1UdDgQWBBSH\n" \
-"myR1dTSlIceMaeUzqlRJ6fYPPzAfBgNVHSMEGDAWgBSHmyR1dTSlIceMaeUzqlRJ\n" \
-"6fYPPzAPBgNVHRMBAf8EBTADAQH/MAoGCCqGSM49BAMCA0gAMEUCIQCt3cbj6sUC\n" \
-"OYnFQSSGD7LZgLQeRvRQ5Cm3HJZpRwZqBAIgL981nWhPEf4p2BYsIAt6xsO6i7eC\n" \
-"LiNPVRT2RvZKS58=\n" \
-"-----END CERTIFICATE-----"
+#include <config.hpp>
+#include <CConfig.hpp>
 
 static CLogScope logger{"mqtt"};
 
