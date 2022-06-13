@@ -15,6 +15,8 @@ SRCS
     "./app/sensors/impl/scdsensor.cpp"
     "./app/sensors/impl/colorsensor.cpp"
     "./app/sensors/impl/lightintensitysensor.cpp"
+    "./app/sensors/impl/particlesensor.cpp"
+    "./app/sensors/impl/vocsensor.cpp"
     # Time
     "./app/time/time.cpp"
     # Wifi
