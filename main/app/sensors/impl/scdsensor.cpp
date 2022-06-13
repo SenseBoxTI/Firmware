@@ -12,6 +12,9 @@ SensorOutput CScdSensor::m_MeasureCallback() {
         output.emplace("temperature", scd30.temperature);
         output.emplace("relative_humidity", scd30.relative_humidity);
         output.emplace("CO2", scd30.CO2);
+
+        m_LastTemperature = scd30.temperature;
+        m_LastRelative_humidity = scd30.relative_humidity;
     }
 
     return output;
