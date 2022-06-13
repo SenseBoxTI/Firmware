@@ -51,14 +51,14 @@ CSensorStatus CO2Sensor::m_InitCallback() {
 }
 
 void AdcPrintFeatures() {
-        logger.mInfo("ADC Feature     | Supported");
-        logger.mInfo("                |          ");
-        logger.mInfo("eFuse two point | %s", esp_adc_cal_check_efuse(ESP_ADC_CAL_VAL_EFUSE_TP) ? "No" : "Yes");
-        logger.mInfo("eFuse Vref      | %s", esp_adc_cal_check_efuse(ESP_ADC_CAL_VAL_EFUSE_VREF) ? "No" : "Yes");
+        logger.mDebug("ADC Feature     | Supported");
+        logger.mDebug("                |          ");
+        logger.mDebug("eFuse two point | %s", esp_adc_cal_check_efuse(ESP_ADC_CAL_VAL_EFUSE_TP) ? "No" : "Yes");
+        logger.mDebug("eFuse Vref      | %s", esp_adc_cal_check_efuse(ESP_ADC_CAL_VAL_EFUSE_VREF) ? "No" : "Yes");
 }
 
 void AdcPrintCharacteristics(esp_adc_cal_value_t aValType) {
-    logger.mInfo(
+    logger.mDebug(
         "Characterized by using %s",
         (aValType == ESP_ADC_CAL_VAL_EFUSE_TP) ? "Two Point Value" :
         (aValType == ESP_ADC_CAL_VAL_EFUSE_VREF) ? "eFuse Vref" :
