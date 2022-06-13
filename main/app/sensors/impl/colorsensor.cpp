@@ -19,17 +19,15 @@ constexpr const char* colors[] = {
 
 SensorOutput CColorSpectrumSensor::m_MeasureCallback() {
     SensorOutput output;
-    if (as726x.dataReady()) {
-        as726x.readCalibratedValues(calibratedValues);
 
-        for (int i = 0; i < AS726x_NUM_CHANNELS; i++) {
-            output.insert({colors[i], std::to_string(calibratedValues[i] + offsets[i])});
-        }
-    } else {
-        for (int i = 0; i < AS726x_NUM_CHANNELS; i++) {
-            output.insert({colors[i], "NaN"});
-        }
+    if (!as726x.dataReady()) return output;
+
+    as726x.readCalibratedValues(calibratedValues);
+
+    for (int i = 0; i < AS726x_NUM_CHANNELS; i++) {
+        output.insert({colors[i], calibratedValues[i] + offsets[i]});
     }
+
     return output;
 }
 

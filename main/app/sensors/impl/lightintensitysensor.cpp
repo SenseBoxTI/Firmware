@@ -6,17 +6,17 @@ Adafruit_TSL2591 tsl = Adafruit_TSL2591(2591);
 
 SensorOutput CLightIntensitySensor::m_MeasureCallback() {
     SensorOutput output;
-    
+
     uint32_t lum = tsl.getFullLuminosity();
     uint16_t ir = lum >> 16;
     uint16_t full = lum & 0xFFFF;
     uint16_t visible = full - ir;
     float lux = tsl.calculateLux(full, ir) + m_offset;
 
-    output.insert({"ir", std::to_string(ir)});
-    output.insert({"full", std::to_string(full)});
-    output.insert({"visible", std::to_string(visible)});
-    output.insert({"lux", std::to_string(lux)});
+    output.insert({"ir", static_cast<float>(ir)});
+    output.insert({"full", static_cast<float>(full)});
+    output.insert({"visible", static_cast<float>(visible)});
+    output.insert({"lux", static_cast<float>(lux)});
 
     return output;
 }

@@ -61,10 +61,10 @@ void CMqtt::mSendMeasurements(Measurements& arValues) {
     cJSON* obj = cJSON_CreateObject(); 
     if (obj == NULL) throw std::runtime_error("Could not create measurements object");
 
-    for (auto el : arValues) {
-        for (auto p : el.second) {
+    for (auto& el : arValues) {
+        for (auto& p : el.second) {
             if (cJSON_GetObjectItemCaseSensitive(obj, p.first.c_str()) == NULL) {
-                cJSON_AddStringToObject(obj, p.first.c_str(), p.second.c_str());
+                cJSON_AddNumberToObject(obj, p.first.c_str(), static_cast<double>(p.second));
             }
 
             // else get average value?

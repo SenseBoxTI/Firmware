@@ -15,12 +15,7 @@ uint32_t CDbSensor::m_SampleADC() {
 }
 
 SensorOutput CDbSensor::m_MeasureCallback() {
-    SensorOutput output;
-    static char sampleString[16] = { 0 };
-    std::snprintf(sampleString, 16, "%d", m_SampleADC());
-    output.insert({"db", sampleString});
-
-    return output;
+    return {{"dB", m_SampleADC()}};
 }
 
 CSensorStatus CDbSensor::m_InitCallback() {

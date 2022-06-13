@@ -2,7 +2,6 @@
 
 #include <sensor.hpp>
 
-
 class CO2Sensor : public CSensor {
     public:
     using CSensor::CSensor;
