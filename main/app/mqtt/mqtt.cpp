@@ -62,8 +62,10 @@ void CMqtt::mSendMeasurements(Measurements& arValues) {
     cJSON* obj = cJSON_CreateObject(); 
     if (obj == NULL) throw std::runtime_error("Could not create measurements object");
 
+    // add all values to 1 layer deep json object
     for (auto& el : arValues) {
         for (auto& p : el.second) {
+            // if the json key already exists the value will be skipped
             if (cJSON_GetObjectItemCaseSensitive(obj, p.first.c_str()) == NULL) {
                 cJSON_AddNumberToObject(obj, p.first.c_str(), static_cast<double>(p.second));
             }
