@@ -14,10 +14,10 @@ SensorOutput CLightIntensitySensor::m_MeasureCallback() {
     uint16_t visible = full - ir;
     float lux = tsl.calculateLux(full, ir) + m_offset;
 
-    output.insert({"ir", static_cast<float>(ir)});
-    output.insert({"full", static_cast<float>(full)});
-    output.insert({"visible", static_cast<float>(visible)});
-    output.insert({"lux", static_cast<float>(lux)});
+    output.emplace("ir", static_cast<float>(ir));
+    output.emplace("full", static_cast<float>(full));
+    output.emplace("visible", static_cast<float>(visible));
+    output.emplace("lux", static_cast<float>(lux));
 
     return output;
 }
