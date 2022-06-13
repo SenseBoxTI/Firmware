@@ -1,7 +1,7 @@
 #include "sensor.hpp"
 
-SensorOutput CSensor::mMeasure() {
-    m_LastMeasurement = m_MeasureCallback();
+SensorOutput CSensor::mGetResults() {
+    m_LastMeasurement = m_GetResultsCallback();
     return m_LastMeasurement;
 }
 

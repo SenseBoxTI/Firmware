@@ -14,11 +14,11 @@ CSensorStatus CSensorManager::mAddSensor(CSensor* apSensor) {
     return status;
 }
 
-Measurements CSensorManager::mMeasure() {
+Measurements CSensorManager::mGetResults() {
     Measurements measurements;
 
     for (auto sensor : m_Sensors) {
-        measurements.insert({sensor->mName, sensor->mMeasure()});
+        measurements.insert({sensor->mName, sensor->mGetResults()});
     }
     m_Measurements = measurements;
 

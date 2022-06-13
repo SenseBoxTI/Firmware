@@ -83,7 +83,7 @@ void App::init() {
 
 void App::loop() {
     auto& sensorManager = CSensorManager::getInstance();
-    auto measurements = sensorManager.mMeasure();
+    auto measurements = sensorManager.mGetResults();
     auto& mqtt = CMqtt::getInstance();
 
     mqtt.mSendMeasurements(measurements);
