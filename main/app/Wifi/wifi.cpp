@@ -51,7 +51,7 @@ void CWifi::mInitWifi(const WifiCredentials& aConfig) {
     m_EventGroup = xEventGroupCreate();
     WIFI_THROW_ON_ERROR(esp_event_loop_create_default());
     m_StaNetif = esp_netif_create_default_wifi_sta();
-    assert(m_StaNetif);
+    if (!m_StaNetif) throw std::runtime_error("WTF WIFI");
 
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     WIFI_THROW_ON_ERROR( esp_wifi_init(&cfg) );
