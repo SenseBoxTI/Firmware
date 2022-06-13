@@ -15,5 +15,4 @@ class CSensor {
     CSensorStatus m_Status;
     virtual CSensorStatus m_InitCallback() = 0;
     virtual SensorOutput m_GetResultsCallback() = 0;
-    virtual SensorOutput m_MeasureCallback() = 0;
 };
