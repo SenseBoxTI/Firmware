@@ -9,6 +9,7 @@ public:
     void mInit(const std::string& acrDeviceId, const std::string& acrAccessToken);
     static CMqtt& getInstance();
     void mSendMeasurements(Measurements& arValues);
+    void mDisconnect();
 
 private:
     CMqtt();

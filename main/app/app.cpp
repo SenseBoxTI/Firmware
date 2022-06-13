@@ -34,7 +34,7 @@ void App::init() {
 
     auto& config = CConfig::getInstance();
     config.mRead("/sdcard/config.toml");
-    
+
     logger.mInfo("Initializing Wifi");
     // init PEAP network
     try {
@@ -110,5 +110,11 @@ void App::start() {
         logger.mError("FATAL unhandled runtime exception occured!");
         logger.mError("Famous lasts words:");
         logger.mError(e.what());
+
+        auto& sensorManager = CSensorManager::getInstance();
+        sensorManager.mClearTasks();
+
+        auto& mqtt = CMqtt::getInstance();
+        mqtt.mDisconnect();
     }
 }

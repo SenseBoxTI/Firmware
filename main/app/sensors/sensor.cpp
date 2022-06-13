@@ -49,6 +49,12 @@ void CSensor::m_ReadSensor(void* aSelf) {
     }
     self.m_MeasurementCnt++;
 }
+
+void CSensor::mClearTask() {
+    esp_timer_stop(m_MeasureTimer);
+    esp_timer_delete(m_MeasureTimer);
+}
+
 CSensor::CSensor(std::string aName)
 :   m_MeasurementCnt(0),
     m_MeasureInterval(0)

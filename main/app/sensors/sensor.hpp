@@ -11,10 +11,10 @@ class CSensor {
     std::string mName;
     SensorOutput mGetResults();
     CSensorStatus mInit();
+    void mClearTask();
     CSensor(std::string aName);
 
     private:
-    SensorOutput m_LastMeasurement;
     CSensorStatus m_Status;
     virtual CSensorStatus m_InitCallback() = 0;
     virtual SensorOutput m_MeasureCallback() = 0;
