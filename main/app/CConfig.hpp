@@ -24,12 +24,12 @@
 "LiNPVRT2RvZKS58=\n" \
 "-----END CERTIFICATE-----"
 
-#define SEND_INTERVAL_US 60 * 1000 * 1000
+#define SEND_INTERVAL_US                60 * 1000 * 1000
 
-#define MIX8410_MEASURE_INTERVAL_US 10 * 1000 * 1000 // O2 sensor
-#define MAX4466_MEASURE_INTERVAL_US .5 * 1000 * 1000 // dB sensor
-#define TSL2591_MEASURE_INTERVAL_US 2 * 1000 * 1000 // light sensor
-#define AS7262_MEASURE_INTERVAL_US 2 * 1000 * 1000 // color sensor
-#define CCS811_MEASURE_INTERVAL_US 2 * 1000 * 1000 // tVOC sensor
-#define PMSA003I_MEASURE_INTERVAL_US 10 * 1000 * 1000 // particle sensor
-#define SCD30_MEASURE_INTERVAL_US 10 * 1000 * 1000 // CO2
+#define MIX8410_MEASURE_INTERVAL_US     10 * 1000 * 1000 // O2 sensor
+#define MAX4466_MEASURE_INTERVAL_US     .5 * 1000 * 1000 // dB sensor
+#define TSL2591_MEASURE_INTERVAL_US     2  * 1000 * 1000 // light sensor
+#define AS7262_MEASURE_INTERVAL_US      2  * 1000 * 1000 // color sensor
+#define CCS811_MEASURE_INTERVAL_US      2  * 1000 * 1000 // tVOC sensor
+#define PMSA003I_MEASURE_INTERVAL_US    10 * 1000 * 1000 // particle sensor
+#define SCD30_MEASURE_INTERVAL_US       10 * 1000 * 1000 // CO2
