@@ -3,7 +3,7 @@
 #include <errno.h>
 #include <logscope.hpp>
 
-CLogScope logger{"dir"};
+static CLogScope logger{"dir"};
 
 CDir::CDir(const std::string& arPath) 
 :   mPath(arPath), 
