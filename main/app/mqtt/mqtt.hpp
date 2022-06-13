@@ -10,6 +10,7 @@ public:
     static CMqtt& getInstance();
     void mSendMeasurements(Measurements& arValues);
     void mDisconnect();
+    void mReconnect();
 
 private:
     CMqtt();
@@ -21,7 +22,7 @@ private:
     void m_OnProvisionResponse(const char* acpData, int aLen);
     void m_JsonError(cJSON* aJsonObject, const char* aError);
     esp_mqtt_client_config_t m_GetClientConfig(const char* aUsername);
-    void m_Reconnect();
+    void m_Connect();
 
     esp_mqtt_client_handle_t m_Client;
     std::string mcp_DeviceId;

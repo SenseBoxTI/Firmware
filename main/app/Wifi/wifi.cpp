@@ -34,10 +34,14 @@ void CWifi::m_EventHandler(void* apArg, esp_event_base_t aBase, int32_t aId, voi
         auto& wifi = CWifi::getInstance();
         xEventGroupClearBits(wifi.m_EventGroup, CONNECTED_BIT);
         memset(&wifi.mIp, 0, sizeof(decltype(wifi.mIp)));
+
+        for (auto& func : wifi.m_DisconnectCbs) func();
     } else if (aBase == IP_EVENT && aId == IP_EVENT_STA_GOT_IP) {
         auto& wifi = CWifi::getInstance();
         xEventGroupSetBits(wifi.m_EventGroup, CONNECTED_BIT);
         esp_netif_get_ip_info(wifi.m_StaNetif, &wifi.mIp);
+
+        for (auto& func : wifi.m_ConnectCbs) func();
     }
 }
 
@@ -46,7 +50,7 @@ void CWifi::mInitWifi(const WifiCredentials& aConfig) {
     bool enterprise = !aConfig.eapUsername.empty();
     esp_err_t error;
     mCredentials = aConfig;
-    
+
     WIFI_THROW_ON_ERROR(esp_netif_init());
     m_EventGroup = xEventGroupCreate();
     WIFI_THROW_ON_ERROR(esp_event_loop_create_default());
@@ -69,7 +73,7 @@ void CWifi::mInitWifi(const WifiCredentials& aConfig) {
     WIFI_THROW_ON_ERROR( esp_wifi_set_config(WIFI_IF_STA, &wifi_config) );
     if (enterprise) {
         WIFI_THROW_ON_ERROR( esp_wifi_sta_wpa2_ent_set_identity((uint8_t *)mCredentials.eapId.c_str(), mCredentials.eapId.size()) );
-    
+
         WIFI_THROW_ON_ERROR( esp_wifi_sta_wpa2_ent_set_username((uint8_t *)mCredentials.eapUsername.c_str(), mCredentials.eapUsername.size()) );
         WIFI_THROW_ON_ERROR( esp_wifi_sta_wpa2_ent_set_password((uint8_t *)mCredentials.password.c_str(), mCredentials.password.size()) );
         WIFI_THROW_ON_ERROR( esp_wifi_sta_wpa2_ent_enable() );
@@ -80,3 +84,12 @@ void CWifi::mInitWifi(const WifiCredentials& aConfig) {
 bool CWifi::mConnected() {
     return mIp.ip.addr != 0;
 }
+
+void CWifi::mAttachOnConnect(WifiCb aFunc) {
+    m_ConnectCbs.push_back(aFunc);
+}
+
+void CWifi::mAttachOnDisconnect(WifiCb aFunc) {
+    m_ConnectCbs.push_back(aFunc);
+}
+

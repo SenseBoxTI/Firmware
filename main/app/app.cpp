@@ -109,6 +109,15 @@ void App::start() {
         ESP_ERROR_CHECK(esp_timer_create(&createArgs, &m_SendDataTimer));
 
         ESP_ERROR_CHECK(esp_timer_start_periodic(m_SendDataTimer, SEND_INTERVAL_US));
+
+        auto& wifi = CWifi::getInstance();
+        auto& mqtt = CMqtt::getInstance();
+
+        CWifi::WifiCb mqttConnectCb = [&]{mqtt.mReconnect();};
+        CWifi::WifiCb mqttDisconnectCb = [&]{mqtt.mDisconnect();};
+
+        wifi.mAttachOnConnect(mqttConnectCb);
+        wifi.mAttachOnDisconnect(mqttDisconnectCb);
     }
     catch (const std::runtime_error& e) {
         logger.mError("Ah shucks!");

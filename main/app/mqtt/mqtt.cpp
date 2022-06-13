@@ -18,6 +18,7 @@
 #include <file.hpp>
 #include <config.hpp>
 #include <CConfig.hpp>
+#include <wifi.hpp>
 
 static CLogScope logger{"mqtt"};
 
@@ -117,7 +118,7 @@ void CMqtt::m_EventHandler(void* apArgs, esp_event_base_t aBase, int32_t aId, vo
 
         if (self.mb_Provisioned) {
             vTaskDelay(1000 / portTICK_PERIOD_MS);
-            self.m_Reconnect();
+            self.m_Connect();
         }
 
         break;
@@ -247,7 +248,17 @@ esp_mqtt_client_config_t CMqtt::m_GetClientConfig(const char* aUsername) {
     return config;
 }
 
-void CMqtt::m_Reconnect() {
+void CMqtt::mReconnect() {
+    if (mb_Connected) {
+        esp_mqtt_client_disconnect(m_Client);
+    } else {
+        m_Connect();
+    }
+}
+
+void CMqtt::m_Connect() {
+    if (!CWifi::getInstance().mConnected()) return;
+
     const esp_mqtt_client_config_t mqtt_cfg = m_GetClientConfig(mcp_AccessToken.c_str());
     m_Client = esp_mqtt_client_init(&mqtt_cfg);
     /* The last argument may be used to pass data to the event handler, in this example mqtt_event_handler */
