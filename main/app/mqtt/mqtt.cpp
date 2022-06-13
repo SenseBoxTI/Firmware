@@ -107,7 +107,7 @@ void CMqtt::m_EventHandler(void* apArgs, esp_event_base_t aBase, int32_t aId, vo
     case MQTT_EVENT_CONNECTED:
         self.mb_Connected = true;
 
-        logger.mDebug("MQTT_EVENT_CONNECTED");
+        logger.mInfo("MQTT_EVENT_CONNECTED");
 
         if (!self.mb_Provisioned) self.m_RequestProvision();
         break;
