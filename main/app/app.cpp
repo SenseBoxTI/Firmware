@@ -13,6 +13,7 @@
 #include <time.hpp>
 #include <mqtt.hpp>
 #include <config.hpp>
+#include <CConfig.hpp>
 
 static CLogScope logger{"app"};
 
@@ -81,25 +82,33 @@ void App::init() {
     logger.mInfo("The current time is: %s", CTime::mGetTimeString().c_str());
 }
 
-void App::loop() {
+void App::m_SendMeasurements(void* aArgs) {
     auto& sensorManager = CSensorManager::getInstance();
     auto measurements = sensorManager.mGetResults();
     auto& mqtt = CMqtt::getInstance();
 
     mqtt.mSendMeasurements(measurements);
-
-    vTaskDelay(5 * 1000 / portTICK_PERIOD_MS);
 }
 
 void App::start() {
     try {
         this->init();
-        while (true) this->loop();
+
+        esp_timer_create_args_t createArgs = {
+            .callback = &m_SendMeasurements,
+            .arg = this,
+            .dispatch_method = ESP_TIMER_TASK,
+            .name = "SendData"
+        };
+
+        ESP_ERROR_CHECK(esp_timer_create(&createArgs, &m_SendDataTimer));
+
+        ESP_ERROR_CHECK(esp_timer_start_periodic(m_SendDataTimer, SEND_INTERVAL_US));
     }
     catch (const std::runtime_error& e) {
-            logger.mError("Ah shucks!");
-            logger.mError("FATAL unhandled runtime exception occured!");
-            logger.mError("Famous lasts words:");
-            logger.mError(e.what());
+        logger.mError("Ah shucks!");
+        logger.mError("FATAL unhandled runtime exception occured!");
+        logger.mError("Famous lasts words:");
+        logger.mError(e.what());
     }
 }
