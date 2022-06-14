@@ -44,9 +44,8 @@ void CSensor::m_ReadSensor(void* aSelf) {
 
     if (measurement.size() == 0) return;
 
-    for (auto& el : measurement) {
-        self.m_MeasurementTotal[el.first] += el.second;
-    }
+    for (auto& el : measurement) self.m_MeasurementTotal[el.first] += el.second;
+
     self.m_MeasurementCnt++;
 }
 
