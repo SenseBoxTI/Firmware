@@ -34,6 +34,11 @@ CMqtt& CMqtt::getInstance() {
 }
 
 void CMqtt::mInit(const std::string& acrDeviceId, const std::string& acrAccessToken) {
+    auto& wifi = CWifi::getInstance();
+    if (!wifi.mConnected()) throw std::runtime_error("Need a active internet connection to get the time.");
+
+    logger.mInfo("Initializing MQTT");
+
     mcp_DeviceId = acrDeviceId;
     mcp_AccessToken = acrAccessToken;
 

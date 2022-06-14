@@ -1,5 +1,9 @@
 #include "sensormanager.hpp"
 
+#include <logscope.hpp>
+
+static CLogScope logger{"sensorManager"};
+
 CSensorManager& CSensorManager::getInstance() {
     static CSensorManager instance = {};
     return instance;
@@ -9,6 +13,8 @@ CSensorManager::CSensorManager() {
 }
 
 CSensorStatus CSensorManager::mAddSensor(CSensor* apSensor) {
+    logger.mDebug("Initializing sensor: %s", apSensor->mName);
+
     auto status = apSensor->mInit();
     m_Sensors.push_back(apSensor);
     return status;

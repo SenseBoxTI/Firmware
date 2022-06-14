@@ -15,7 +15,7 @@ void CTime::mInitTime(const char* apNtpServer) {
 
     if (!wifi.mConnected()) throw std::runtime_error("Need a active internet connection to get the time.");
 
-    logger.mDebug("Initializing SNTP");
+    logger.mDebug("Initializing NTP");
     sntp_servermode_dhcp(1);
     sntp_setoperatingmode(SNTP_OPMODE_POLL);
     sntp_setservername(1, apNtpServer);
