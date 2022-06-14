@@ -35,3 +35,4 @@
 #define SCD30_MEASURE_INTERVAL_US       10 * 1000 * 1000 // CO2
 
 #define FILE_CLOSE_TIMEOUT              120 * 1000 * 1000
+#define FILE_WRITE_INTERVAL             5   * 1000 * 1000

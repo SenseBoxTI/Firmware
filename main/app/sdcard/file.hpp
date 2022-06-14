@@ -3,6 +3,8 @@
 #include <iostream>
 
 #include <esp_timer.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/queue.h>
 
 #define MOUNT_POINT "/sdcard"
 
@@ -51,11 +53,14 @@ private:
     bool m_IsOpen();
     void m_Open();
     void m_Close();
-    static void m_Close(void* aSelf);
-    void m_SetCloseTimer();
     std::string m_GetTaskName();
+    static void m_StartWrite(void* aSelf);
+    void m_WriteFromQueue();
+    void m_AddToQueue(const char* apText);
 
     FileMode m_Mode;
     FILE* mp_File;
-    esp_timer_handle_t m_CloseTimer;
+    esp_timer_handle_t m_WriteTimer;
+    QueueHandle_t m_WriteQueue;
+    uint8_t m_FileUntouchedCnt;
 };

@@ -8,6 +8,7 @@
 #include <stdexcept>
 #include "sdmmc_cmd.h"
 #include <CConfig.hpp>
+#include <freertos/portmacro.h>
 
 #include <logscope.hpp>
 
@@ -19,6 +20,8 @@
 #define PIN_CLK  2  // SCK pin
 #define PIN_MOSI 3
 #define PIN_MISO 1
+
+#define QUEUE_SIZE_BYTES 128
 
 static CLogScope logger{"file"};
 
@@ -33,21 +36,28 @@ SdState CFile::m_SdState = Unitizialized;
 CFile::CFile(const std::string& arPath, FileMode aMode)
 :   mPath(MOUNT_POINT "/" + arPath),
     m_Mode(aMode),
-    mp_File(nullptr)
+    mp_File(nullptr),
+    m_FileUntouchedCnt(0)
 {
     esp_timer_create_args_t createArgs = {
-        .callback = &m_Close,
+        .callback = &m_StartWrite,
         .arg = this,
         .dispatch_method = ESP_TIMER_TASK,
         .name = m_GetTaskName().c_str()
     };
 
-    esp_timer_create(&createArgs, &m_CloseTimer);
+    esp_timer_create(&createArgs, &m_WriteTimer);
+    esp_timer_start_periodic(m_WriteTimer, FILE_WRITE_INTERVAL);
 
-    m_Open();
+    m_WriteQueue = xQueueCreate(16, QUEUE_SIZE_BYTES); // queue of 20
 }
 
+/**
+ * Not thread safe if the file is being written to
+ * But currently all tasks have the same prio so there should not be any context switching
+ */
 void CFile::mReopen(FileMode aMode) {
+    if (aMode == m_Mode) return;
     if (m_IsOpen()) m_Close();
 
     m_Mode = aMode;
@@ -62,25 +72,19 @@ void CFile::m_Open() {
     if (m_SdState == Unitizialized) throw std::runtime_error("SD card is not initialized");
 
     mp_File = fopen(mPath.c_str(), FileModes[m_Mode]);
+    m_FileUntouchedCnt = 0;
 
     if (!m_IsOpen()) throw std::runtime_error("File does not exist and cannot be created");
 }
 
 void CFile::m_Close() {
     if (m_IsOpen()) {
-        esp_timer_stop(m_CloseTimer);
-
         if (fclose(mp_File) < 0) {
             throw std::runtime_error("Failed to close file properly");
         }
     }
 
     mp_File = nullptr;
-}
-
-void CFile::m_Close(void* aSelf) {
-    CFile& self = *static_cast<CFile*>(aSelf);
-    self.m_Close();
 }
 
 bool CFile::m_IsOpen() {
@@ -100,7 +104,7 @@ std::string CFile::mRead() {
     output.resize(size);
     for (int i = 0; i < size; i++) output[i] = fgetc(mp_File);
 
-    m_SetCloseTimer();
+    m_Close();
 
     return output;
 }
@@ -113,18 +117,45 @@ void CFile::mWrite(const std::string& arText) {
 
     fprintf(mp_File, arText.c_str());
 
-    m_SetCloseTimer();
+    // reset the counter
+    m_FileUntouchedCnt = 0;
 }
 
 void CFile::mAppend(const std::string& arText) {
     if (m_SdState == Unavailable) return;
     if (m_Mode != Append) std::runtime_error("File " + mPath + " is not opened in append mode");
 
-    m_Open();
+    const size_t strLen = arText.size();
 
-    fprintf(mp_File, arText.c_str());
+    if (strLen <= QUEUE_SIZE_BYTES) {
+        m_AddToQueue(arText.c_str());
+        return;
+    }
 
-    m_SetCloseTimer();
+    // add multiple items to the queue if the text is too long
+    for (size_t i = 0; i < strLen; i += QUEUE_SIZE_BYTES) {
+        m_AddToQueue(arText.substr(i, QUEUE_SIZE_BYTES).c_str());
+    }
+}
+
+/**
+ * Add item to the write queue
+ */
+void CFile::m_AddToQueue(const char* apText) {
+    if (strlen(apText) > QUEUE_SIZE_BYTES) throw std::runtime_error("Text is longer than " + std::to_string(QUEUE_SIZE_BYTES) + " characters.");
+
+    BaseType_t result;
+    BaseType_t isIsr = xPortInIsrContext();
+
+    if (isIsr)  result = xQueueSendToBackFromISR(m_WriteQueue, apText, (TickType_t)0);
+    else        result = xQueueSendToBack(m_WriteQueue, apText, (TickType_t)0);
+
+    if (result == errQUEUE_FULL) {
+        m_WriteFromQueue();
+
+        if (isIsr)  xQueueSendToBackFromISR(m_WriteQueue, apText, (TickType_t)0);
+        else        xQueueSendToBack(m_WriteQueue, apText, (TickType_t)0);
+    }
 }
 
 bool CFile::mExists() {
@@ -141,6 +172,39 @@ void CFile::mRename(const std::string& arNewName) {
 
 void CFile::mDelete() {
     if (mExists()) remove(mPath.c_str());
+}
+
+/**
+ * purely a wrapper of m_WriteFromQueue() to satisfy the esp_timer callback
+ */
+void CFile::m_StartWrite(void* aSelf) {
+    CFile& self = *static_cast<CFile*>(aSelf);
+    self.m_WriteFromQueue();
+}
+
+/**
+ * Writes the messages from the queue to the log file
+ */
+void CFile::m_WriteFromQueue() {
+    static const uint8_t maxUntouchedBeforeClose = FILE_CLOSE_TIMEOUT / FILE_WRITE_INTERVAL;
+
+    if (uxQueueMessagesWaiting(m_WriteQueue) > 0) {
+        m_Open();
+
+        char buffer[QUEUE_SIZE_BYTES];
+
+        while (uxQueueMessagesWaiting(m_WriteQueue) > 0) {
+            if (xQueueReceive(m_WriteQueue, &buffer, (TickType_t)0)) {
+                fprintf(mp_File, buffer);
+            }
+        }
+
+        m_FileUntouchedCnt = 0;
+    } else if (m_FileUntouchedCnt == maxUntouchedBeforeClose) {
+        m_Close();
+    } else {
+        m_FileUntouchedCnt++;
+    }
 }
 
 size_t CFile::mGetFileLength() {
@@ -172,14 +236,8 @@ CFile & CFile::operator=(CFile &&arrOther) {
 
 CFile::~CFile() {
     m_Close();
-}
-
-void CFile::m_SetCloseTimer() {
-    if (!m_IsOpen()) return;
-
-    if (esp_timer_is_active(m_CloseTimer)) esp_timer_stop(m_CloseTimer);
-
-    esp_timer_start_once(m_CloseTimer, FILE_CLOSE_TIMEOUT);
+    esp_timer_delete(m_WriteTimer);
+    vQueueDelete(m_WriteQueue);
 }
 
 std::string CFile::m_GetTaskName() {
