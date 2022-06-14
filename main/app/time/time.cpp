@@ -4,9 +4,9 @@
 #include "esp_sntp.h"
 #include <stdexcept>
 #include <logscope.hpp>
+#include <CConfig.hpp>
 
 static CLogScope logger{"time"};
-#define TIMEZONE "CET-1CEST,M3.4.0/2,M10.4.0/2" //timezone NL
 
 bool CTime::mb_IsInitialized = false;
 

@@ -36,3 +36,8 @@
 
 #define FILE_CLOSE_TIMEOUT              120 * 1000 * 1000
 #define FILE_WRITE_INTERVAL             5   * 1000 * 1000
+
+#define TIMEZONE "CET-1CEST,M3.4.0/2,M10.4.0/2" //timezone NL
+
+#define LOG_DIR "logs"
+#define LOG_MAX_FILE_SIZE_BYTE (1024 * 1024) // 1MB

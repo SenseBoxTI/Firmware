@@ -1,9 +1,7 @@
 #include "log.hpp"
 #include <dir.hpp>
 #include <time.hpp>
-
-#define LOG_DIR "logs"
-#define MAX_FILE_BYTE_SIZE (1024 * 1024) // 1MB
+#include <CConfig.hpp>
 
 extern std::string string_vformat(const char* apFormat, ...);
 
@@ -79,7 +77,7 @@ void CLog::mWriteLog(const char* apScope, const std::string& arText, LogType aTy
             m_Log.mAppend("\r\n");
             // File size check, if too big rotate the log file
             try {
-                if (m_Log.mGetFileLength() > MAX_FILE_BYTE_SIZE) m_RotateLogFile();
+                if (m_Log.mGetFileLength() > LOG_MAX_FILE_SIZE_BYTE) m_RotateLogFile();
             }
             catch (const std::runtime_error& e) {
                 std::printf("%sE %s (log) Failed to rotate log file: %s%s\r\n", ansiColors[3], timeString.c_str(), e.what(), resetStyle);
