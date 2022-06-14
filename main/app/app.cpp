@@ -133,7 +133,7 @@ void App::start() {
     catch (const std::runtime_error& e) {
         logger.mError("Ah shucks!");
         logger.mError("FATAL unhandled runtime exception occured!");
-        logger.mError("Famous lasts words:");
+        logger.mError("Famous last words:");
         logger.mError(e.what());
 
         auto& sensorManager = CSensorManager::getInstance();
