@@ -33,3 +33,5 @@
 #define CCS811_MEASURE_INTERVAL_US      2  * 1000 * 1000 // tVOC sensor
 #define PMSA003I_MEASURE_INTERVAL_US    10 * 1000 * 1000 // particle sensor
 #define SCD30_MEASURE_INTERVAL_US       10 * 1000 * 1000 // CO2
+
+#define FILE_CLOSE_TIMEOUT              120 * 1000 * 1000

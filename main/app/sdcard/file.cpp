@@ -7,6 +7,7 @@
 #include "esp_vfs_fat.h"
 #include <stdexcept>
 #include "sdmmc_cmd.h"
+#include <CConfig.hpp>
 
 #include <logscope.hpp>
 
@@ -29,33 +30,57 @@ static const char FileModes[3][2] = {
 
 SdState CFile::m_SdState = Unitizialized;
 
-CFile::CFile(const std::string& arPath)
+CFile::CFile(const std::string& arPath, FileMode aMode)
 :   mPath(MOUNT_POINT "/" + arPath),
-    m_Mode(Closed),
+    m_Mode(aMode),
     mp_File(nullptr)
-{}
+{
+    esp_timer_create_args_t createArgs = {
+        .callback = &m_Close,
+        .arg = this,
+        .dispatch_method = ESP_TIMER_TASK,
+        .name = m_GetTaskName().c_str()
+    };
 
-void CFile::m_Open(FileMode aMode) {
-    if (m_SdState == Unitizialized) throw std::runtime_error("SD card should have been initialized");
+    esp_timer_create(&createArgs, &m_CloseTimer);
 
+    m_Open();
+}
+
+void CFile::mReopen(FileMode aMode) {
     if (m_IsOpen()) m_Close();
 
-    mp_File = fopen(mPath.c_str(), FileModes[aMode]);
+    m_Mode = aMode;
+
+    m_Open();
+}
+
+void CFile::m_Open() {
+    // do nothing if file is already opened
+    if (m_IsOpen()) return;
+
+    if (m_SdState == Unitizialized) throw std::runtime_error("SD card is not initialized");
+
+    mp_File = fopen(mPath.c_str(), FileModes[m_Mode]);
 
     if (!m_IsOpen()) throw std::runtime_error("File does not exist and cannot be created");
-
-    m_Mode = aMode;
 }
 
 void CFile::m_Close() {
-    if (m_IsOpen())
-    {
+    if (m_IsOpen()) {
+        esp_timer_stop(m_CloseTimer);
+
         if (fclose(mp_File) < 0) {
             throw std::runtime_error("Failed to close file properly");
         }
     }
+
     mp_File = nullptr;
-    m_Mode = Closed;
+}
+
+void CFile::m_Close(void* aSelf) {
+    CFile& self = *static_cast<CFile*>(aSelf);
+    self.m_Close();
 }
 
 bool CFile::m_IsOpen() {
@@ -64,39 +89,42 @@ bool CFile::m_IsOpen() {
 
 std::string CFile::mRead() {
     if (m_SdState == Unavailable) return "";
+    if (m_Mode != Read) std::runtime_error("File " + mPath + " is not opened in read mode");
 
     size_t size = mGetFileLength();
     if (size <= 0) return "";
 
-    m_Open(Read);
+    m_Open();
 
     std::string output;
     output.resize(size);
     for (int i = 0; i < size; i++) output[i] = fgetc(mp_File);
 
-    m_Close();
+    m_SetCloseTimer();
 
     return output;
 }
 
 void CFile::mWrite(const std::string& arText) {
     if (m_SdState == Unavailable) return;
+    if (m_Mode != Write) std::runtime_error("File " + mPath + " is not opened in write mode");
 
-    m_Open(Write);
+    m_Open();
 
     fprintf(mp_File, arText.c_str());
 
-    m_Close();
+    m_SetCloseTimer();
 }
 
 void CFile::mAppend(const std::string& arText) {
     if (m_SdState == Unavailable) return;
+    if (m_Mode != Append) std::runtime_error("File " + mPath + " is not opened in append mode");
 
-    m_Open(Append);
+    m_Open();
 
     fprintf(mp_File, arText.c_str());
 
-    m_Close();
+    m_SetCloseTimer();
 }
 
 bool CFile::mExists() {
@@ -144,6 +172,22 @@ CFile & CFile::operator=(CFile &&arrOther) {
 
 CFile::~CFile() {
     m_Close();
+}
+
+void CFile::m_SetCloseTimer() {
+    if (!m_IsOpen()) return;
+
+    if (esp_timer_is_active(m_CloseTimer)) esp_timer_stop(m_CloseTimer);
+
+    esp_timer_start_once(m_CloseTimer, FILE_CLOSE_TIMEOUT);
+}
+
+std::string CFile::m_GetTaskName() {
+    const size_t len = mPath.size();
+    const size_t maxLen = CONFIG_FREERTOS_MAX_TASK_NAME_LEN;
+
+    if (len <= maxLen) return mPath;
+    return mPath.substr(len - maxLen);
 }
 
 void CFile::mInitSd() {

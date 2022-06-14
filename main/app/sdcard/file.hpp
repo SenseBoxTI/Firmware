@@ -2,6 +2,8 @@
 #include <stdexcept>
 #include <iostream>
 
+#include <esp_timer.h>
+
 #define MOUNT_POINT "/sdcard"
 
 enum FileMode { //enumerate for filemode fopen
@@ -21,7 +23,7 @@ class CFile {
 public:
     std::string mPath;
 
-    CFile(const std::string& arPath);
+    CFile(const std::string& arPath, FileMode aMode = Read);
     CFile() = delete;
 
     CFile& operator=(const CFile& arOther) = delete;
@@ -32,6 +34,7 @@ public:
 
     static void mInitSd();
     static SdState getSdState();
+    void mReopen(FileMode aMode);
 
     std::string mRead();
     void mWrite(const std::string& arText);
@@ -46,9 +49,13 @@ private:
     static SdState m_SdState;
 
     bool m_IsOpen();
-    void m_Open(FileMode aMode);
+    void m_Open();
     void m_Close();
+    static void m_Close(void* aSelf);
+    void m_SetCloseTimer();
+    std::string m_GetTaskName();
 
     FileMode m_Mode;
     FILE* mp_File;
+    esp_timer_handle_t m_CloseTimer;
 };
