@@ -17,7 +17,7 @@ SensorOutput CLightIntensitySensor::m_MeasureCallback() {
     output.emplace("ir", static_cast<float>(ir));
     output.emplace("full", static_cast<float>(full));
     output.emplace("visible", static_cast<float>(visible));
-    output.emplace("lux", static_cast<float>(lux));
+    output.emplace("lux", lux);
 
     return output;
 }
