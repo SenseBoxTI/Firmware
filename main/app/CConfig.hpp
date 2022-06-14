@@ -1,6 +1,6 @@
 #pragma once
 
-#define DEBUG_ENABLED 1
+#define DEBUG_ENABLED 0
 
 #define MQTT_URL "mqtts://test.ddss-sensebox.nl"
 
