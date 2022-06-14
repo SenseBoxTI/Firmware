@@ -70,26 +70,26 @@ void CLog::mWriteLog(const char* apScope, const std::string& arText, LogType aTy
     // print to serial
     std::printf("%s%s%s\n", ansiColors[uint8_t(aType)], toPrint.c_str(), resetStyle);
 
-    // print to logfile
-    if (CFile::getSdState() == SdState::Ready) {
-        try {
-            CDir(LOG_DIR).mEnsure();
-            m_Log.mAppend(toPrint);
-            m_Log.mAppend("\r\n");
-            // File size check, if too big rotate the log file
-            try {
-                if (m_Log.mGetFileLength() > MAX_FILE_BYTE_SIZE) m_RotateLogFile();
-            }
-            catch (const std::runtime_error& e) {
-                std::printf("%sE %s (log) Failed to rotate log file: %s%s\r\n", ansiColors[3], timeString.c_str(), e.what(), resetStyle);
-                m_Log.mAppend(string_vformat("E %s (log) Failed to rotate log file: %s\r\n", timeString.c_str(), e.what()));
+    // // print to logfile
+    // if (CFile::getSdState() == SdState::Ready) {
+    //     try {
+    //         CDir(LOG_DIR).mEnsure();
+    //         m_Log.mAppend(toPrint);
+    //         m_Log.mAppend("\r\n");
+    //         // File size check, if too big rotate the log file
+    //         try {
+    //             if (m_Log.mGetFileLength() > MAX_FILE_BYTE_SIZE) m_RotateLogFile();
+    //         }
+    //         catch (const std::runtime_error& e) {
+    //             std::printf("%sE %s (log) Failed to rotate log file: %s%s\r\n", ansiColors[3], timeString.c_str(), e.what(), resetStyle);
+    //             m_Log.mAppend(string_vformat("E %s (log) Failed to rotate log file: %s\r\n", timeString.c_str(), e.what()));
 
-            }
-        }
-        catch (const std::runtime_error& e) {
-            std::printf("%sE %s (log) Failed to write log to file: %s%s\r\n", ansiColors[3], timeString.c_str(), e.what(), resetStyle);
-        }
-    }
+    //         }
+    //     }
+    //     catch (const std::runtime_error& e) {
+    //         std::printf("%sE %s (log) Failed to write log to file: %s%s\r\n", ansiColors[3], timeString.c_str(), e.what(), resetStyle);
+    //     }
+    // }
 }
 
 CLogScope CLog::mScope(const char* apScope) {
