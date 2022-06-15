@@ -10,7 +10,7 @@ class CDir {
         CDir(const std::string& arPath);
 
         std::vector<CFile> mListFiles();
-        CFile mFile(const std::string& arFileName);
+        CFile mFile(const std::string& arFileName, FileMode aMode = Read);
         void mEnsure();
     private:
         void m_Open();

@@ -68,7 +68,7 @@ std::string CDir::m_MountPath() {
     return MOUNT_POINT "/" + mPath;
 }
 
-CFile CDir::mFile(const std::string& arFileName) {
+CFile CDir::mFile(const std::string& arFileName, FileMode aMode) {
     mEnsure();
-    return CFile(mPath + "/" + arFileName);
+    return CFile(mPath + "/" + arFileName, aMode);
 }
