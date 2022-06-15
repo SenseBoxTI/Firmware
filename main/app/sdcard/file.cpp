@@ -75,10 +75,10 @@ void CFile::m_Open() {
 }
 
 void CFile::m_Close() {
-    if (m_IsOpen()) {
-        if (fclose(mp_File) < 0) {
-            throw std::runtime_error("Failed to close file properly");
-        }
+    if (!m_IsOpen()) return;
+
+    if (fclose(mp_File) < 0) {
+        throw std::runtime_error("Failed to close file properly");
     }
 
     mp_File = nullptr;
