@@ -9,4 +9,10 @@ void app_main() {
 
     auto app = App();
     app.start();
+
+    while (!App::stopped) vTaskDelay(1000 / portTICK_PERIOD_MS);
+
+    printf("App has stopped\n");
+
+    while (true) vTaskDelay(60 * 1000 / portTICK_PERIOD_MS);
 }

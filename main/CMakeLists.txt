@@ -32,6 +32,9 @@ SRCS
     "./app/mqtt/mqtt.cpp"
     # Config
     "./app/config/config.cpp"
+    # Timer
+    "./app/timer/CTimer.cpp"
+    "./app/timer/CTimers.cpp"
 INCLUDE_DIRS
     # Add directories seperately.
     "./app/"
@@ -51,4 +54,6 @@ INCLUDE_DIRS
     "./app/mqtt"
     # Config
     "./app/config/"
+    # Timer
+    "./app/timer/"
 )

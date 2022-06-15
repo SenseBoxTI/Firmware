@@ -2,7 +2,7 @@
 #include <stdexcept>
 #include <iostream>
 
-#include <esp_timer.h>
+#include <CTimer.hpp>
 #include <freertos/FreeRTOS.h>
 #include <freertos/queue.h>
 
@@ -60,7 +60,8 @@ private:
 
     FileMode m_Mode;
     FILE* mp_File;
-    esp_timer_handle_t m_WriteTimer;
     QueueHandle_t m_WriteQueue;
     uint8_t m_FileUntouchedCnt;
+    CTimer* m_WriteTimer;
+    std::string taskName;
 };

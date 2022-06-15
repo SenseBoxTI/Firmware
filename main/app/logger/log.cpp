@@ -61,7 +61,8 @@ void CLog::m_RotateLogFile() {
 }
 
 CLog::CLog()
-:   m_Log(LOG_DIR "/latest.log", Append)
+:   m_Log(LOG_DIR "/latest.log", Append),
+    m_RotateTimer(nullptr)
 {}
 
 CLog& CLog::getInstance() {
@@ -76,15 +77,8 @@ CLog& CLog::getInstance() {
 }
 
 void CLog::mInit() {
-    esp_timer_create_args_t createArgs = {
-        .callback = &m_RotateLogFile,
-        .arg = this,
-        .dispatch_method = ESP_TIMER_TASK,
-        .name = "LogRotate"
-    };
-
-    esp_timer_create(&createArgs, &m_RotateTimer);
-    esp_timer_start_periodic(m_RotateTimer, LOG_ROTATE_INTERVAL);
+    m_RotateTimer = CTimer::mInit("LogRotate", &m_RotateLogFile, this);
+    m_RotateTimer->mStartPeriodic(LOG_ROTATE_INTERVAL);
 }
 
 void CLog::mWriteLog(const char* apScope, const std::string& arText, LogType aType) {

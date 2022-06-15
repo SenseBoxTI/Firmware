@@ -30,9 +30,3 @@ Measurements CSensorManager::mGetResults() {
 
     return m_Measurements;
 }
-
-void CSensorManager::mClearTasks() {
-    for (auto& sensor : m_Sensors) {
-        sensor->mClearTask();
-    }
-}

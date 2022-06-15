@@ -37,17 +37,12 @@ CFile::CFile(const std::string& arPath, FileMode aMode)
 :   mPath(MOUNT_POINT "/" + arPath),
     m_Mode(aMode),
     mp_File(nullptr),
-    m_FileUntouchedCnt(0)
+    m_FileUntouchedCnt(0),
+    m_WriteTimer(nullptr)
 {
-    esp_timer_create_args_t createArgs = {
-        .callback = &m_StartWrite,
-        .arg = this,
-        .dispatch_method = ESP_TIMER_TASK,
-        .name = m_GetTaskName().c_str()
-    };
-
-    esp_timer_create(&createArgs, &m_WriteTimer);
-    esp_timer_start_periodic(m_WriteTimer, FILE_WRITE_INTERVAL);
+    taskName = m_GetTaskName();
+    m_WriteTimer = CTimer::mInit(taskName.c_str(), &m_StartWrite, this);
+    m_WriteTimer->mStartPeriodic(FILE_WRITE_INTERVAL);
 
     m_WriteQueue = xQueueCreate(16, QUEUE_SIZE_BYTES); // queue of 20
 }
@@ -237,7 +232,7 @@ CFile & CFile::operator=(CFile &&arrOther) {
 
 CFile::~CFile() {
     m_Close();
-    esp_timer_delete(m_WriteTimer);
+    m_WriteTimer->mDelete();
     vQueueDelete(m_WriteQueue);
 }
 

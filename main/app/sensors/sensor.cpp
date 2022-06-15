@@ -24,16 +24,8 @@ CSensorStatus CSensor::mInit() {
         throw std::runtime_error("Measure interval must be shorter than " + std::to_string(SEND_INTERVAL_US / 1000000) + "s and longer than 10ms");
     }
 
-    esp_timer_create_args_t createArgs = {
-        .callback = &m_ReadSensor,
-        .arg = this,
-        .dispatch_method = ESP_TIMER_TASK,
-        .name = mName.c_str()
-    };
-
-    ESP_ERROR_CHECK(esp_timer_create(&createArgs, &m_MeasureTimer));
-
-    ESP_ERROR_CHECK(esp_timer_start_periodic(m_MeasureTimer, m_MeasureInterval));
+    m_MeasureTimer = CTimer::mInit(mName.c_str(), &m_ReadSensor, this);
+    m_MeasureTimer->mStartPeriodic(m_MeasureInterval);
 
     return m_Status;
 }
@@ -49,16 +41,16 @@ void CSensor::m_ReadSensor(void* aSelf) {
     self.m_MeasurementCnt++;
 }
 
-void CSensor::mClearTask() {
-    esp_timer_stop(m_MeasureTimer);
-    esp_timer_delete(m_MeasureTimer);
-}
-
 CSensor::CSensor(std::string aName)
-:   m_MeasurementCnt(0),
+:   m_MeasureTimer(nullptr),
+    m_MeasurementCnt(0),
     m_MeasureInterval(0)
 {
     if (aName.length() == 0) throw std::runtime_error("Sensor name is required");
 
     mName = aName;
+}
+
+CSensor::~CSensor() {
+    m_MeasureTimer->mDelete();
 }

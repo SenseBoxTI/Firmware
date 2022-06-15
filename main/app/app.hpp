@@ -1,11 +1,20 @@
 #pragma once
 
-#include <esp_timer.h>
+#include <CTimer.hpp>
 #include <config.hpp>
 
 class App {
+public:
+    App();
+    void start();
+    static void exit(const std::exception& e);
+
+    static bool stopped;
+
+private:
     void init();
     static void m_SendMeasurements(void* aArgs);
+    static bool handledException;
 
     void initSdCard();
     void initWifi(toml::Value config);
@@ -15,8 +24,5 @@ class App {
     void startSendingData();
     void attachWifiCallbacks();
 
-    esp_timer_handle_t m_SendDataTimer;
-
-public:
-    void start();
+    CTimer* m_SendDataTimer;
 };

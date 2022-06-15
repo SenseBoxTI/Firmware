@@ -10,13 +10,21 @@
 #include <particlesensor.hpp>
 #include <vocsensor.hpp>
 #include <wifi.hpp>
-#include <logscope.hpp>
+#include <log.hpp>
 #include <file.hpp>
 #include <time.hpp>
 #include <mqtt.hpp>
 #include <CConfig.hpp>
+#include <CTimers.hpp>
 
 static CLogScope logger{"app"};
+
+bool App::stopped = false;
+bool App::handledException = false;
+
+App::App()
+:   m_SendDataTimer(nullptr)
+{}
 
 void App::m_SendMeasurements(void* aArgs) {
     auto& sensorManager = CSensorManager::getInstance();
@@ -31,19 +39,7 @@ void App::start() {
         init();
     }
     catch (const std::runtime_error& e) {
-        logger.mError("Ah shucks!");
-        logger.mError("FATAL unhandled runtime exception occured!");
-        logger.mError("Famous last words:");
-        logger.mError(e.what());
-
-        auto& sensorManager = CSensorManager::getInstance();
-        sensorManager.mClearTasks();
-
-        auto& mqtt = CMqtt::getInstance();
-        mqtt.mDisconnect();
-
-        auto& wifi = CWifi::getInstance();
-        wifi.mDisconnect();
+        exit(e);
     }
 }
 
@@ -54,6 +50,8 @@ void App::init() {
 
     auto& config = CConfig::getInstance();
     config.mRead("/sdcard/config.toml");
+
+    CLog::getInstance().mInit();
 
     initWifi(config["wifi"]);
     initNtp();
@@ -149,15 +147,30 @@ void App::attachWifiCallbacks() {
 }
 
 void App::startSendingData() {
-    esp_timer_create_args_t createArgs = {
-        .callback = &m_SendMeasurements,
-        .arg = this,
-        .dispatch_method = ESP_TIMER_TASK,
-        .name = "SendData"
-    };
-
-    esp_timer_create(&createArgs, &m_SendDataTimer);
-    esp_timer_start_periodic(m_SendDataTimer, SEND_INTERVAL_US);
+    m_SendDataTimer = CTimer::mInit("SendData", &m_SendMeasurements, this);
+    m_SendDataTimer->mStartPeriodic(SEND_INTERVAL_US);
 
     logger.mDebug("Send data timer has started");
+}
+
+void App::exit(const std::exception& e) {
+    logger.mError("Ah shucks!");
+    logger.mError("FATAL unhandled runtime exception occured!");
+    logger.mError("Famous last words:");
+    logger.mError(e.what());
+
+    if (App::handledException) return;
+    App::handledException = true;
+
+    auto& mqtt = CMqtt::getInstance();
+    auto& wifi = CWifi::getInstance();
+    auto& log = CLog::getInstance();
+    auto& timers = CTimers::getInstance();
+
+    mqtt.mDisconnect();
+    wifi.mDisconnect();
+    timers.mCleanTimers();
+
+
+    App::stopped = true;
 }
