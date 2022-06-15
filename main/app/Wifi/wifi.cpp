@@ -14,7 +14,7 @@ static CLogScope logger{"wifi"};
 const int CONNECTED_BIT = BIT0;
 
 // FIXME: use logger eventually
-#define WIFI_THROW_ON_ERROR(method)                              \
+#define WIFI_THROW_ON_ERROR(method)                         \
     if ((error = method) != ESP_OK) {                       \
         throw std::runtime_error(esp_err_to_name(error));   \
     }
@@ -27,21 +27,51 @@ CWifi& CWifi::getInstance() {
 }
 
 void CWifi::m_EventHandler(void* apArg, esp_event_base_t aBase, int32_t aId, void* apData) {
-    if (aBase == WIFI_EVENT && aId == WIFI_EVENT_STA_START) {
-        esp_wifi_connect();
-    } else if (aBase == WIFI_EVENT && aId == WIFI_EVENT_STA_DISCONNECTED) {
-        esp_wifi_connect();
-        auto& wifi = CWifi::getInstance();
-        xEventGroupClearBits(wifi.m_EventGroup, CONNECTED_BIT);
-        memset(&wifi.mIp, 0, sizeof(decltype(wifi.mIp)));
+    auto& self = CWifi::getInstance();
 
-        for (auto& func : wifi.m_DisconnectCbs) func();
-    } else if (aBase == IP_EVENT && aId == IP_EVENT_STA_GOT_IP) {
-        auto& wifi = CWifi::getInstance();
-        xEventGroupSetBits(wifi.m_EventGroup, CONNECTED_BIT);
-        esp_netif_get_ip_info(wifi.m_StaNetif, &wifi.mIp);
+    if (aBase == WIFI_EVENT) {
+        switch (aId)
+        {
+        case WIFI_EVENT_STA_START:
+            logger.mDebug("WIFI_EVENT_STA_START");
+            esp_wifi_connect();
+            break;
+        case WIFI_EVENT_STA_CONNECTED:
+            logger.mInfo("WIFI_EVENT_STA_CONNECTED");
+            break;
+        case WIFI_EVENT_STA_DISCONNECTED:
+            logger.mInfo("WIFI_EVENT_STA_DISCONNECTED");
+            for (auto& func : self.m_DisconnectCbs) func();
 
-        for (auto& func : wifi.m_ConnectCbs) func();
+            esp_wifi_connect();
+            xEventGroupClearBits(self.m_EventGroup, CONNECTED_BIT);
+            memset(&self.mIp, 0, sizeof(decltype(self.mIp)));
+            break;
+        default:
+            logger.mDebug("Unhandled wifi event id: %d", aId);
+            break;
+        }
+    } else if (aBase == IP_EVENT) {
+        switch (aId)
+        {
+        case IP_EVENT_STA_GOT_IP:
+            logger.mDebug("IP_EVENT_STA_GOT_IP");
+
+            xEventGroupSetBits(self.m_EventGroup, CONNECTED_BIT);
+            esp_netif_get_ip_info(self.m_StaNetif, &self.mIp);
+
+            for (auto& func : self.m_ConnectCbs) func();
+            break;
+        case IP_EVENT_STA_LOST_IP:
+            logger.mDebug("IP_EVENT_STA_LOST_IP");
+            break;
+        default:
+            logger.mDebug("Unhandled ip event id: %d", aId);
+            break;
+        }
+    } else {
+        printf("WTF\n");
+        throw std::runtime_error("UNKNOWN WIFI BASE EVENT: " + std::string(aBase));
     }
 }
 
@@ -60,7 +90,7 @@ void CWifi::mInitWifi(const WifiCredentials& aConfig) {
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     WIFI_THROW_ON_ERROR( esp_wifi_init(&cfg) );
     WIFI_THROW_ON_ERROR( esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &CWifi::m_EventHandler, NULL) );
-    WIFI_THROW_ON_ERROR( esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &CWifi::m_EventHandler, NULL) );
+    WIFI_THROW_ON_ERROR( esp_event_handler_register(IP_EVENT, ESP_EVENT_ANY_ID, &CWifi::m_EventHandler, NULL) );
     WIFI_THROW_ON_ERROR( esp_wifi_set_storage(WIFI_STORAGE_RAM) );
     wifi_config_t wifi_config = {};
     memcpy(wifi_config.sta.ssid, mCredentials.ssid.c_str(), mCredentials.ssid.size());
