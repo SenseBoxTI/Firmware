@@ -201,8 +201,9 @@ void CFile::m_WriteFromQueue() {
 
         m_FileUntouchedCnt = 0;
     } else if (m_FileUntouchedCnt == maxUntouchedBeforeClose) {
+        m_FileUntouchedCnt = 0;
         m_Close();
-    } else {
+    } else if (m_IsOpen()) {
         m_FileUntouchedCnt++;
     }
 }
