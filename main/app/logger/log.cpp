@@ -126,6 +126,10 @@ void CLog::mWriteLog(const char* apScope, const std::string& arText, LogType aTy
     }
 }
 
+void CLog::mFinalize() {
+    m_Log.mFlushQueue();
+}
+
 CLogScope CLog::mScope(const char* apScope) {
     return CLogScope(apScope);
 }

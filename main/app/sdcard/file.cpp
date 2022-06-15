@@ -203,6 +203,24 @@ void CFile::m_WriteFromQueue() {
     }
 }
 
+/**
+ * Write any data that is still pending from the queue and close the file
+ */
+void CFile::mFlushQueue() {
+    if (m_Mode != Append) return;
+    if (!m_IsOpen()) return;
+
+    char buffer[QUEUE_SIZE_BYTES];
+
+    while (uxQueueMessagesWaiting(m_WriteQueue) > 0) {
+        if (xQueueReceive(m_WriteQueue, &buffer, (TickType_t)0)) {
+            fprintf(mp_File, buffer);
+        }
+    }
+
+    m_Close();
+}
+
 size_t CFile::mGetFileLength() {
     if (m_SdState == Unavailable) return 0;
 

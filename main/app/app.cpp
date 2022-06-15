@@ -170,6 +170,7 @@ void App::exit(const std::exception& e) {
     mqtt.mDisconnect();
     wifi.mDisconnect();
     timers.mCleanTimers();
+    log.mFinalize();
 
 
     App::stopped = true;

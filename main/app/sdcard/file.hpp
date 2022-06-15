@@ -37,6 +37,7 @@ public:
     static void mInitSd();
     static SdState getSdState();
     void mReopen(FileMode aMode);
+    void mFlushQueue();
 
     std::string mRead();
     void mWrite(const std::string& arText);

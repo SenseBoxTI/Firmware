@@ -20,6 +20,7 @@ public:
     void mInit();
     void mWriteLog(const char* apScope, const std::string& arText, LogType aType);
     CLogScope mScope(const char* apScope);
+    void mFinalize();
 
     CTimer* m_RotateTimer;
 };
