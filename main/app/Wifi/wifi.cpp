@@ -136,4 +136,6 @@ void CWifi::mAttachOnDisconnect(WifiCb aFunc) {
 
 void CWifi::mDisconnect() {
     esp_wifi_disconnect();
+    esp_wifi_stop();
+    esp_wifi_deinit();
 }

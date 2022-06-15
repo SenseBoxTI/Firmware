@@ -102,6 +102,7 @@ void CMqtt::m_SendAttributes(const char* apData) {
 
 void CMqtt::mDisconnect() {
     esp_mqtt_client_disconnect(m_Client);
+    esp_mqtt_client_destroy(m_Client);
 }
 
 void CMqtt::m_SendCustom(const char* acpTopic, const char* acpMsg) {
@@ -177,7 +178,8 @@ void CMqtt::m_EventHandler(void* apArgs, esp_event_base_t aBase, int32_t aId, vo
         logger.mInfo("Other event id:%d", event->event_id);
         break;
         }
-    } catch (const std::runtime_error& err) {
+    }
+    catch (const std::runtime_error& err) {
         logger.mError(err.what());
     }
 }
