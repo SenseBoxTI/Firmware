@@ -172,6 +172,7 @@ void App::exit(const std::exception& e) {
     timers.mCleanTimers();
     log.mFinalize();
 
+    CFile::mDeinitSd();
 
     App::stopped = true;
 }

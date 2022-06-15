@@ -1,6 +1,7 @@
 #pragma once
 #include <stdexcept>
 #include <iostream>
+#include "esp_vfs_fat.h"
 
 #include <CTimer.hpp>
 #include <freertos/FreeRTOS.h>
@@ -35,6 +36,7 @@ public:
     CFile(CFile&& arrOther);
 
     static void mInitSd();
+    static void mDeinitSd();
     static SdState getSdState();
     void mReopen(FileMode aMode);
     void mFlushQueue();
@@ -50,6 +52,7 @@ public:
 
 private:
     static SdState m_SdState;
+    static sdmmc_card_t* m_SdCard;
 
     bool m_IsOpen();
     void m_Open();

@@ -4,7 +4,6 @@
 #include <sys/unistd.h>
 #include <string.h>
 #include <iostream>
-#include "esp_vfs_fat.h"
 #include <stdexcept>
 #include "sdmmc_cmd.h"
 #include <CConfig.hpp>
@@ -32,6 +31,7 @@ static const char FileModes[3][2] = {
 };
 
 SdState CFile::m_SdState = Unitizialized;
+sdmmc_card_t* CFile::m_SdCard = nullptr;
 
 CFile::CFile(const std::string& arPath, FileMode aMode)
 :   mPath(MOUNT_POINT "/" + arPath),
@@ -266,7 +266,6 @@ void CFile::mInitSd() {
     m_SdState = Unavailable;
 
     esp_err_t ret;
-    sdmmc_card_t * sdCard;
 
     esp_vfs_fat_sdmmc_mount_config_t mount_config = {
         .format_if_mount_failed = false,
@@ -299,7 +298,7 @@ void CFile::mInitSd() {
     slot_config.gpio_cs = static_cast<gpio_num_t>(PIN_CS);
     slot_config.host_id = static_cast<spi_host_device_t>(host.slot);
     logger.mDebug("Mounting filesystem");
-    ret = esp_vfs_fat_sdspi_mount(MOUNT_POINT, &host, &slot_config, &mount_config, &sdCard);
+    ret = esp_vfs_fat_sdspi_mount(MOUNT_POINT, &host, &slot_config, &mount_config, &m_SdCard);
 
     if (ret != ESP_OK) {
         if (ret == ESP_FAIL) {
@@ -316,7 +315,15 @@ void CFile::mInitSd() {
 
     logger.mDebug("Filesystem mounted");
     m_SdState = Ready;
-    sdmmc_card_print_info(stdout, sdCard);
+    sdmmc_card_print_info(stdout, m_SdCard);
+}
+
+void CFile::mDeinitSd() {
+    m_SdState = Unavailable;
+
+    esp_vfs_fat_sdcard_unmount(MOUNT_POINT, m_SdCard);
+
+    logger.mInfo("File system has been unmounted\n");
 }
 
 SdState CFile::getSdState() {
