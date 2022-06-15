@@ -13,7 +13,7 @@ CSensorManager::CSensorManager() {
 }
 
 CSensorStatus CSensorManager::mAddSensor(CSensor* apSensor) {
-    logger.mDebug("Initializing sensor: %s", apSensor->mName);
+    logger.mDebug("Initializing sensor: %s", apSensor->mName.c_str());
 
     auto status = apSensor->mInit();
     m_Sensors.push_back(apSensor);
