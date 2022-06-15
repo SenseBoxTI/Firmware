@@ -53,7 +53,9 @@ CFile::CFile(const std::string& arPath, FileMode aMode)
  */
 void CFile::mReopen(FileMode aMode) {
     if (aMode == m_Mode) return;
-    if (m_IsOpen()) m_Close();
+
+    mFlushQueue();
+    m_Close();
 
     m_Mode = aMode;
 
