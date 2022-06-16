@@ -102,12 +102,17 @@ void CMqtt::m_SendAttributes(const char* apData) {
 
 void CMqtt::mDisconnect() {
     esp_mqtt_client_disconnect(m_Client);
+}
+
+void CMqtt::mDeinit() {
+    esp_mqtt_client_disconnect(m_Client);
+    esp_mqtt_client_stop(m_Client);
     esp_mqtt_client_destroy(m_Client);
 }
 
 void CMqtt::m_SendCustom(const char* acpTopic, const char* acpMsg) {
     int msg_id = esp_mqtt_client_publish(m_Client, acpTopic, acpMsg, strlen(acpMsg), 0, 0);
-    logger.mInfo("binary sent with msg_id=%d", msg_id);
+    logger.mDebug("binary sent with msg_id=%d", msg_id);
 }
 
 void CMqtt::m_Subscribe(const char* acpTopic) {

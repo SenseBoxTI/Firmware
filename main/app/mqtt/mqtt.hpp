@@ -11,6 +11,7 @@ public:
     void mSendMeasurements(Measurements& arValues);
     void mDisconnect();
     void mReconnect();
+    void mDeinit();
 
 private:
     CMqtt();

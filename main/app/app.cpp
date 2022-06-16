@@ -167,8 +167,8 @@ void App::exit(const std::exception& e) {
     auto& log = CLog::getInstance();
     auto& timers = CTimers::getInstance();
 
-    mqtt.mDisconnect();
-    wifi.mDisconnect();
+    mqtt.mDeinit();
+    wifi.mDeinit();
     timers.mCleanTimers();
     log.mFinalize();
 
