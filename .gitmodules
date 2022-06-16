@@ -23,9 +23,12 @@
 [submodule "components/adafruit_pm25aqi"]
 	path = components/adafruit_pm25aqi
 	url = https://github.com/SenseBoxTI/Adafruit_PM25AQI
-[submodule "components/adafruit_as726x"]
-	path = components/adafruit_as726x
-	url = https://github.com/SenseBoxTI/Adafruit_AS726x
 [submodule "components/tinytoml"]
 	path = components/tinytoml
 	url = https://github.com/SenseBoxTI/tinytoml
+[submodule "components/adafruit_as726x"]
+	path = components/adafruit_as726x
+	url = https://github.com/SenseBoxTI/Adafruit_AS726x.git
+[submodule "components/adafruit_ccs811"]
+	path = components/adafruit_ccs811
+	url = https://github.com/SenseBoxTI/Adafruit_CCS811.git
