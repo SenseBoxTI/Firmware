@@ -324,6 +324,7 @@ void CFile::mDeinitSd() {
     m_SdState = Unavailable;
 
     esp_vfs_fat_sdcard_unmount(MOUNT_POINT, m_SdCard);
+    spi_bus_free((spi_host_device_t)SDSPI_DEFAULT_HOST);
 
     logger.mInfo("File system has been unmounted\n");
 }
