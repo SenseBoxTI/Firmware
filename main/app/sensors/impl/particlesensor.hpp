@@ -7,6 +7,8 @@ class CParticleSensor : public CSensor{
         using CSensor::CSensor;
 
     private:
+        float m_offset = 0.0f;
+        
         SensorOutput m_MeasureCallback();
         CSensorStatus m_InitCallback();
 };

@@ -1,5 +1,6 @@
 #include "o2sensor.hpp"
 
+#include <config.hpp>
 #include <esp_adc_cal.h>
 #include <logscope.hpp>
 
@@ -39,18 +40,28 @@ SensorOutput CO2Sensor::m_MeasureCallback() {
     // sensor range 0 - 25%
     const float ratio = 25.0f / 3089.0f;
 
-    // TODO config file implementation
-
     static char sampleString[8] = { 0 };
-    std::snprintf(sampleString, 8, "%.4f", static_cast<float>(m_SampleADC()) * ratio);
-
-    output.insert({"O2%", sampleString});
+    float measurement = (static_cast<float>(m_SampleADC()) * m_rc * ratio) + m_offset;
+    std::snprintf(sampleString, 8, "%.4f", measurement);
+    output.emplace("O2%", sampleString);
 
     return output;
 }
 
 CSensorStatus CO2Sensor::m_InitCallback() {
     m_InitADC();
+
+    auto& calibration = CConfig::getInstance()["calibration"];
+    
+    if (calibration.valid()) {
+        auto& o2SensorCalibration = calibration["o2"];
+        
+        if (o2SensorCalibration.valid()) {
+            m_rc = o2SensorCalibration.get<double>("rc");
+            m_offset = o2SensorCalibration.get<double>("offset");
+        }
+    }
+
     return CSensorStatus::Ok();
 }
 

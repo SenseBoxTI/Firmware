@@ -1,4 +1,5 @@
 #include "colorsensor.hpp"
+#include <config.hpp>
 
 #include <Adafruit_AS726x.h>
 #include <Wire.h>
@@ -23,11 +24,7 @@ SensorOutput CColorSpectrumSensor::m_MeasureCallback() {
         as726x.readCalibratedValues(calibratedValues);
 
         for (int i = 0; i < AS726x_NUM_CHANNELS; i++) {
-            output.insert({colors[i], std::to_string(calibratedValues[i] + offsets[i])});
-        }
-    } else {
-        for (int i = 0; i < AS726x_NUM_CHANNELS; i++) {
-            output.insert({colors[i], "NaN"});
+            output.emplace(colors[i], std::to_string(calibratedValues[i] + offsets[i]));
         }
     }
     return output;
@@ -44,12 +41,20 @@ CSensorStatus CColorSpectrumSensor::m_InitCallback() {
 
     as726x.setConversionType(MODE_2);
 
-    offsets[0] = 0.0f; // MAGENTA
-    offsets[1] = 0.0f; // BLUE
-    offsets[2] = 0.0f; // GREEN
-    offsets[3] = 0.0f; // YELLOW
-    offsets[4] = 0.0f; // ORANGE
-    offsets[5] = 0.0f; // RED
+    auto& calibration = CConfig::getInstance()["calibration"];
+
+    if (calibration.valid()) {
+        auto& colorSensorOffsets = calibration["colorspectrum"];
+
+        if (colorSensorOffsets.valid()) {
+            offsets[0] = colorSensorOffsets.get<double>("magentaOffset"); // MAGENTA
+            offsets[1] = colorSensorOffsets.get<double>("blueOffset"); // BLUE
+            offsets[2] = colorSensorOffsets.get<double>("greenOffset"); // GREEN
+            offsets[3] = colorSensorOffsets.get<double>("yellowOffset"); // YELLOW
+            offsets[4] = colorSensorOffsets.get<double>("orangeOffset"); // ORANGE
+            offsets[5] = colorSensorOffsets.get<double>("redOffset"); // RED
+        }
+    }
 
     return CSensorStatus::Ok();
 }

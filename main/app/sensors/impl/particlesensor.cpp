@@ -1,6 +1,7 @@
 #include "particlesensor.hpp"
 #include <Adafruit_PM25AQI.h>
 #include <logscope.hpp>
+#include <config.hpp>
 
 static CLogScope logger{"particlesensor"};
 
@@ -18,6 +19,17 @@ SensorOutput CParticleSensor::m_MeasureCallback() {
 }
 
 CSensorStatus CParticleSensor::m_InitCallback() {
+    
+    auto& calibration = CConfig::getInstance()["calibration"];
+
+    if (calibration.valid()) {
+        auto& particleSensorCalibration = calibration["particles"];
+
+        if (particleSensorCalibration.valid()) {
+            m_offset = particleSensorCalibration.get<double>("offset");
+        }
+    }
+    
     if (pmsa.begin_I2C()) {
         return CSensorStatus::Ok();
     } else {
