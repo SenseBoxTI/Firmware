@@ -52,10 +52,10 @@ CSensorStatus CO2Sensor::m_InitCallback() {
     m_InitADC();
 
     auto& calibration = CConfig::getInstance()["calibration"];
-    
+
     if (calibration.valid()) {
         auto& o2SensorCalibration = calibration["o2"];
-        
+
         if (o2SensorCalibration.valid()) {
             m_rc = o2SensorCalibration.get<double>("rc");
             m_offset = o2SensorCalibration.get<double>("offset");

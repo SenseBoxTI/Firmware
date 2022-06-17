@@ -10,9 +10,8 @@ Adafruit_CCS811 ccs = Adafruit_CCS811();
 
 CVocSensor::CVocSensor(std::string aName, CScdSensor& arScdSensor)
 :   CSensor(aName),
-    mr_ScdSensor(arScdSensor) {
-
-}
+    mr_ScdSensor(arScdSensor)
+{}
 
 SensorOutput CVocSensor::m_MeasureCallback() {
     SensorOutput output;
