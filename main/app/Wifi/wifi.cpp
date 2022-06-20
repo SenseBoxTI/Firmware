@@ -10,15 +10,11 @@
 
 #include <logscope.hpp>
 
-/**
- * Richard and Luc please I beg you, I do not understand enough to confidently document this code.
- * Kind regards, Jorn
- */
-
 static CLogScope logger{"wifi"};
+
+// connected bit in the event group is bit 0
 const int CONNECTED_BIT = BIT0;
 
-// FIXME: use logger eventually
 #define WIFI_THROW_ON_ERROR(method)                         \
     if ((error = method) != ESP_OK) {                       \
         throw std::runtime_error(esp_err_to_name(error));   \
@@ -46,6 +42,7 @@ void CWifi::m_EventHandler(void* apArg, esp_event_base_t aBase, int32_t aId, voi
             break;
         case WIFI_EVENT_STA_DISCONNECTED:
             logger.mInfo("WIFI_EVENT_STA_DISCONNECTED");
+            // this is actual disconnect, run disconnect callbacks
             for (auto& func : self.m_DisconnectCbs) func();
 
             esp_wifi_connect();
@@ -65,6 +62,7 @@ void CWifi::m_EventHandler(void* apArg, esp_event_base_t aBase, int32_t aId, voi
             xEventGroupSetBits(self.m_EventGroup, CONNECTED_BIT);
             esp_netif_get_ip_info(self.m_StaNetif, &self.mIp);
 
+            // we should now be properly connected, run connected callbacks
             for (auto& func : self.m_ConnectCbs) func();
             break;
         case IP_EVENT_STA_LOST_IP:
@@ -75,6 +73,7 @@ void CWifi::m_EventHandler(void* apArg, esp_event_base_t aBase, int32_t aId, voi
             break;
         }
     } else {
+        // we got an event in our callback that should never happen. throw!
         printf("WTF\n");
         throw std::runtime_error("UNKNOWN WIFI BASE EVENT: " + std::string(aBase));
     }
@@ -82,14 +81,18 @@ void CWifi::m_EventHandler(void* apArg, esp_event_base_t aBase, int32_t aId, voi
 
 void CWifi::mInitWifi(const WifiCredentials& aConfig) {
     logger.mInfo("Initializing WiFi");
+    // if the username is empty, it's probably a regular wpa2 connection
     bool enterprise = !aConfig.eapUsername.empty();
     esp_err_t error;
     mCredentials = aConfig;
 
+    // create all the things to make wifi work
     WIFI_THROW_ON_ERROR(esp_netif_init());
     m_EventGroup = xEventGroupCreate();
     WIFI_THROW_ON_ERROR(esp_event_loop_create_default());
     m_StaNetif = esp_netif_create_default_wifi_sta();
+
+    // failed to get a net interface station, throw!
     if (!m_StaNetif) throw std::runtime_error("WTF WIFI");
 
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
@@ -100,6 +103,7 @@ void CWifi::mInitWifi(const WifiCredentials& aConfig) {
     wifi_config_t wifi_config = {};
     memcpy(wifi_config.sta.ssid, mCredentials.ssid.c_str(), mCredentials.ssid.size());
     if (!enterprise) {
+        // if not enterprise, enter password into the config
         memcpy(wifi_config.sta.password, mCredentials.password.c_str(), mCredentials.password.size());
     }
     wifi_config.sta.pmf_cfg.required = false;
@@ -107,6 +111,7 @@ void CWifi::mInitWifi(const WifiCredentials& aConfig) {
     WIFI_THROW_ON_ERROR( esp_wifi_set_mode(WIFI_MODE_STA) );
     WIFI_THROW_ON_ERROR( esp_wifi_set_config(WIFI_IF_STA, &wifi_config) );
     if (enterprise) {
+        // if enterprise, set user and password in enterprise module
         WIFI_THROW_ON_ERROR( esp_wifi_sta_wpa2_ent_set_identity((uint8_t *)mCredentials.eapId.c_str(), mCredentials.eapId.size()) );
 
         WIFI_THROW_ON_ERROR( esp_wifi_sta_wpa2_ent_set_username((uint8_t *)mCredentials.eapUsername.c_str(), mCredentials.eapUsername.size()) );
@@ -119,11 +124,13 @@ void CWifi::mInitWifi(const WifiCredentials& aConfig) {
 
     uint8_t retry = 0;
     const uint8_t retryCnt = 15;
+    // wait for the wifi to connect (we have an IP)
     while (mIp.ip.addr == 0 && ++retry <= retryCnt) {
         logger.mDebug("Waiting...  (%d/%d)", retry, retryCnt);
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 
+    // if we timed out waiting for an IP, throw
     if (retry == retryCnt) throw std::runtime_error("Could not connect to WiFi.");
 }
 
