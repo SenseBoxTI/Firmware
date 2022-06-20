@@ -3,18 +3,25 @@
 #include <CTimer.hpp>
 #include <config.hpp>
 
+typedef enum {
+    Init = 0,
+    Active,
+    SoftReset,
+    Stopped
+} AppState;
+
 class App {
 public:
-    App();
+    static App& getInstance();
     void start();
     static void exit(const std::exception& e);
 
-    static bool stopped;
+    static AppState status;
 
 private:
+    App();
     void init();
     static void m_SendMeasurements(void* aArgs);
-    static bool handledException;
 
     void initSdCard();
     void initWifi(toml::Value config);

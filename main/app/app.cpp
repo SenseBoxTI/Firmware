@@ -19,12 +19,16 @@
 
 static CLogScope logger{"app"};
 
-bool App::stopped = false;
-bool App::handledException = false;
+AppState App::status = Init;
 
 App::App()
 :   m_SendDataTimer(nullptr)
 {}
+
+App& App::getInstance() {
+    static auto instance = App();
+    return instance;
+}
 
 void App::m_SendMeasurements(void* aArgs) {
     auto& sensorManager = CSensorManager::getInstance();
@@ -44,24 +48,30 @@ void App::start() {
 }
 
 void App::init() {
-    logger.mDebug("Application is starting");
+    try {
+        logger.mDebug("Application is starting");
 
-    initSdCard();
+        initSdCard();
 
-    auto& config = CConfig::getInstance();
-    config.mRead("/sdcard/config.toml");
+        auto& config = CConfig::getInstance();
+        config.mRead("/sdcard/config.toml");
 
-    CLog::getInstance().mInit();
+        CLog::getInstance().mInit();
 
-    initWifi(config["wifi"]);
-    initNtp();
-    initMqtt(config["mqtt"]);
-    initSensors();
-    attachWifiCallbacks();
-    startSendingData();
+        initWifi(config["wifi"]);
+        if (status == Init) initNtp();
+        initMqtt(config["mqtt"]);
+        initSensors();
+        attachWifiCallbacks();
+        startSendingData();
 
-    logger.mInfo("System has started.");
-    logger.mInfo("The current time is: %s", CTime::mGetTimeString().c_str());
+        status = Active;
+
+        logger.mInfo("System has started.");
+        logger.mInfo("The current time is: %s", CTime::mGetTimeString().c_str());
+    } catch (const std::runtime_error& e) {
+        status = Stopped;
+    }
 }
 
 void App::initSdCard() {
@@ -159,8 +169,11 @@ void App::exit(const std::exception& e) {
     logger.mError("Famous last words:");
     logger.mError(e.what());
 
-    if (App::handledException) return;
-    App::handledException = true;
+    if (status == SoftReset) {
+        logger.mWarn("Above error was received during soft reset status.");
+        return;
+    }
+    status = SoftReset;
 
     auto& mqtt = CMqtt::getInstance();
     auto& wifi = CWifi::getInstance();
