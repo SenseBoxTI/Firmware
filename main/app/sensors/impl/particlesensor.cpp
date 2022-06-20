@@ -11,7 +11,7 @@ SensorOutput CParticleSensor::m_MeasureCallback() {
     SensorOutput output;
     PM25_AQI_Data data;
     if (pmsa.read(&data)) {
-        output.emplace("PM 2.5", std::to_string(data.pm25_standard));
+        output.emplace("PM 2.5", std::to_string(data.pm25_standard * m_factor));
     } else {
         logger.mError("Read fail");
     }
@@ -26,7 +26,7 @@ CSensorStatus CParticleSensor::m_InitCallback() {
         auto& particleSensorCalibration = calibration["particles"];
 
         if (particleSensorCalibration.valid()) {
-            m_offset = particleSensorCalibration.get<double>("offset");
+            m_factor = particleSensorCalibration.get<double>("factor");
         }
     }
     

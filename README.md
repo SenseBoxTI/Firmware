@@ -107,7 +107,7 @@ To configure things in an existing sensebox, you should put a `config.toml` file
     factor = 0
 
     [particles]
-    offset = 0
+    factor = 0
 
     [db]
     offset = 0
