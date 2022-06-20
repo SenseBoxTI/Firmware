@@ -40,6 +40,7 @@ public:
     static SdState getSdState();
     void mReopen(FileMode aMode);
     void mFlushQueue();
+    void mStartWriteTimer();
 
     std::string mRead();
     void mWrite(const std::string& arText);
@@ -57,7 +58,7 @@ private:
     bool m_IsOpen();
     void m_Open();
     void m_Close();
-    std::string m_GetTaskName();
+    std::string m_GetTimerName();
     static void m_StartWrite(void* aSelf);
     void m_WriteFromQueue();
     void m_AddToQueue(const char* apText);
@@ -67,5 +68,5 @@ private:
     QueueHandle_t m_WriteQueue;
     uint8_t m_FileUntouchedCnt;
     CTimer* m_WriteTimer;
-    std::string taskName;
+    std::string m_WriteTimerName;
 };

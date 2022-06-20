@@ -79,6 +79,7 @@ CLog& CLog::getInstance() {
 void CLog::mInit() {
     m_RotateTimer = CTimer::mInit("LogRotate", &m_RotateLogFile, this);
     m_RotateTimer->mStartPeriodic(LOG_ROTATE_INTERVAL);
+    m_Log.mStartWriteTimer();
 }
 
 void CLog::mWriteLog(const char* apScope, const std::string& arText, LogType aType) {

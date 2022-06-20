@@ -40,11 +40,19 @@ CFile::CFile(const std::string& arPath, FileMode aMode)
     m_FileUntouchedCnt(0),
     m_WriteTimer(nullptr)
 {
-    taskName = m_GetTaskName();
-    m_WriteTimer = CTimer::mInit(taskName.c_str(), &m_StartWrite, this);
+    m_WriteTimerName = m_GetTimerName();
+    m_WriteTimer = CTimer::mInit(m_WriteTimerName.c_str(), &m_StartWrite, this);
     m_WriteTimer->mStartPeriodic(FILE_WRITE_INTERVAL);
 
     m_WriteQueue = xQueueCreate(16, QUEUE_SIZE_BYTES); // queue of 20
+}
+
+void CFile::mStartWriteTimer() {
+    if (m_WriteTimer == nullptr) {
+        printf("Starting write timer for file %s\n", mPath.c_str());
+        m_WriteTimer = CTimer::mInit(m_WriteTimerName.c_str(), &m_StartWrite, this);
+        m_WriteTimer->mStartPeriodic(FILE_WRITE_INTERVAL);
+    }
 }
 
 /**
@@ -252,11 +260,13 @@ CFile & CFile::operator=(CFile &&arrOther) {
 
 CFile::~CFile() {
     m_Close();
-    m_WriteTimer->mDelete();
+    if (m_WriteTimer != nullptr) {
+        m_WriteTimer->mDelete();
+    }
     vQueueDelete(m_WriteQueue);
 }
 
-std::string CFile::m_GetTaskName() {
+std::string CFile::m_GetTimerName() {
     const size_t len = mPath.size();
     const size_t maxLen = CONFIG_FREERTOS_MAX_TASK_NAME_LEN;
 
