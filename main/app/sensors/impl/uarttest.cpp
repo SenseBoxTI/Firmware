@@ -15,7 +15,7 @@ SensorOutput CUartTest::m_MeasureCallback() {
 
     PM25_AQI_Data data;
     if (!pm25aqi.read(&data)) {
-        throw std::runtime_error("Failed to read SCD30");
+         throw std::runtime_error("Failed to read SMUART");
     };
 
     static char buffer[8] = { 0 };

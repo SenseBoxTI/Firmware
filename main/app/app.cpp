@@ -42,7 +42,7 @@ void App::loop() {
         std::printf("\n");
     }
     // Throw debug error
-    throw std::runtime_error("If you see this, everything works!");
+    // throw std::runtime_error("If you see this, everything works!");
     vTaskDelay(2000 / portTICK_RATE_MS);
 }
 

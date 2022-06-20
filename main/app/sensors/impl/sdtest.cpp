@@ -2,7 +2,7 @@
 #include <sd.hpp>
 #include <file.hpp>
 
-CFile file = CFile("sdtest.cbt");
+CFile file = CFile("/sdcard/sdtest.cbt");
 
 SensorOutput CSdTest::m_MeasureCallback() {
     SensorOutput output;
@@ -16,7 +16,7 @@ CSensorStatus CSdTest::m_InitCallback() {
         file.mWrite("Success");
     }
     catch (const std::runtime_error& e) {
-        return CSensorStatus::Error(e.what());
+        return CSensorStatus::Error(e.what() + errno);
     }
     return CSensorStatus::Ok();
 }
