@@ -58,7 +58,7 @@ void CMqtt::mInit(const std::string& acrDeviceId, const std::string& acrAccessTo
     /* The last argument may be used to pass data to the event handler, in this example mqtt_event_handler */
     esp_mqtt_client_register_event(m_Client, MQTT_EVENT_ANY, m_EventHandler, NULL);
 
-    logger.mDebug("Connecting to MQTT server");
+    logger.mDebug("Connecting to server");
 
     uint8_t retry = 0;
     const uint8_t retryCnt = 15;
@@ -200,76 +200,76 @@ void CMqtt::m_EventHandler(void* apArgs, esp_event_base_t aBase, int32_t aId, vo
     CMqtt& self = *static_cast<CMqtt*>(event->user_context);
 
     try {
-    switch (static_cast<esp_mqtt_event_id_t>(aId)) {
-    case MQTT_EVENT_CONNECTED:
-        self.mb_Connected = true;
-        self.m_ReconnectCnt = 0;
+        switch (static_cast<esp_mqtt_event_id_t>(aId)) {
+        case MQTT_EVENT_CONNECTED:
+            self.mb_Connected = true;
+            self.m_ReconnectCnt = 0;
 
-        logger.mInfo("MQTT_EVENT_CONNECTED");
+            logger.mInfo("MQTT_EVENT_CONNECTED");
 
-        if (!self.mb_Provisioned) self.m_RequestProvision();
-        break;
-    case MQTT_EVENT_DISCONNECTED: {
-        self.mb_Connected = false;
-        self.m_ReconnectCnt++;
-        logger.mWarn("MQTT_EVENT_DISCONNECTED");
+            if (!self.mb_Provisioned) self.m_RequestProvision();
+            break;
+        case MQTT_EVENT_DISCONNECTED: {
+            self.mb_Connected = false;
+            self.m_ReconnectCnt++;
+            logger.mWarn("MQTT_EVENT_DISCONNECTED");
 
-        if (self.m_ReconnectCnt > 3) {
-            logger.mWarn("Reiniting MQTT client.");
+            if (self.m_ReconnectCnt > 3) {
+                logger.mWarn("Reiniting client.");
 
-            // create task to move of the event task
-            xTaskHandle handle = NULL;
-            xTaskCreate(&m_Reinit, "mqttReinit", CONFIG_PTHREAD_TASK_STACK_SIZE_DEFAULT, event->user_context, CONFIG_PTHREAD_TASK_PRIO_DEFAULT, &handle);
-            return;
+                // create task to move of the event task
+                xTaskHandle handle = NULL;
+                xTaskCreate(&m_Reinit, "mqttReinit", CONFIG_PTHREAD_TASK_STACK_SIZE_DEFAULT, event->user_context, CONFIG_PTHREAD_TASK_PRIO_DEFAULT, &handle);
+                return;
+            }
+
+            uint8_t timeoutSeconds = pow(self.m_ReconnectCnt, self.m_ReconnectCnt);
+
+            if (self.mb_Provisioned) {
+                logger.mDebug("Reconnecting to the server %d/3. Waiting for %d seconds.", self.m_ReconnectCnt, timeoutSeconds);
+                vTaskDelay(timeoutSeconds * 1000 / portTICK_PERIOD_MS);
+                self.m_Connect();
+            }
+
+            break;
         }
+        case MQTT_EVENT_SUBSCRIBED:
+            logger.mDebug("MQTT_EVENT_SUBSCRIBED, msg_id=%d", event->msg_id);
+            break;
+        case MQTT_EVENT_UNSUBSCRIBED:
+            logger.mDebug("MQTT_EVENT_UNSUBSCRIBED, msg_id=%d", event->msg_id);
+            break;
+        case MQTT_EVENT_PUBLISHED:
+            logger.mDebug("MQTT_EVENT_PUBLISHED, msg_id=%d", event->msg_id);
+            break;
+        case MQTT_EVENT_DATA: {
+            logger.mDebug("MQTT_EVENT_DATA");
 
-        uint8_t timeoutSeconds = pow(self.m_ReconnectCnt, self.m_ReconnectCnt);
-
-        if (self.mb_Provisioned) {
-            logger.mDebug("Reconnecting to the MQTT %d/3. Waiting for %d seconds.", self.m_ReconnectCnt, timeoutSeconds);
-            vTaskDelay(timeoutSeconds * 1000 / portTICK_PERIOD_MS);
-            self.m_Connect();
+            if (strcmp(self.mcp_SubscribeTopic, event->topic) == 0) {
+                self.m_OnProvisionResponse(event->data, event->data_len);
+            }
+            break;
         }
-
-        break;
-    }
-    case MQTT_EVENT_SUBSCRIBED:
-        logger.mDebug("MQTT_EVENT_SUBSCRIBED, msg_id=%d", event->msg_id);
-        break;
-    case MQTT_EVENT_UNSUBSCRIBED:
-        logger.mDebug("MQTT_EVENT_UNSUBSCRIBED, msg_id=%d", event->msg_id);
-        break;
-    case MQTT_EVENT_PUBLISHED:
-        logger.mDebug("MQTT_EVENT_PUBLISHED, msg_id=%d", event->msg_id);
-        break;
-    case MQTT_EVENT_DATA: {
-        logger.mDebug("MQTT_EVENT_DATA");
-
-        if (strcmp(self.mcp_SubscribeTopic, event->topic) == 0) {
-            self.m_OnProvisionResponse(event->data, event->data_len);
-        }
-        break;
-    }
-    case MQTT_EVENT_ERROR:
-        logger.mError("MQTT_EVENT_ERROR");
-        if (event->error_handle->error_type == MQTT_ERROR_TYPE_TCP_TRANSPORT) {
-            logger.mError("Last error code reported from esp-tls: 0x%x", event->error_handle->esp_tls_last_esp_err);
-            logger.mError("Last tls stack error number: 0x%x", event->error_handle->esp_tls_stack_err);
-            logger.mError("Last captured errno : %d (%s)",  event->error_handle->esp_transport_sock_errno,
-                          strerror(event->error_handle->esp_transport_sock_errno));
-        } else if (event->error_handle->error_type == MQTT_ERROR_TYPE_CONNECTION_REFUSED) {
-            logger.mError("Connection refused error: 0x%x", event->error_handle->connect_return_code);
-        } else {
-            logger.mError("Unknown error type: 0x%x", event->error_handle->error_type);
-        }
-        break;
-    default:
-        logger.mInfo("Other event id:%d", event->event_id);
-        break;
+        case MQTT_EVENT_ERROR:
+            logger.mError("MQTT_EVENT_ERROR");
+            if (event->error_handle->error_type == MQTT_ERROR_TYPE_TCP_TRANSPORT) {
+                logger.mError("Last error code reported from esp-tls: 0x%x", event->error_handle->esp_tls_last_esp_err);
+                logger.mError("Last tls stack error number: 0x%x", event->error_handle->esp_tls_stack_err);
+                logger.mError("Last captured errno : %d (%s)",  event->error_handle->esp_transport_sock_errno,
+                            strerror(event->error_handle->esp_transport_sock_errno));
+            } else if (event->error_handle->error_type == MQTT_ERROR_TYPE_CONNECTION_REFUSED) {
+                logger.mError("Connection refused error: 0x%x", event->error_handle->connect_return_code);
+            } else {
+                logger.mError("Unknown error type: 0x%x", event->error_handle->error_type);
+            }
+            break;
+        default:
+            logger.mInfo("Other event id: %d", event->event_id);
+            break;
         }
     }
     catch (const std::runtime_error& err) {
-        logger.mError(err.what());
+        logger.mError("Error during event: %s.", err.what());
     }
 }
 

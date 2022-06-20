@@ -29,49 +29,54 @@ CWifi& CWifi::getInstance() {
 void CWifi::m_EventHandler(void* apArg, esp_event_base_t aBase, int32_t aId, void* apData) {
     auto& self = CWifi::getInstance();
 
-    if (aBase == WIFI_EVENT) {
-        switch (aId)
-        {
-        case WIFI_EVENT_STA_START:
-            logger.mDebug("WIFI_EVENT_STA_START");
-            esp_wifi_connect();
-            break;
-        case WIFI_EVENT_STA_CONNECTED:
-            logger.mInfo("WIFI_EVENT_STA_CONNECTED");
-            break;
-        case WIFI_EVENT_STA_DISCONNECTED:
-            logger.mInfo("WIFI_EVENT_STA_DISCONNECTED");
-            for (auto& func : self.m_DisconnectCbs) func();
+    try {
+        if (aBase == WIFI_EVENT) {
+            switch (aId)
+            {
+            case WIFI_EVENT_STA_START:
+                logger.mDebug("WIFI_EVENT_STA_START");
+                esp_wifi_connect();
+                break;
+            case WIFI_EVENT_STA_CONNECTED:
+                logger.mInfo("WIFI_EVENT_STA_CONNECTED");
+                break;
+            case WIFI_EVENT_STA_DISCONNECTED:
+                logger.mInfo("WIFI_EVENT_STA_DISCONNECTED");
+                for (auto& func : self.m_DisconnectCbs) func();
 
-            esp_wifi_connect();
-            xEventGroupClearBits(self.m_EventGroup, CONNECTED_BIT);
-            memset(&self.mIp, 0, sizeof(decltype(self.mIp)));
-            break;
-        default:
-            logger.mDebug("Unhandled wifi event id: %d", aId);
-            break;
+                esp_wifi_connect();
+                xEventGroupClearBits(self.m_EventGroup, CONNECTED_BIT);
+                memset(&self.mIp, 0, sizeof(decltype(self.mIp)));
+                break;
+            default:
+                logger.mDebug("Unhandled wifi event id: %d", aId);
+                break;
+            }
+        } else if (aBase == IP_EVENT) {
+            switch (aId)
+            {
+            case IP_EVENT_STA_GOT_IP:
+                logger.mDebug("IP_EVENT_STA_GOT_IP");
+
+                xEventGroupSetBits(self.m_EventGroup, CONNECTED_BIT);
+                esp_netif_get_ip_info(self.m_StaNetif, &self.mIp);
+
+                for (auto& func : self.m_ConnectCbs) func();
+                break;
+            case IP_EVENT_STA_LOST_IP:
+                logger.mDebug("IP_EVENT_STA_LOST_IP");
+                break;
+            default:
+                logger.mDebug("Unhandled ip event id: %d", aId);
+                break;
+            }
+        } else {
+            printf("WTF\n");
+            throw std::runtime_error("UNKNOWN WIFI BASE EVENT: " + std::string(aBase));
         }
-    } else if (aBase == IP_EVENT) {
-        switch (aId)
-        {
-        case IP_EVENT_STA_GOT_IP:
-            logger.mDebug("IP_EVENT_STA_GOT_IP");
-
-            xEventGroupSetBits(self.m_EventGroup, CONNECTED_BIT);
-            esp_netif_get_ip_info(self.m_StaNetif, &self.mIp);
-
-            for (auto& func : self.m_ConnectCbs) func();
-            break;
-        case IP_EVENT_STA_LOST_IP:
-            logger.mDebug("IP_EVENT_STA_LOST_IP");
-            break;
-        default:
-            logger.mDebug("Unhandled ip event id: %d", aId);
-            break;
-        }
-    } else {
-        printf("WTF\n");
-        throw std::runtime_error("UNKNOWN WIFI BASE EVENT: " + std::string(aBase));
+    }
+    catch (const std::runtime_error& e) {
+        logger.mError("Error during event: %s.", e.what());
     }
 }
 
