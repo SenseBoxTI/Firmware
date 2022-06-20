@@ -83,15 +83,15 @@ void CMqtt::m_Reinit(void* aSelf) {
 
 void CMqtt::m_Reinit() {
     try {
-        logger.mInfo("Reiniting MQTT client.");
+        logger.mInfo("Reiniting client.");
 
         mDeinit();
         vTaskDelay(5000 / portTICK_PERIOD_MS);
         mStartClient();
 
-        logger.mDebug("MQTT client was reinited.\n");
+        logger.mDebug("Client was reinited.\n");
     } catch (const std::exception& e) {
-        logger.mError("Could not reinit MQTT connection\n");
+        logger.mError("Could not reinit connection\n");
         App::exit(e);
     }
 }
@@ -116,7 +116,7 @@ void CMqtt::mDeinit() {
 
     m_Client = NULL;
 
-    logger.mDebug("MQTT client was deinited.");
+    logger.mDebug("Client was deinited.");
 }
 
 void CMqtt::mReconnect() {
@@ -125,7 +125,7 @@ void CMqtt::mReconnect() {
 }
 
 void CMqtt::m_Connect() {
-    if (m_Client == NULL) throw std::runtime_error("MQTT client is not started.");
+    if (m_Client == NULL) throw std::runtime_error("Client is not started.");
     esp_mqtt_client_reconnect(m_Client);
 }
 
@@ -134,7 +134,7 @@ void CMqtt::mStartClient() {
 
     if (!CWifi::getInstance().mConnected()) return;
 
-    if (m_Client != NULL) throw std::runtime_error("MQTT client was already constructed.");
+    if (m_Client != NULL) throw std::runtime_error("Client was already constructed.");
 
     const esp_mqtt_client_config_t mqtt_cfg = m_GetClientConfig(mcp_AccessToken.c_str());
     m_Client = esp_mqtt_client_init(&mqtt_cfg);
@@ -144,8 +144,8 @@ void CMqtt::mStartClient() {
 }
 
 void CMqtt::mSendMeasurements(Measurements& arValues) {
-    if (!mb_Connected) logger.mWarn("Can not send message, MQTT client is not connected.");
-    if (!mb_Provisioned) logger.mWarn("Can not send message, MQTT client is not provisioned.");
+    if (!mb_Connected) logger.mWarn("Can not send message, client is not connected.");
+    if (!mb_Provisioned) logger.mWarn("Can not send message, client is not provisioned.");
     if (!mb_Connected || !mb_Provisioned) return;
 
     const char* topic = "v1/devices/me/telemetry";
@@ -278,26 +278,26 @@ void CMqtt::m_RequestProvision() {
     const char* publishData;
 
     cJSON* obj = cJSON_CreateObject();
-    if (obj == NULL) throw std::runtime_error("Could not create provisioning object");
+    if (obj == NULL) throw std::runtime_error("Could not create provisioning object.");
 
     if (cJSON_AddStringToObject(obj, "deviceName", mcp_DeviceId.c_str()) == NULL) {
-        m_JsonError(obj, "Could not create deviceName for provisioning object");
+        m_JsonError(obj, "Could not create deviceName for provisioning object.");
     }
     if (cJSON_AddStringToObject(obj, "provisionDeviceKey", PROVISION_KEY) == NULL) {
-        m_JsonError(obj, "Could not create provisionDeviceKey for provisioning object");
+        m_JsonError(obj, "Could not create provisionDeviceKey for provisioning object.");
     }
     if (cJSON_AddStringToObject(obj, "provisionDeviceSecret", PROVISION_SECRET) == NULL) {
-        m_JsonError(obj, "Could not create provisionDeviceSecret for provisioning object");
+        m_JsonError(obj, "Could not create provisionDeviceSecret for provisioning object.");
     }
     if (cJSON_AddStringToObject(obj, "credentialsType", "ACCESS_TOKEN") == NULL) {
-        m_JsonError(obj, "Could not create credentialsType for provisioning object");
+        m_JsonError(obj, "Could not create credentialsType for provisioning object.");
     }
     if (cJSON_AddStringToObject(obj, "token", mcp_AccessToken.c_str()) == NULL) {
-        m_JsonError(obj, "Could not create token for provisioning object");
+        m_JsonError(obj, "Could not create token for provisioning object.");
     }
 
     publishData = cJSON_Print(obj);
-    if (publishData == NULL) m_JsonError(obj, "Could not print json object");
+    if (publishData == NULL) m_JsonError(obj, "Could not print json object.");
 
     cJSON_Delete(obj);
 
@@ -313,18 +313,18 @@ void CMqtt::m_OnProvisionResponse(const char* acpData, int aLen) {
     if (data == NULL) {
         const char *error_ptr = cJSON_GetErrorPtr();
         if (error_ptr != NULL) logger.mWarn("Error before: %s\n", error_ptr);
-        m_JsonError(data, "Error parsing provisioning JSON");
+        m_JsonError(data, "Error parsing provisioning JSON.");
     }
 
     cJSON* status = cJSON_GetObjectItemCaseSensitive(data, "status");
     if (cJSON_IsString(status) && (status->valuestring != NULL)) {
         if (strcmp(status->valuestring, "SUCCESS") == 0) {
-            logger.mInfo("Provisioned new device");
+            logger.mInfo("Provisioned new device.");
         } else {
             cJSON* errorMsg = cJSON_GetObjectItemCaseSensitive(data, "errorMsg");
             if (cJSON_IsString(errorMsg) && (errorMsg->valuestring != NULL)) {
                 if (strcmp(errorMsg->valuestring, "Failed to provision device!") == 0) {
-                    logger.mInfo("Device was already provisioned");
+                    logger.mInfo("Device was already provisioned.");
                 } else {
                     std::string error("Could not provision device: ");
                     error.append(errorMsg->valuestring);
@@ -332,11 +332,11 @@ void CMqtt::m_OnProvisionResponse(const char* acpData, int aLen) {
                     throw std::runtime_error(error);
                 }
             } else {
-                m_JsonError(data, "Could not parse provision errorMsg");
+                m_JsonError(data, "Could not parse provision errorMsg.");
             }
         }
     } else {
-        m_JsonError(data, "Could not parse provision status");
+        m_JsonError(data, "Could not parse provision status.");
     }
 
     cJSON_Delete(data);
