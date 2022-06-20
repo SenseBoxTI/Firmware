@@ -28,7 +28,9 @@ CMqtt::CMqtt()
 :   m_Client(NULL),
     mb_Provisioned(false),
     mb_Connected(false),
-    mb_SendAttributes(false)
+    mb_SendAttributes(false),
+    m_ReconnectCnt(0),
+    m_DisconnectedRequestCnt(0)
 {}
 
 CMqtt& CMqtt::getInstance() {
@@ -201,6 +203,7 @@ void CMqtt::m_EventHandler(void* apArgs, esp_event_base_t aBase, int32_t aId, vo
     switch (static_cast<esp_mqtt_event_id_t>(aId)) {
     case MQTT_EVENT_CONNECTED:
         self.mb_Connected = true;
+        self.m_ReconnectCnt = 0;
 
         logger.mInfo("MQTT_EVENT_CONNECTED");
 
@@ -208,10 +211,23 @@ void CMqtt::m_EventHandler(void* apArgs, esp_event_base_t aBase, int32_t aId, vo
         break;
     case MQTT_EVENT_DISCONNECTED: {
         self.mb_Connected = false;
+        self.m_ReconnectCnt++;
         logger.mWarn("MQTT_EVENT_DISCONNECTED");
 
+        if (self.m_ReconnectCnt > 3) {
+            logger.mWarn("Reiniting MQTT client.");
+
+            // create task to move of the event task
+            xTaskHandle handle = NULL;
+            xTaskCreate(&m_Reinit, "mqttReinit", CONFIG_PTHREAD_TASK_STACK_SIZE_DEFAULT, event->user_context, CONFIG_PTHREAD_TASK_PRIO_DEFAULT, &handle);
+            return;
+        }
+
+        uint8_t timeoutSeconds = pow(self.m_ReconnectCnt, self.m_ReconnectCnt);
+
         if (self.mb_Provisioned) {
-            vTaskDelay(1000 / portTICK_PERIOD_MS);
+            logger.mDebug("Reconnecting to the MQTT %d/3. Waiting for %d seconds.", self.m_ReconnectCnt, timeoutSeconds);
+            vTaskDelay(timeoutSeconds * 1000 / portTICK_PERIOD_MS);
             self.m_Connect();
         }
 

@@ -36,4 +36,6 @@ private:
     bool mb_Provisioned;
     bool mb_Connected;
     bool mb_SendAttributes;
+    uint8_t m_ReconnectCnt;
+    int8_t m_DisconnectedRequestCnt;
 };
