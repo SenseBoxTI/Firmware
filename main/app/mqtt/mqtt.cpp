@@ -142,6 +142,8 @@ void CMqtt::mStartClient() {
 }
 
 void CMqtt::mSendMeasurements(Measurements& arValues) {
+    if (!mb_Connected) logger.mWarn("Can not send message, MQTT client is not connected.");
+    if (!mb_Provisioned) logger.mWarn("Can not send message, MQTT client is not provisioned.");
     if (!mb_Connected || !mb_Provisioned) return;
 
     const char* topic = "v1/devices/me/telemetry";
