@@ -12,10 +12,13 @@ public:
     void mDisconnect();
     void mReconnect();
     void mDeinit();
+    void mStartClient();
 
 private:
     CMqtt();
     static void m_EventHandler(void* apArgs, esp_event_base_t aBase, int32_t aId, void* apData);
+    static void m_Reinit(void* aSelf);
+    void m_Reinit();
     void m_SendCustom(const char* acpTopic, const char* acpMsg);
     void m_SendAttributes(const char* apData);
     void m_Subscribe(const char* acpTopic);

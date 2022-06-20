@@ -19,11 +19,14 @@
 #include <config.hpp>
 #include <CConfig.hpp>
 #include <wifi.hpp>
+#include <freertos/task.h>
+#include <app.hpp>
 
 static CLogScope logger{"mqtt"};
 
 CMqtt::CMqtt()
-:   mb_Provisioned(false),
+:   m_Client(NULL),
+    mb_Provisioned(false),
     mb_Connected(false),
     mb_SendAttributes(false)
 {}
@@ -65,6 +68,79 @@ void CMqtt::mInit(const std::string& acrDeviceId, const std::string& acrAccessTo
     if (retry == retryCnt) throw std::runtime_error("Could not connect to MQTT server.");
 }
 
+/**
+ * static wrapper for m_Reinit(), to be called as task from the event handler
+ */
+void CMqtt::m_Reinit(void* aSelf) {
+    CMqtt& self = *static_cast<CMqtt*>(aSelf);
+
+    self.m_Reinit();
+
+    vTaskDelete(NULL);
+}
+
+void CMqtt::m_Reinit() {
+    try {
+        logger.mInfo("Reiniting MQTT client.");
+
+        mDeinit();
+        vTaskDelay(5000 / portTICK_PERIOD_MS);
+        mStartClient();
+
+        logger.mDebug("MQTT client was reinited.\n");
+    } catch (const std::exception& e) {
+        logger.mError("Could not reinit MQTT connection\n");
+        App::exit(e);
+    }
+}
+
+void CMqtt::mDisconnect() {
+    if (!mb_Connected) {
+        logger.mWarn("Can not disconnect MQTT client, not connected.");
+        return;
+    }
+
+    m_ReconnectCnt = -1; // overflow
+    esp_err_t ret;
+    if ((ret = esp_mqtt_client_disconnect(m_Client)) != ESP_OK) throw std::runtime_error("Could not disconnect MQTT client. " + std::string(esp_err_to_name(ret)));
+}
+
+void CMqtt::mDeinit() {
+    logger.mDebug("Client will deinit now.");
+
+    esp_err_t ret;
+    // no need to call disconnect or stop, this is done in esp_mqtt_client_destroy()
+    if ((ret = esp_mqtt_client_destroy(m_Client)) != ESP_OK) throw std::runtime_error("Could not destroy MQTT client. " + std::string(esp_err_to_name(ret)));
+
+    m_Client = NULL;
+
+    logger.mDebug("MQTT client was deinited.");
+}
+
+void CMqtt::mReconnect() {
+    mDisconnect();
+    m_Connect();
+}
+
+void CMqtt::m_Connect() {
+    if (m_Client == NULL) throw std::runtime_error("MQTT client is not started.");
+    esp_mqtt_client_reconnect(m_Client);
+}
+
+void CMqtt::mStartClient() {
+    logger.mDebug("Client will start now.");
+
+    if (!CWifi::getInstance().mConnected()) return;
+
+    if (m_Client != NULL) throw std::runtime_error("MQTT client was already constructed.");
+
+    const esp_mqtt_client_config_t mqtt_cfg = m_GetClientConfig(mcp_AccessToken.c_str());
+    m_Client = esp_mqtt_client_init(&mqtt_cfg);
+    esp_mqtt_client_start(m_Client);
+
+    logger.mDebug("Client has started");
+}
+
 void CMqtt::mSendMeasurements(Measurements& arValues) {
     if (!mb_Connected || !mb_Provisioned) return;
 
@@ -98,16 +174,6 @@ void CMqtt::m_SendAttributes(const char* apData) {
     m_SendCustom(topic, apData);
 
     mb_SendAttributes = true;
-}
-
-void CMqtt::mDisconnect() {
-    esp_mqtt_client_disconnect(m_Client);
-}
-
-void CMqtt::mDeinit() {
-    esp_mqtt_client_disconnect(m_Client);
-    esp_mqtt_client_stop(m_Client);
-    esp_mqtt_client_destroy(m_Client);
 }
 
 void CMqtt::m_SendCustom(const char* acpTopic, const char* acpMsg) {
@@ -273,24 +339,6 @@ esp_mqtt_client_config_t CMqtt::m_GetClientConfig(const char* aUsername) {
         .skip_cert_common_name_check = true,
     };
     return config;
-}
-
-void CMqtt::mReconnect() {
-    if (mb_Connected) {
-        esp_mqtt_client_disconnect(m_Client);
-    } else {
-        m_Connect();
-    }
-}
-
-void CMqtt::m_Connect() {
-    if (!CWifi::getInstance().mConnected()) return;
-
-    const esp_mqtt_client_config_t mqtt_cfg = m_GetClientConfig(mcp_AccessToken.c_str());
-    m_Client = esp_mqtt_client_init(&mqtt_cfg);
-    /* The last argument may be used to pass data to the event handler, in this example mqtt_event_handler */
-    esp_mqtt_client_register_event(m_Client, MQTT_EVENT_ANY, m_EventHandler, NULL);
-    esp_mqtt_client_start(m_Client);
 }
 
 void CMqtt::m_JsonError(cJSON* aJsonObject, const char* aError) {
