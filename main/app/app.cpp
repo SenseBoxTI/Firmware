@@ -120,7 +120,8 @@ void App::initMqtt(toml::Value config) {
         std::string accessToken = config.get<std::string>("accessToken");
 
         auto& mqtt = CMqtt::getInstance();
-        mqtt.mInit(deviceId, accessToken);
+        if (status == Init) mqtt.mInit(deviceId, accessToken);
+        else mqtt.mStartClient();
     }
     catch (const std::runtime_error& e) {
         logger.mError("Initializing MQTT threw error: %s", e.what());
