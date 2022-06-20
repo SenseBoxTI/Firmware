@@ -302,7 +302,7 @@ void CMqtt::m_OnProvisionResponse(const char* acpData, int aLen) {
     if (cJSON_IsString(status) && (status->valuestring != NULL)) {
         if (strcmp(status->valuestring, "SUCCESS") == 0) {
             logger.mInfo("Provisioned new device");
-            } else {
+        } else {
             cJSON* errorMsg = cJSON_GetObjectItemCaseSensitive(data, "errorMsg");
             if (cJSON_IsString(errorMsg) && (errorMsg->valuestring != NULL)) {
                 if (strcmp(errorMsg->valuestring, "Failed to provision device!") == 0) {
@@ -312,8 +312,8 @@ void CMqtt::m_OnProvisionResponse(const char* acpData, int aLen) {
                     error.append(errorMsg->valuestring);
 
                     throw std::runtime_error(error);
-            }
-        } else {
+                }
+            } else {
                 m_JsonError(data, "Could not parse provision errorMsg");
             }
         }
