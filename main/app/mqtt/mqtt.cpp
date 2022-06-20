@@ -323,9 +323,10 @@ void CMqtt::m_OnProvisionResponse(const char* acpData, int aLen) {
 
     cJSON_Delete(data);
 
-    esp_mqtt_client_disconnect(m_Client);
-
     mb_Provisioned = true;
+
+    xTaskHandle handle = NULL;
+    xTaskCreate(&m_Reinit, "mqttReinit", CONFIG_PTHREAD_TASK_STACK_SIZE_DEFAULT, this, CONFIG_PTHREAD_TASK_PRIO_DEFAULT, &handle);
 }
 
 esp_mqtt_client_config_t CMqtt::m_GetClientConfig(const char* aUsername) {
