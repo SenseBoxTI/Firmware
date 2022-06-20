@@ -49,6 +49,7 @@ void CTimers::mRemoveTimer(const char* apName) {
 
     // delete the pointer, then remove the item from the queue
     delete res->second;
+    res->second = nullptr;
     m_Timers.erase(apName);
 }
 
@@ -62,6 +63,7 @@ void CTimers::mCleanTimers() {
         auto timer = tp.second;
 
         delete timer;
+        tp.second = nullptr;
     }
 
     // empty the queue
