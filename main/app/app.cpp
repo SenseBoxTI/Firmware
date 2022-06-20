@@ -185,13 +185,25 @@ void App::exit(const std::exception& e) {
     auto& wifi = CWifi::getInstance();
     auto& log = CLog::getInstance();
     auto& timers = CTimers::getInstance();
+    auto& app = App::getInstance();
 
-    mqtt.mDeinit();
-    wifi.mDeinit();
-    timers.mCleanTimers();
-    log.mFinalize();
+    try {
+        mqtt.mDeinit();
+        logger.mDebug("mqtt deinited");
+        wifi.mDeinit();
+        logger.mDebug("wifi deinited");
+        timers.mCleanTimers();
+        logger.mDebug("timers deinited");
+        log.mFinalize();
+        logger.mDebug("log deinited");
 
-    CFile::mDeinitSd();
+        CFile::mDeinitSd();
+        logger.mDebug("sd deinited\n");
 
-    App::stopped = true;
+        logger.mWarn("App will restart now!");
+        app.init();
+    } catch (const std::exception& e) {
+        status = Stopped;
+    }
+
 }
