@@ -20,6 +20,12 @@ CSensorStatus CSensorManager::mAddSensor(CSensor* apSensor) {
     return status;
 }
 
+void CSensorManager::mReinit() {
+    for (auto& sensor : m_Sensors) {
+        sensor->mInit();
+    }
+}
+
 Measurements CSensorManager::mGetResults() {
     Measurements measurements;
 

@@ -132,6 +132,11 @@ void App::initMqtt(toml::Value config) {
 void App::initSensors() {
     auto& sensorManager = CSensorManager::getInstance();
 
+    if (status == SoftReset) {
+        sensorManager.mReinit();
+        return;
+    }
+
     logger.mDebug("Adding sensors...");
     sensorManager.mAddSensor(new CDbSensor("dbSensor"));
     sensorManager.mAddSensor(new CO2Sensor("O2Sensor"));
