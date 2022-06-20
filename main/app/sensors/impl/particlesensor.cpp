@@ -19,7 +19,6 @@ SensorOutput CParticleSensor::m_MeasureCallback() {
 }
 
 CSensorStatus CParticleSensor::m_InitCallback() {
-    
     auto& calibration = CConfig::getInstance()["calibration"];
 
     if (calibration.valid()) {
@@ -29,7 +28,7 @@ CSensorStatus CParticleSensor::m_InitCallback() {
             m_factor = particleSensorCalibration.get<double>("factor");
         }
     }
-    
+
     if (pmsa.begin_I2C()) {
         return CSensorStatus::Ok();
     } else {

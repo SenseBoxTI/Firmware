@@ -32,10 +32,10 @@ CSensorStatus CDbSensor::m_InitCallback() {
     m_AdcCharacteristics = calloc(1, sizeof(esp_adc_cal_characteristics_t));
 
     auto& calibration = CConfig::getInstance()["calibration"];
-    
+
     if (calibration.valid()) {
         auto& dbSensorCalibration = calibration["db"];
-        
+
         if (dbSensorCalibration.valid()) {
             m_rc = dbSensorCalibration.get<double>("rc");
             m_offset = dbSensorCalibration.get<double>("offset");
