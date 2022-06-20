@@ -1,10 +1,17 @@
 #pragma once
 
+/**
+ * The global configuration, these are changes not made on a device by device basis
+ * Certain changes here are security sensitive, and not to be placed on the SD card for this reason.
+ */
+
 #define DEBUG_ENABLED 0
 
 #define MQTT_URL "mqtts://test.ddss-sensebox.nl"
 
+// Must be set before use.
 #define PROVISION_KEY ""
+// Mut be set before use.
 #define PROVISION_SECRET ""
 
 // public key

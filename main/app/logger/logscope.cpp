@@ -5,6 +5,11 @@
 
 #include <CConfig.hpp>
 
+/**
+ * Special printing function meant to replace printf
+ * This is because our printing function is formatted to fit a standardized output layout.
+ * This is then converted into string to be used as usual.
+ */
 std::string string_vformat(const char* apFormat, va_list aArgs) {
     // get size
     size_t size = vsnprintf(nullptr, 0, apFormat, aArgs) + 1;
@@ -19,6 +24,9 @@ std::string string_vformat(const char* apFormat, va_list aArgs) {
     return result;
 }
 
+/**
+ * The usable variant of the above function
+ */
 std::string string_vformat(const char* apFormat, ...) {
     va_list a_list;
     va_start(a_list, apFormat);
@@ -53,6 +61,7 @@ void CLogScope::mError(const char* apFormat, ...) {
 }
 
 void CLogScope::mDebug(const char* apFormat, ...) {
+    // Debug information is not written to the Log unless specified.
     if (!DEBUG_ENABLED) return;
 
     va_list a_list;

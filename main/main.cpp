@@ -4,6 +4,11 @@
 
 extern "C" void app_main();
 
+/**
+ * This is the main application entry point
+ * It is extern "C" because the compiler requires it to be.
+ * C++ can later be used throughout the project, however.
+ */
 void app_main() {
     initArduino();
 

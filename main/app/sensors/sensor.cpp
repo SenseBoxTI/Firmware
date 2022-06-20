@@ -3,7 +3,9 @@
 #include <CConfig.hpp>
 #include <stdexcept>
 
+//! Should not be called while sensor task is interrupting it. Make sure timings don't cause overlap.
 SensorOutput CSensor::mGetResults() {
+    // Because sensors are just `doing their thing' in the background, we only need to query whether there are measurements.
     if (m_MeasurementCnt == 0) {
         throw std::runtime_error("Sensor " + mName + " did not make any measurements within the set interval of " + std::to_string(SEND_INTERVAL_US / 1000000) + " seconds.");
     }

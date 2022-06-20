@@ -3,6 +3,10 @@
 #include <toml.h>
 #include <file.hpp>
 
+/**
+ * The config class
+ * Reads TOML configuration from file on the SD Card
+ */
 class CConfig {
     public:
         [[nodiscard]] static CConfig& getInstance();

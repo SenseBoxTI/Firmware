@@ -32,6 +32,9 @@ std::vector<CFile> CDir::mListFiles()
     return result;
 }
 
+/**
+ * Checks whether a map exists, if it does not, create the directory.
+ */
 void CDir::mEnsure()
 {
     errno = 0;

@@ -10,6 +10,11 @@
 
 #include <logscope.hpp>
 
+/**
+ * Richard and Luc please I beg you, I do not understand enough to confidently document this code.
+ * Kind regards, Jorn
+ */
+
 static CLogScope logger{"wifi"};
 const int CONNECTED_BIT = BIT0;
 

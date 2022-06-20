@@ -22,6 +22,11 @@
 
 static CLogScope logger{"mqtt"};
 
+/**
+ * Luc please I beg you, I do not understand enough to confidently document this code.
+ * Kind regards, Jorn
+ */
+
 CMqtt::CMqtt()
 :   mb_Provisioned(false),
     mb_Connected(false),

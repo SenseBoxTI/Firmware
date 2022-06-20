@@ -4,6 +4,11 @@
 #include <cJSON.h>
 #include <measurements.hpp>
 
+/**
+ * Luc please I beg you, I do not understand enough to confidently document this code.
+ * Kind regards, Jorn
+ */
+
 class CMqtt {
 public:
     void mInit(const std::string& acrDeviceId, const std::string& acrAccessToken);
