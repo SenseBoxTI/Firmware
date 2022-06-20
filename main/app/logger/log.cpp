@@ -100,7 +100,7 @@ void CLog::mWriteLog(const char* apScope, const std::string& arText, LogType aTy
         timeString = "[  TIME  UNINITIALIZED  ]";
     }
 
-    std::string toPrint = string_vformat("%c %s (%s) %s",
+    std::string toPrint = string_vformat("%c %s (%s) %s\r\n",
         logIds[uint8_t(aType)],
         timeString.c_str(),
         apScope,
@@ -108,7 +108,7 @@ void CLog::mWriteLog(const char* apScope, const std::string& arText, LogType aTy
     );
 
     // print to serial
-    std::printf("%s%s%s\n", ansiColors[uint8_t(aType)], toPrint.c_str(), resetStyle);
+    std::printf("%s%s%s", ansiColors[uint8_t(aType)], toPrint.c_str(), resetStyle);
 
     // print to logfile
     if (CFile::getSdState() == SdState::Ready) {
@@ -118,7 +118,7 @@ void CLog::mWriteLog(const char* apScope, const std::string& arText, LogType aTy
                 dirCheckDone = true;
             }
 
-            m_Log.mAppend(toPrint + "\r\n");
+            m_Log.mAppend(toPrint);
         }
         catch (const std::runtime_error& e) {
             std::printf("%sE %s (log) Failed to write log to file: %s%s\r\n", ansiColors[3], timeString.c_str(), e.what(), resetStyle);
