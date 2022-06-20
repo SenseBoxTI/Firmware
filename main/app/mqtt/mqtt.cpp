@@ -108,6 +108,8 @@ void CMqtt::mDisconnect() {
 }
 
 void CMqtt::mDeinit() {
+    if (m_Client == NULL) return;
+
     logger.mDebug("Client will deinit now.");
 
     esp_err_t ret;
