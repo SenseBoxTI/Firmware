@@ -275,6 +275,13 @@ std::string CFile::m_GetTimerName() {
 }
 
 void CFile::mInitSd() {
+    if (m_SdState == Disabled) {
+        m_SdState = Ready;
+        logger.mDebug("Filesystem reinstated.");
+        sdmmc_card_print_info(stdout, m_SdCard);
+        return;
+    }
+
     m_SdState = Unavailable;
 
     esp_err_t ret;
@@ -330,13 +337,15 @@ void CFile::mInitSd() {
     sdmmc_card_print_info(stdout, m_SdCard);
 }
 
+/**
+ * disable the sd card, using the unmount function just crashes the whole system.
+ */
 void CFile::mDeinitSd() {
-    m_SdState = Unavailable;
+    m_SdState = Disabled;
 
-    esp_vfs_fat_sdcard_unmount(MOUNT_POINT, m_SdCard);
-    spi_bus_free((spi_host_device_t)SDSPI_DEFAULT_HOST);
+    // esp_vfs_fat_sdcard_unmount(MOUNT_POINT, m_SdCard);
 
-    logger.mInfo("File system has been unmounted\n");
+    logger.mInfo("SD usage has been disabled.");
 }
 
 SdState CFile::getSdState() {

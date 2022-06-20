@@ -19,7 +19,8 @@ enum FileMode { //enumerate for filemode fopen
 enum SdState { //enumerate for filemode fopen
     Unitizialized,
     Ready,
-    Unavailable
+    Unavailable,
+    Disabled
 };
 
 class CFile {
