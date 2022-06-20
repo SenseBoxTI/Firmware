@@ -34,26 +34,26 @@ CMqtt& CMqtt::getInstance() {
 }
 
 void CMqtt::mInit(const std::string& acrDeviceId, const std::string& acrAccessToken) {
-    auto& wifi = CWifi::getInstance();
-    if (!wifi.mConnected()) throw std::runtime_error("Need a active internet connection to get the time.");
-
     logger.mInfo("Initializing MQTT");
+
+    auto& wifi = CWifi::getInstance();
+    if (!wifi.mConnected()) throw std::runtime_error("Need a active internet connection to connect to the MQTT server.");
 
     mcp_DeviceId = acrDeviceId;
     mcp_AccessToken = acrAccessToken;
+    mcp_SubscribeTopic = "/provision/response";
 
     ESP_ERROR_CHECK(nvs_flash_init());
-
-    mcp_SubscribeTopic = "/provision/response";
 
     const esp_mqtt_client_config_t mqtt_cfg = m_GetClientConfig("provision");
 
     m_Client = esp_mqtt_client_init(&mqtt_cfg);
-    /* The last argument may be used to pass data to the event handler, in this example mqtt_event_handler */
-    esp_mqtt_client_register_event(m_Client, MQTT_EVENT_ANY, m_EventHandler, NULL);
     esp_mqtt_client_start(m_Client);
 
-    logger.mDebug("Initializing MQTT");
+    /* The last argument may be used to pass data to the event handler, in this example mqtt_event_handler */
+    esp_mqtt_client_register_event(m_Client, MQTT_EVENT_ANY, m_EventHandler, NULL);
+
+    logger.mDebug("Connecting to MQTT server");
 
     uint8_t retry = 0;
     const uint8_t retryCnt = 15;
