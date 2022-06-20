@@ -152,8 +152,8 @@ void App::attachWifiCallbacks() {
     auto& wifi = CWifi::getInstance();
     auto& mqtt = CMqtt::getInstance();
 
-    CWifi::WifiCb mqttConnectCb = [&]{mqtt.mReconnect();};
-    CWifi::WifiCb mqttDisconnectCb = [&]{mqtt.mDisconnect();};
+    CWifi::WifiCb mqttConnectCb = [&]{mqtt.mStartClient();};
+    CWifi::WifiCb mqttDisconnectCb = [&]{mqtt.mDeinit();};
 
     wifi.mAttachOnConnect(mqttConnectCb);
     wifi.mAttachOnDisconnect(mqttDisconnectCb);
