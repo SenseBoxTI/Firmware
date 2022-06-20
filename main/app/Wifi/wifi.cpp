@@ -131,7 +131,7 @@ void CWifi::mAttachOnConnect(WifiCb aFunc) {
 }
 
 void CWifi::mAttachOnDisconnect(WifiCb aFunc) {
-    m_ConnectCbs.push_back(aFunc);
+    m_DisconnectCbs.push_back(aFunc);
 }
 
 void CWifi::mDisconnect() {
