@@ -300,7 +300,7 @@ void CFile::mInitSd() {
     };
 
     logger.mDebug("Initializing bus");
-    ret = spi_bus_initialize((spi_host_device_t)SDSPI_DEFAULT_HOST, &bus_cfg, SDSPI_DEFAULT_DMA);
+    ret = spi_bus_initialize((spi_host_device_t)host.slot, &bus_cfg, SDSPI_DEFAULT_DMA);
     if (ret != ESP_OK) {
         logger.mError("Failed to initialize spi bus.");
         throw std::runtime_error(esp_err_to_name(ret));
