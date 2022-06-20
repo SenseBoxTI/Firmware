@@ -6,10 +6,6 @@ class CTimer {
 public:
     CTimer() = delete;
 
-    // no copy
-    // CTimer & operator=( const CTimer &arOther ) = delete;
-    // CTimer( const CTimer &arOther ) = delete;
-
     static CTimer* mInit(const char* apName, esp_timer_cb_t aCb, void* aUserCtx);
     void mStop();
     void mStartPeriodic(uint64_t aInterval);
