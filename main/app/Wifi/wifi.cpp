@@ -81,6 +81,8 @@ void CWifi::mInitWifi(const WifiCredentials& aConfig) {
     esp_err_t error;
     mCredentials = aConfig;
 
+    if (mCredentials.ssid.size() > 32) throw std::runtime_error("SSID is longer than 32 characters");
+    if (enterprise && mCredentials.password.size() > 64) throw std::runtime_error("Password is longer than 64 characters");
     WIFI_THROW_ON_ERROR(esp_netif_init());
     m_EventGroup = xEventGroupCreate();
     WIFI_THROW_ON_ERROR(esp_event_loop_create_default());
