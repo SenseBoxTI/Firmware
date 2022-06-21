@@ -5,7 +5,7 @@
 
 SensorOutput CSensor::mGetResults() {
     if (m_MeasurementCnt == 0) {
-        throw std::runtime_error("Sensor " + mName + " did not make any measurements within the set interval of " + std::to_string(SEND_INTERVAL_US / 1000000) + " seconds.");
+        return SensorOutput();
     }
 
     SensorOutput output;
