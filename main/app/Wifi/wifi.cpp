@@ -188,6 +188,7 @@ void CWifi::m_Reconnect(void* aSelf) {
 
     while (!self.mConnected()) {
         logger.mInfo("Reconnecting to network: %s.", self.mCredentials.ssid.c_str());
+        esp_wifi_disconnect();
         esp_wifi_connect();
         vTaskDelay(30 * 1000 / portTICK_PERIOD_MS);
     }
