@@ -205,5 +205,4 @@ void App::exit(const std::exception& e) {
     } catch (const std::exception& e) {
         status = Stopped;
     }
-
 }
