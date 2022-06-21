@@ -103,6 +103,21 @@ To configure things in an existing sensebox, you should put a `config.toml` file
     [lightintensity]
     intensityOffset = 0
 
+    [voc]
+    factor = 0
+
+    [particles]
+    factor = 0
+
+    [db]
+    offset = 0
+    rc = 1
+
+    [o2]
+    offset = 0
+    rc = 1
+
+
 [mqtt]
     deviceId = ""
     accessToken = ""

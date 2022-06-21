@@ -1,5 +1,6 @@
 #include "scdsensor.hpp"
 #include <Adafruit_SCD30.h>
+#include <config.hpp>
 
 Adafruit_SCD30 scd30 = Adafruit_SCD30();
 
@@ -13,8 +14,7 @@ SensorOutput CScdSensor::m_MeasureCallback() {
         output.emplace("temperature", std::to_string(m_LastTemperature));
         output.emplace("relative_humidity", std::to_string(m_LastRelative_humidity));
         output.emplace("CO2", std::to_string(m_LastCO2));
-    }
-    else {
+    } else {
         output.emplace("temperature", "NaN");
         output.emplace("relative_humidity", "NaN");
         output.emplace("CO2", "NaN");
@@ -28,11 +28,20 @@ CSensorStatus CScdSensor::m_InitCallback() {
     }
 
     if (scd30.begin(SCD30_I2CADDR_DEFAULT, &Wire, 0)) {
+        auto& calibration = CConfig::getInstance()["calibration"];
+
+        if (calibration.valid()) {
+            auto& scdSensorCalibration = calibration["scd"];
+
+            if (scdSensorCalibration.valid()) {
+                scd30.setTemperatureOffset(scdSensorCalibration.get<int>("temperatureOffset"));
+            }
+        }
+
         scd30.selfCalibrationEnabled(false);
-        scd30.setTemperatureOffset(0);
         scd30.setMeasurementInterval(2);
         return CSensorStatus::Ok();
-    }
-    else 
+    } else {
         return CSensorStatus::Error("SCD30 failed to init!");
+    }
 }

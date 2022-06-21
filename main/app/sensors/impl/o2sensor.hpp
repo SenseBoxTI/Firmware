@@ -9,6 +9,8 @@ class CO2Sensor : public CSensor {
 
     private:
     void * m_adcCharacteristics = nullptr;
+    float m_rc = 1.0f;
+    float m_offset = 0.0f;
 
     void m_InitADC();
     uint32_t m_SampleADC();
