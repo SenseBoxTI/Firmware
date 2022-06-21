@@ -100,9 +100,10 @@ void CWifi::mInitWifi(const WifiCredentials& aConfig) {
         WIFI_THROW_ON_ERROR(esp_event_loop_create_default());
         m_StaNetif = esp_netif_create_default_wifi_sta();
         if (!m_StaNetif) throw std::runtime_error("WTF WIFI");
-        WIFI_THROW_ON_ERROR( esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &CWifi::m_EventHandler, NULL) );
-        WIFI_THROW_ON_ERROR( esp_event_handler_register(IP_EVENT, ESP_EVENT_ANY_ID, &CWifi::m_EventHandler, NULL) );
     }
+
+    WIFI_THROW_ON_ERROR( esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &CWifi::m_EventHandler, NULL) );
+    WIFI_THROW_ON_ERROR( esp_event_handler_register(IP_EVENT, ESP_EVENT_ANY_ID, &CWifi::m_EventHandler, NULL) );
 
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     WIFI_THROW_ON_ERROR( esp_wifi_init(&cfg) );
@@ -158,11 +159,19 @@ void CWifi::mDisconnect() {
 }
 
 void CWifi::mDeinit() {
+    esp_event_handler_unregister(WIFI_EVENT, ESP_EVENT_ANY_ID, &CWifi::m_EventHandler);
+    esp_event_handler_unregister(IP_EVENT, ESP_EVENT_ANY_ID, &CWifi::m_EventHandler);
+
     logger.mDebug("wifi_init_sta stop sta");
     ESP_ERROR_CHECK(esp_wifi_stop());
 
     logger.mDebug("wifi_init_sta deinit sta");
     ESP_ERROR_CHECK(esp_wifi_deinit());
+
+    for (auto& func : m_DisconnectCbs) func();
+
+    xEventGroupClearBits(m_EventGroup, CONNECTED_BIT);
+    memset(&mIp, 0, sizeof(decltype(mIp)));
 
     m_ConnectCbs.clear();
     m_DisconnectCbs.clear();
