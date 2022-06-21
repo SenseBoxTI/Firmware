@@ -34,6 +34,7 @@ private:
     esp_netif_t* m_StaNetif = nullptr;
     CWifi();
     static void m_EventHandler(void* apArg, esp_event_base_t aBase, int32_t aId, void* apData);
+    static void m_Reconnect(void* aSelf);
 
     std::vector<WifiCb> m_ConnectCbs;
     std::vector<WifiCb> m_DisconnectCbs;

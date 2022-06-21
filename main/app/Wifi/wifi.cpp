@@ -7,6 +7,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
 #include "esp_err.h"
+#include <freertos/task.h>
 
 #include <logscope.hpp>
 
@@ -40,14 +41,18 @@ void CWifi::m_EventHandler(void* apArg, esp_event_base_t aBase, int32_t aId, voi
             case WIFI_EVENT_STA_CONNECTED:
                 logger.mInfo("WIFI_EVENT_STA_CONNECTED");
                 break;
-            case WIFI_EVENT_STA_DISCONNECTED:
+            case WIFI_EVENT_STA_DISCONNECTED: {
                 logger.mInfo("WIFI_EVENT_STA_DISCONNECTED");
                 for (auto& func : self.m_DisconnectCbs) func();
 
-                esp_wifi_connect();
                 xEventGroupClearBits(self.m_EventGroup, CONNECTED_BIT);
                 memset(&self.mIp, 0, sizeof(decltype(self.mIp)));
+
+                // create task to move of the event task, low priority so it does not block other wifi events
+                xTaskHandle handle = NULL;
+                xTaskCreatePinnedToCore(&m_Reconnect, "wifiReconnect", CONFIG_PTHREAD_TASK_STACK_SIZE_DEFAULT, &self, 2, &handle, 1);
                 break;
+            }
             default:
                 logger.mDebug("Unhandled wifi event id: %d", aId);
                 break;
@@ -162,4 +167,21 @@ void CWifi::mDeinit() {
     m_ConnectCbs.clear();
     m_DisconnectCbs.clear();
     logger.mDebug("wifi succesfully deinited");
+}
+
+void CWifi::m_Reconnect(void* aSelf) {
+    CWifi& self = *static_cast<CWifi*>(aSelf);
+
+    logger.mInfo("Reconnecting to network: %s.", self.mCredentials.ssid.c_str());
+    esp_wifi_connect();
+
+    vTaskDelay(5 * 1000 / portTICK_PERIOD_MS);
+
+    while (!self.mConnected()) {
+        logger.mInfo("Reconnecting to network: %s.", self.mCredentials.ssid.c_str());
+        esp_wifi_connect();
+        vTaskDelay(30 * 1000 / portTICK_PERIOD_MS);
+    }
+
+    vTaskDelete(NULL);
 }
