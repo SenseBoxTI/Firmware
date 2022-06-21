@@ -1,5 +1,6 @@
 #include "o2sensor.hpp"
 
+#include <config.hpp>
 #include <esp_adc_cal.h>
 #include <logscope.hpp>
 #include <CConfig.hpp>
@@ -38,14 +39,29 @@ SensorOutput CO2Sensor::m_MeasureCallback() {
     // voltage range 0 - 3089, see O2 doc
     // sensor range 0 - 25%
     const float ratio = 25.0f / 3089.0f;
+    SensorOutput output;
 
-    return {{ "O2", static_cast<float>(m_SampleADC()) * ratio }};
+    float measurement = (static_cast<float>(m_SampleADC()) * m_rc * ratio) + m_offset;
+    output.emplace("O2", measurement);
+
+    return output;
 }
 
 CSensorStatus CO2Sensor::m_InitCallback() {
     m_MeasureInterval = MIX8410_MEASURE_INTERVAL_US;
 
     m_InitADC();
+
+    auto& calibration = CConfig::getInstance()["calibration"];
+
+    if (calibration.valid()) {
+        auto& o2SensorCalibration = calibration["o2"];
+
+        if (o2SensorCalibration.valid()) {
+            m_rc = o2SensorCalibration.get<double>("rc");
+            m_offset = o2SensorCalibration.get<double>("offset");
+        }
+    }
 
     return CSensorStatus::Ok();
 }

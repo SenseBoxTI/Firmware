@@ -1,5 +1,6 @@
 #include "scdsensor.hpp"
 #include <Adafruit_SCD30.h>
+#include <config.hpp>
 
 #include <CConfig.hpp>
 
@@ -28,8 +29,17 @@ CSensorStatus CScdSensor::m_InitCallback() {
     }
 
     if (scd30.begin(SCD30_I2CADDR_DEFAULT, &Wire, 0)) {
+        auto& calibration = CConfig::getInstance()["calibration"];
+
+        if (calibration.valid()) {
+            auto& scdSensorCalibration = calibration["scd"];
+
+            if (scdSensorCalibration.valid()) {
+                scd30.setTemperatureOffset(scdSensorCalibration.get<int>("temperatureOffset"));
+            }
+        }
+
         scd30.selfCalibrationEnabled(false);
-        scd30.setTemperatureOffset(0);
         scd30.setMeasurementInterval(2);
         return CSensorStatus::Ok();
     } else {
