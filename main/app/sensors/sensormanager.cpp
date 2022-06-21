@@ -13,10 +13,18 @@ CSensorManager::CSensorManager() {
 }
 
 CSensorStatus CSensorManager::mAddSensor(CSensor* apSensor) {
-    logger.mDebug("Initializing sensor: %s", apSensor->mName.c_str());
+    logger.mInfo("Initializing sensor: %s", apSensor->mName.c_str());
+    std::string reason = "";
 
     auto status = apSensor->mInit();
-    m_Sensors.push_back(apSensor);
+
+    if (status.mIsOk(reason)) {
+        m_Sensors.push_back(apSensor);
+    } else {
+        delete apSensor;
+        logger.mWarn("Initialization failed: %s", reason.c_str());
+    }
+
     return status;
 }
 

@@ -12,7 +12,7 @@ class CSensor {
     SensorOutput mGetResults();
     CSensorStatus mInit();
     CSensor(std::string aName);
-    ~CSensor();
+    virtual ~CSensor();
 
     private:
     CSensorStatus m_Status;
