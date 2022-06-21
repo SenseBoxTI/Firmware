@@ -10,6 +10,7 @@
 #include <freertos/portmacro.h>
 
 #include <logscope.hpp>
+#include <CTimers.hpp>
 
 #define SDSPI_DEFAULT_DMA 3
 #define TRANSFER_SIZE 4000
@@ -48,7 +49,7 @@ CFile::CFile(const std::string& arPath, FileMode aMode)
 }
 
 void CFile::mStartWriteTimer() {
-    if (m_WriteTimer == nullptr) {
+    if (!CTimers::mCheckTimerExists(m_WriteTimerName.c_str())) {
         printf("Starting write timer for file %s\n", mPath.c_str());
         m_WriteTimer = CTimer::mInit(m_WriteTimerName.c_str(), &m_StartWrite, this);
         m_WriteTimer->mStartPeriodic(FILE_WRITE_INTERVAL);
@@ -260,7 +261,7 @@ CFile & CFile::operator=(CFile &&arrOther) {
 
 CFile::~CFile() {
     m_Close();
-    if (m_WriteTimer != nullptr) {
+    if (CTimers::mCheckTimerExists(m_WriteTimerName.c_str())) {
         m_WriteTimer->mDelete();
     }
     vQueueDelete(m_WriteQueue);

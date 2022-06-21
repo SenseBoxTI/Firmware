@@ -11,6 +11,7 @@ public:
     CTimer* mAddTimer(const char* apName, esp_timer_cb_t aCb, void* aUserCtx);
     void mRemoveTimer(const char* apName);
     void mCleanTimers();
+    static bool mCheckTimerExists(const char* apName);
 
 private:
     CTimers();

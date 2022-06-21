@@ -49,7 +49,6 @@ void CTimers::mRemoveTimer(const char* apName) {
 
     // delete the pointer, then remove the item from the queue
     delete res->second;
-    res->second = nullptr;
     m_Timers.erase(apName);
 }
 
@@ -63,7 +62,6 @@ void CTimers::mCleanTimers() {
         auto timer = tp.second;
 
         delete timer;
-        tp.second = nullptr;
     }
 
     // empty the queue
@@ -80,4 +78,11 @@ void CTimers::m_RunCallback(void* apArg) {
         logger.mError("Task error:");
         App::exit(e);
     }
+}
+
+bool CTimers::mCheckTimerExists(const char* apName) {
+    auto& self = CTimers::getInstance();
+
+    if (self.m_Timers.find(apName) == self.m_Timers.end()) return false;
+    return true;
 }
