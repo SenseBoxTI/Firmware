@@ -43,4 +43,6 @@ jobs:
             build/bootloader/bootloader.bin
             build/partition_table/partition-table.bin
             build/main.bin
+            example_config.toml
+          # generated in this workflow
             flashing.md
