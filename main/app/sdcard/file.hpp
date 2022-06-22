@@ -39,7 +39,7 @@ public:
     static void mDeinitSd();
     static SdState getSdState();
     void mReopen(FileMode aMode);
-    void mFlushQueue();
+    void mFinalizeAppend();
     void mStartWriteTimer();
 
     std::string mRead();
@@ -62,6 +62,7 @@ private:
     static void m_StartWrite(void* aSelf);
     void m_WriteFromQueue();
     void m_AddToQueue(const char* apText);
+    void m_CleanTimers();
 
     FileMode m_Mode;
     FILE* mp_File;

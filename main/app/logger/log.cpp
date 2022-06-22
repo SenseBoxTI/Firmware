@@ -98,7 +98,7 @@ void CLog::mWriteLog(const char* apScope, const std::string& arText, LogType aTy
 }
 
 void CLog::mFinalize() {
-    m_Log.mFlushQueue();
+    m_Log.mFinalizeAppend();
     printf("All items in the queue were written to the log file.\n"); // do not change this to logger!
 }
 

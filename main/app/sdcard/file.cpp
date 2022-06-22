@@ -38,21 +38,38 @@ CFile::CFile(const std::string& arPath, FileMode aMode)
 :   mPath(MOUNT_POINT "/" + arPath),
     m_Mode(aMode),
     mp_File(nullptr),
-    m_FileUntouchedCnt(0),
     m_WriteTimer(nullptr)
 {
     m_WriteTimerName = m_GetTimerName();
-    m_WriteTimer = CTimer::mInit(m_WriteTimerName.c_str(), &m_StartWrite, this);
-    m_WriteTimer->mStartPeriodic(FILE_WRITE_INTERVAL);
 
-    m_WriteQueue = xQueueCreate(16, QUEUE_SIZE_BYTES); // queue of 20
+    if (aMode == Append) mStartWriteTimer();
 }
 
 void CFile::mStartWriteTimer() {
+    if (m_Mode != Append) return;
+
     if (!CTimers::mCheckTimerExists(m_WriteTimerName.c_str())) {
         printf("Starting write timer for file %s\n", mPath.c_str());
         m_WriteTimer = CTimer::mInit(m_WriteTimerName.c_str(), &m_StartWrite, this);
         m_WriteTimer->mStartPeriodic(FILE_WRITE_INTERVAL);
+    }
+
+    if (m_WriteQueue == nullptr) {
+        m_WriteQueue = xQueueCreate(16, QUEUE_SIZE_BYTES); // queue of 16
+    }
+}
+
+void CFile::m_CleanTimers() {
+    // really important, otherwise creates a infinite loop
+    if (m_WriteQueue != nullptr && uxQueueMessagesWaiting(m_WriteQueue) > 0) mFinalizeAppend();
+
+    if (CTimers::mCheckTimerExists(m_WriteTimerName.c_str())) {
+        m_WriteTimer->mDelete();
+    }
+
+    if (m_WriteQueue != nullptr) {
+        vQueueDelete(m_WriteQueue);
+        m_WriteQueue = nullptr;
     }
 }
 
@@ -63,12 +80,15 @@ void CFile::mStartWriteTimer() {
 void CFile::mReopen(FileMode aMode) {
     if (aMode == m_Mode) return;
 
-    mFlushQueue();
+    if (m_Mode == Append) m_CleanTimers();
+
     m_Close();
 
     m_Mode = aMode;
 
     m_Open();
+
+    if (m_Mode == Append) mStartWriteTimer();
 }
 
 void CFile::m_Open() {
@@ -217,7 +237,7 @@ void CFile::m_WriteFromQueue() {
 /**
  * Write any data that is still pending from the queue and close the file
  */
-void CFile::mFlushQueue() {
+void CFile::mFinalizeAppend() {
     if (m_Mode != Append) return;
 
     m_Open();
@@ -229,6 +249,8 @@ void CFile::mFlushQueue() {
             fprintf(mp_File, buffer);
         }
     }
+
+    m_CleanTimers();
 
     m_Close();
 }
