@@ -66,6 +66,8 @@ void CTimers::mCleanTimers() {
 
     // empty the queue
     m_Timers.clear();
+
+    logger.mInfo("All timers were stopped.");
 }
 
 void CTimers::m_RunCallback(void* apArg) {

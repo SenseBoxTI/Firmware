@@ -189,16 +189,11 @@ void App::exit(const std::exception& e) {
 
     try {
         mqtt.mDeinit();
-        logger.mDebug("mqtt deinited");
         wifi.mDeinit();
-        logger.mDebug("wifi deinited");
         timers.mCleanTimers();
-        logger.mDebug("timers deinited");
         log.mFinalize();
-        logger.mDebug("log deinited");
 
         CFile::mDeinitSd();
-        logger.mDebug("sd deinited\n");
 
         logger.mWarn("App will restart now!");
         app.init();
