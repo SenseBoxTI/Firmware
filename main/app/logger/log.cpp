@@ -25,22 +25,7 @@ void CLog::m_RotateLogFile(void* aSelf) {
 }
 
 void CLog::m_RotateLogFile() {
-    std::string timeString;
-    try {
-        struct tm timeinfo = CTime::mGetTime();
-        timeString = string_vformat(
-            "[ %02d/%02d/%4d | %02d:%02d:%02d ]",
-            timeinfo.tm_mday,
-            timeinfo.tm_mon + 1, // tm mon 0-11
-            timeinfo.tm_year + 1900, // tm years since 1900
-            timeinfo.tm_hour,
-            timeinfo.tm_min,
-            timeinfo.tm_sec
-        );
-    }
-    catch (const std::runtime_error& e) {
-        timeString = "[  TIME  UNINITIALIZED  ]";
-    }
+    std::string timeString = CTime::mGetFormattedTimeString();
 
     try {
         printf("%sD %s (log) Checking log file size.%s\r\n", ansiColors[0], timeString.c_str(), resetStyle);
@@ -84,22 +69,7 @@ void CLog::mInit() {
 
 void CLog::mWriteLog(const char* apScope, const std::string& arText, LogType aType) {
     // Get time string
-    std::string timeString;
-    try {
-        struct tm timeinfo = CTime::mGetTime();
-        timeString = string_vformat(
-            "[ %02d/%02d/%4d | %02d:%02d:%02d ]",
-            timeinfo.tm_mday,
-            timeinfo.tm_mon + 1, // tm mon 0-11
-            timeinfo.tm_year + 1900, // tm years since 1900
-            timeinfo.tm_hour,
-            timeinfo.tm_min,
-            timeinfo.tm_sec
-        );
-    }
-    catch (const std::runtime_error& e) {
-        timeString = "[  TIME  UNINITIALIZED  ]";
-    }
+    std::string timeString = CTime::mGetFormattedTimeString();
 
     std::string toPrint = string_vformat("%c %s (%s) %s\r\n",
         logIds[uint8_t(aType)],

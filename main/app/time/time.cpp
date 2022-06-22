@@ -10,6 +10,8 @@ static CLogScope logger{"time"};
 
 bool CTime::mb_IsInitialized = false;
 
+extern std::string string_vformat(const char* apFormat, ...);
+
 void CTime::mInitTime(const char* apNtpServer) {
     auto& wifi = CWifi::getInstance();
 
@@ -63,4 +65,26 @@ std::string CTime::mGetTimeString() {
     size_t l = strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
 
     return std::string(strftime_buf, l);
+}
+
+std::string CTime::mGetFormattedTimeString() {
+    std::string timeString;
+
+    try {
+        struct tm timeinfo = CTime::mGetTime();
+        timeString = string_vformat(
+            "[ %02d/%02d/%4d | %02d:%02d:%02d ]",
+            timeinfo.tm_mday,
+            timeinfo.tm_mon + 1, // tm mon 0-11
+            timeinfo.tm_year + 1900, // tm years since 1900
+            timeinfo.tm_hour,
+            timeinfo.tm_min,
+            timeinfo.tm_sec
+        );
+    }
+    catch (const std::runtime_error& e) {
+        timeString = "[  TIME  UNINITIALIZED  ]";
+    }
+
+    return timeString;
 }
