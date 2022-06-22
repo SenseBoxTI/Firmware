@@ -57,7 +57,6 @@ void App::init() {
         auto& config = CConfig::getInstance();
         config.mRead("/sdcard/config.toml");
 
-
         initWifi(config["wifi"]);
         if (status == Init) initNtp();
         initMqtt(config["mqtt"]);
@@ -70,7 +69,8 @@ void App::init() {
         logger.mInfo("System has started.");
         logger.mInfo("The current time is: %s", CTime::mGetTimeString().c_str());
     } catch (const std::runtime_error& e) {
-        status = Stopped;
+        logger.mError("Error during init:");
+        exit(e);
     }
 }
 
@@ -169,6 +169,39 @@ void App::startSendingData() {
     logger.mDebug("Send data timer has started");
 }
 
+uint8_t App::deinit() {
+    auto& mqtt = CMqtt::getInstance();
+    auto& wifi = CWifi::getInstance();
+    auto& log = CLog::getInstance();
+    auto& timers = CTimers::getInstance();
+
+    uint8_t step = 0;
+
+    try {
+        step++;
+        mqtt.mDeinit();
+
+        step++;
+        wifi.mDeinit();
+
+        step++;
+        timers.mCleanTimers();
+
+        step++;
+        log.mFinalize();
+
+        step++;
+        CFile::mDeinitSd();
+
+        return 0;
+    }
+    catch (const std::exception& e) {
+        logger.mError("Error during deinit: %s", e.what());
+        logger.mError("Failed at step: %d", step);
+        return step;
+    }
+}
+
 void App::exit(const std::exception& e) {
     logger.mError("Ah shucks!");
     logger.mError("FATAL unhandled runtime exception occured!");
@@ -181,23 +214,18 @@ void App::exit(const std::exception& e) {
     }
     status = SoftReset;
 
-    auto& mqtt = CMqtt::getInstance();
-    auto& wifi = CWifi::getInstance();
-    auto& log = CLog::getInstance();
-    auto& timers = CTimers::getInstance();
     auto& app = App::getInstance();
 
+    if (app.deinit()) {
+        status = Stopped;
+        return;
+    }
+
     try {
-        mqtt.mDeinit();
-        wifi.mDeinit();
-        timers.mCleanTimers();
-        log.mFinalize();
-
-        CFile::mDeinitSd();
-
         logger.mWarn("App will restart now!");
         app.init();
     } catch (const std::exception& e) {
+        logger.mError("Error during softrestart: %s", e.what());
         status = Stopped;
     }
 }
