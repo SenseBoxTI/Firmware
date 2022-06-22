@@ -2,7 +2,7 @@
 
 #include <sensor.hpp>
 
-class CDbSensor : public CSensor {
+class CMax4466 : public CSensor {
     public:
     using CSensor::CSensor;
 

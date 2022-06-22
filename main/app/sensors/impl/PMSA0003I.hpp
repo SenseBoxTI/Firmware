@@ -1,16 +1,14 @@
 #pragma once
 
 #include <sensor.hpp>
-#include <scdsensor.hpp>
 
-class CVocSensor : public CSensor {
+class CPmsa0003I : public CSensor{
     public:
-        CVocSensor(std::string aName, CScdSensor& arScdSensor);
+        using CSensor::CSensor;
 
     private:
         float m_factor = 1.0f;
-
-        CScdSensor& mr_ScdSensor;
+        
         SensorOutput m_MeasureCallback();
         CSensorStatus m_InitCallback();
 };

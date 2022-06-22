@@ -1,5 +1,4 @@
-#include <vocsensor.hpp>
-#include <scdsensor.hpp>
+#include <CCS811.hpp>
 #include <Adafruit_CCS811.h>
 #include <logscope.hpp>
 #include <CConfig.hpp>
@@ -9,12 +8,12 @@ static CLogScope logger{"CCS811"};
 
 Adafruit_CCS811 ccs = Adafruit_CCS811();
 
-CVocSensor::CVocSensor(std::string aName, CScdSensor& arScdSensor)
+CCcs811::CCcs811(std::string aName, CScd30& arScdSensor)
 :   CSensor(aName),
     mr_ScdSensor(arScdSensor)
 {}
 
-SensorOutput CVocSensor::m_MeasureCallback() {
+SensorOutput CCcs811::m_MeasureCallback() {
     SensorOutput output;
     uint8_t error;
 
@@ -29,7 +28,7 @@ SensorOutput CVocSensor::m_MeasureCallback() {
     return output;
 }
 
-CSensorStatus CVocSensor::m_InitCallback() {
+CSensorStatus CCcs811::m_InitCallback() {
     m_MeasureInterval = CCS811_MEASURE_INTERVAL_US;
 
     if(ccs.begin()) {

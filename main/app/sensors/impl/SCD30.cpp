@@ -1,12 +1,11 @@
-#include "scdsensor.hpp"
+#include "SCD30.hpp"
 #include <Adafruit_SCD30.h>
 #include <config.hpp>
-
 #include <CConfig.hpp>
 
 Adafruit_SCD30 scd30 = Adafruit_SCD30();
 
-SensorOutput CScdSensor::m_MeasureCallback() {
+SensorOutput CScd30::m_MeasureCallback() {
     SensorOutput output;
 
     if (scd30.dataReady() && scd30.read()) {
@@ -21,7 +20,7 @@ SensorOutput CScdSensor::m_MeasureCallback() {
     return output;
 }
 
-CSensorStatus CScdSensor::m_InitCallback() {
+CSensorStatus CScd30::m_InitCallback() {
     m_MeasureInterval = SCD30_MEASURE_INTERVAL_US;
 
     if (!Wire.begin(47, 48)) {

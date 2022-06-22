@@ -1,9 +1,7 @@
-#include "colorsensor.hpp"
+#include "AS726x.hpp"
 #include <config.hpp>
-
 #include <Adafruit_AS726x.h>
 #include <Wire.h>
-
 #include <CConfig.hpp>
 
 Adafruit_AS726x as726x;
@@ -20,7 +18,7 @@ constexpr const char* colors[] = {
     "RED"
 };
 
-SensorOutput CColorSpectrumSensor::m_MeasureCallback() {
+SensorOutput CAS726x::m_MeasureCallback() {
     SensorOutput output;
 
     if (!as726x.dataReady()) return output;
@@ -34,7 +32,7 @@ SensorOutput CColorSpectrumSensor::m_MeasureCallback() {
     return output;
 }
 
-CSensorStatus CColorSpectrumSensor::m_InitCallback() {
+CSensorStatus CAS726x::m_InitCallback() {
     m_MeasureInterval = AS7262_MEASURE_INTERVAL_US;
 
     if (!Wire.begin(47, 48)) {

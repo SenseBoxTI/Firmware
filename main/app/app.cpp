@@ -2,13 +2,13 @@
 #include <stdexcept>
 #include <iostream>
 #include <sensormanager.hpp>
-#include <dbsensor.hpp>
-#include <o2sensor.hpp>
-#include <scdsensor.hpp>
-#include <colorsensor.hpp>
-#include <lightintensitysensor.hpp>
-#include <particlesensor.hpp>
-#include <vocsensor.hpp>
+#include <MAX4466.hpp>
+#include <MIX8410.hpp>
+#include <SCD30.hpp>
+#include <AS726x.hpp>
+#include <TSL2591.hpp>
+#include <PMSA0003I.hpp>
+#include <CCS811.hpp>
 #include <wifi.hpp>
 #include <log.hpp>
 #include <file.hpp>
@@ -41,6 +41,10 @@ void App::m_SendMeasurements(void* aArgs) {
 void App::start() {
     try {
         init();
+
+        vTaskDelay(1.25 * 60 * 1000 / portTICK_PERIOD_MS);
+
+        throw std::runtime_error("WE DEAD NOWWW!");
     }
     catch (const std::runtime_error& e) {
         softRestart(e);
@@ -136,14 +140,14 @@ void App::initSensors() {
     }
 
     logger.mDebug("Adding sensors...");
-    sensorManager.mAddSensor(new CDbSensor("dbSensor"));
-    sensorManager.mAddSensor(new CO2Sensor("O2Sensor"));
-    sensorManager.mAddSensor(new CColorSpectrumSensor("ColorSpectrumSensor"));
-    sensorManager.mAddSensor(new CLightIntensitySensor("LightIntensitySensor"));
-    auto scdSensor = new CScdSensor("SCDSensor");
+    sensorManager.mAddSensor(new CMax4466("dbSensor"));
+    sensorManager.mAddSensor(new CMix8410("O2Sensor"));
+    sensorManager.mAddSensor(new CAS726x("ColorSpectrumSensor"));
+    sensorManager.mAddSensor(new CTsl2591("LightIntensitySensor"));
+    auto scdSensor = new CScd30("SCDSensor");
     sensorManager.mAddSensor(scdSensor);
-    sensorManager.mAddSensor(new CParticleSensor("Particlesensor"));
-    sensorManager.mAddSensor(new CVocSensor("VOCSensor", *scdSensor));
+    sensorManager.mAddSensor(new CPmsa0003I("Particlesensor"));
+    sensorManager.mAddSensor(new CCcs811("VOCSensor", *scdSensor));
 }
 
 void App::attachWifiCallbacks() {

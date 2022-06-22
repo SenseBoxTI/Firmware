@@ -2,11 +2,12 @@
 
 #include <sensor.hpp>
 
-class CColorSpectrumSensor : public CSensor {
-public:
+class CTsl2591 : public CSensor {
+    public:
     using CSensor::CSensor;
 
-private:
+    private:
+    float m_offset;
     SensorOutput m_MeasureCallback();
     CSensorStatus m_InitCallback();
 };

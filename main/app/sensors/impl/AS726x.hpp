@@ -2,12 +2,11 @@
 
 #include <sensor.hpp>
 
-class CLightIntensitySensor : public CSensor {
-    public:
+class CAS726x : public CSensor {
+public:
     using CSensor::CSensor;
 
-    private:
-    float m_offset;
+private:
     SensorOutput m_MeasureCallback();
     CSensorStatus m_InitCallback();
 };

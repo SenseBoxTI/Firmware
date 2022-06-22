@@ -2,7 +2,7 @@
 
 #include <sensor.hpp>
 
-class CScdSensor : public CSensor {
+class CScd30 : public CSensor {
     public:
         using CSensor::CSensor;
 

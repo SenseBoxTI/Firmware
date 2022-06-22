@@ -10,17 +10,17 @@ SRCS
     "./app/sensors/sensoroutput.cpp"
     "./app/sensors/measurements.cpp"
     # Sensor Impl
-    "./app/sensors/impl/dbsensor.cpp"
-    "./app/sensors/impl/o2sensor.cpp"
-    "./app/sensors/impl/scdsensor.cpp"
-    "./app/sensors/impl/colorsensor.cpp"
-    "./app/sensors/impl/lightintensitysensor.cpp"
-    "./app/sensors/impl/particlesensor.cpp"
-    "./app/sensors/impl/vocsensor.cpp"
+    "./app/sensors/impl/AS726x.cpp"
+    "./app/sensors/impl/CCS811.cpp"
+    "./app/sensors/impl/MAX4466.cpp"
+    "./app/sensors/impl/MIX8410.cpp"
+    "./app/sensors/impl/PMSA0003I.cpp"
+    "./app/sensors/impl/SCD30.cpp"
+    "./app/sensors/impl/TSL2591.cpp"
     # Time
     "./app/time/time.cpp"
     # Wifi
-    "./app/Wifi/wifi.cpp"
+    "./app/wifi/wifi.cpp"
     # SDCard
     "./app/sdcard/file.cpp"
     "./app/sdcard/dir.cpp"
@@ -45,7 +45,7 @@ INCLUDE_DIRS
     # Time
     "./app/time/"
     # Wifi
-    "./app/Wifi/"
+    "./app/wifi/"
     # SDCard
     "./app/sdcard/"
     # Logger
