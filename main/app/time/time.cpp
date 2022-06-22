@@ -25,12 +25,12 @@ void CTime::mInitTime(const char* apNtpServer) {
     sntp_init();
 
     uint8_t retry = 0;
-    const uint8_t retryCnt = 10;
+    const uint8_t retryCnt = 15;
 
     logger.mInfo("Waiting for system time to be set...");
     while (sntp_get_sync_status() == SNTP_SYNC_STATUS_RESET && ++retry <= retryCnt) {
         logger.mDebug("Waiting...  (%d/%d)", retry, retryCnt);
-        vTaskDelay(2000 / portTICK_PERIOD_MS);
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 
     // check if we have time
