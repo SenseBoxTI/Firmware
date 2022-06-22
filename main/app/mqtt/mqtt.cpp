@@ -137,6 +137,13 @@ void CMqtt::mStartClient() {
 
     if (m_Client != NULL) throw std::runtime_error("Client was already constructed.");
 
+    // allow the device to retry provisioning if the device is not provisioned
+    // this should only be allowed here
+    if (!mb_Provisioned) {
+        mInit(mcp_DeviceId, mcp_AccessToken);
+        return;
+    }
+
     const esp_mqtt_client_config_t mqtt_cfg = m_GetClientConfig(mcp_AccessToken.c_str());
     m_Client = esp_mqtt_client_init(&mqtt_cfg);
     esp_mqtt_client_start(m_Client);
