@@ -219,7 +219,8 @@ void CFile::m_WriteFromQueue() {
  */
 void CFile::mFlushQueue() {
     if (m_Mode != Append) return;
-    if (!m_IsOpen()) return;
+
+    m_Open();
 
     char buffer[QUEUE_SIZE_BYTES];
 
