@@ -86,7 +86,6 @@ void CMqtt::m_Reinit() {
         logger.mInfo("Reiniting client.");
 
         mDeinit();
-        vTaskDelay(5000 / portTICK_PERIOD_MS);
         mStartClient();
 
         logger.mDebug("Client was reinited.\n");
