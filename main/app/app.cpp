@@ -43,7 +43,7 @@ void App::start() {
         init();
     }
     catch (const std::runtime_error& e) {
-        exit(e);
+        softRestart(e);
     }
 }
 
@@ -70,7 +70,7 @@ void App::init() {
         logger.mInfo("The current time is: %s", CTime::mGetTimeString().c_str());
     } catch (const std::runtime_error& e) {
         logger.mError("Error during init:");
-        exit(e);
+        softRestart(e);
     }
 }
 
@@ -199,7 +199,7 @@ uint8_t App::deinit() {
     }
 }
 
-void App::exit(const std::exception& e) {
+void App::softRestart(const std::exception& e) {
     logger.mError("Ah shucks!");
     logger.mError("FATAL unhandled runtime exception occured!");
     logger.mError("Famous last words:");

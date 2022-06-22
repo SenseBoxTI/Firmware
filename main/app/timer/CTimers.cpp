@@ -78,7 +78,7 @@ void CTimers::m_RunCallback(void* apArg) {
     }
     catch (const std::exception& e) {
         logger.mError("Task error:");
-        App::exit(e);
+        App::softRestart(e);
     }
 }
 

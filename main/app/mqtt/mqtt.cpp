@@ -99,7 +99,7 @@ void CMqtt::m_Reinit() {
         logger.mDebug("Client was reinited.\n");
     } catch (const std::exception& e) {
         logger.mError("Could not reinit connection\n");
-        App::exit(e);
+        App::softRestart(e);
     }
 }
 

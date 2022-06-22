@@ -14,7 +14,7 @@ class App {
 public:
     static App& getInstance();
     void start();
-    static void exit(const std::exception& e);
+    static void softRestart(const std::exception& e);
 
     static AppState status;
 
