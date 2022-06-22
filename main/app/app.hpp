@@ -30,6 +30,7 @@ private:
     void initSensors();
     void startSendingData();
     void attachWifiCallbacks();
+    uint8_t deinit();
 
     CTimer* m_SendDataTimer;
 };
