@@ -51,12 +51,12 @@ void App::init() {
     try {
         logger.mDebug("Application is starting");
 
+        CLog::getInstance().mInit();
         initSdCard();
 
         auto& config = CConfig::getInstance();
         config.mRead("/sdcard/config.toml");
 
-        CLog::getInstance().mInit();
 
         initWifi(config["wifi"]);
         if (status == Init) initNtp();
