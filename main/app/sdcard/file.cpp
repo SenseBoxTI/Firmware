@@ -244,27 +244,43 @@ size_t CFile::mGetFileLength() {
 }
 
 CFile::CFile(CFile &&arrOther) {
+    mPath = arrOther.mPath;
+
+    m_Mode = arrOther.m_Mode;
     mp_File = arrOther.mp_File;
     arrOther.mp_File = nullptr;
-
-    mPath = arrOther.mPath;
+    m_WriteQueue = arrOther.m_WriteQueue;
+    arrOther.m_WriteQueue = nullptr;
+    m_FileUntouchedCnt = arrOther.m_FileUntouchedCnt;
+    m_WriteTimer = arrOther.m_WriteTimer;
+    arrOther.m_WriteTimer = nullptr;
+    m_WriteTimerName = arrOther.m_WriteTimerName;
 }
 
 CFile & CFile::operator=(CFile &&arrOther) {
+    mPath = arrOther.mPath;
+
+    m_Mode = arrOther.m_Mode;
     mp_File = arrOther.mp_File;
     arrOther.mp_File = nullptr;
-
-    mPath = arrOther.mPath;
+    m_WriteQueue = arrOther.m_WriteQueue;
+    arrOther.m_WriteQueue = nullptr;
+    m_FileUntouchedCnt = arrOther.m_FileUntouchedCnt;
+    m_WriteTimer = arrOther.m_WriteTimer;
+    arrOther.m_WriteTimer = nullptr;
+    m_WriteTimerName = arrOther.m_WriteTimerName;
 
     return *this;
 }
 
 CFile::~CFile() {
     m_Close();
-    if (CTimers::mCheckTimerExists(m_WriteTimerName.c_str())) {
+    if (m_WriteTimer != nullptr && CTimers::mCheckTimerExists(m_WriteTimerName.c_str())) {
         m_WriteTimer->mDelete();
     }
-    vQueueDelete(m_WriteQueue);
+    if (m_WriteQueue != nullptr) {
+        vQueueDelete(m_WriteQueue);
+    }
 }
 
 std::string CFile::m_GetTimerName() {
