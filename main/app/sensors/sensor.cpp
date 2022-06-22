@@ -20,8 +20,8 @@ SensorOutput CSensor::mGetResults() {
 CSensorStatus CSensor::mInit() {
     m_Status = m_InitCallback();
 
-    if (m_MeasureInterval > SEND_INTERVAL_US || m_MeasureInterval < 10000) {
-        throw std::runtime_error("Measure interval must be shorter than " + std::to_string(SEND_INTERVAL_US / 1000000) + "s and longer than 10ms");
+    if (m_MeasureInterval < 10000) {
+        throw std::runtime_error("Measure interval must be longer than 10ms");
     }
 
     m_MeasurementTotal = SensorOutput();
