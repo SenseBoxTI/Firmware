@@ -76,7 +76,7 @@ void CWifi::m_EventHandler(void* apArg, esp_event_base_t aBase, int32_t aId, voi
                 break;
             }
         } else {
-            printf("WTF\n");
+            // if we end up here something must have gone terribly wrong
             throw std::runtime_error("UNKNOWN WIFI BASE EVENT: " + std::string(aBase));
         }
     }
@@ -90,6 +90,13 @@ void CWifi::mInitWifi(const WifiCredentials& aConfig) {
     bool enterprise = !aConfig.eapUsername.empty();
     esp_err_t error;
     mCredentials = aConfig;
+
+    // check if the client was already inited, for stability
+    wifi_mode_t mode;
+    if (esp_wifi_get_mode(&mode) == ESP_OK) {
+        logger.mWarn("Client was already inited.");
+        return;
+    }
 
     if (mCredentials.ssid.size() > 32) throw std::runtime_error("SSID is longer than 32 characters");
     if (enterprise && mCredentials.password.size() > 64) throw std::runtime_error("Password is longer than 64 characters");
@@ -111,6 +118,8 @@ void CWifi::mInitWifi(const WifiCredentials& aConfig) {
 
     wifi_config_t wifi_config = {};
     memcpy(wifi_config.sta.ssid, mCredentials.ssid.c_str(), mCredentials.ssid.size());
+
+    // set normal password
     if (!enterprise) {
         memcpy(wifi_config.sta.password, mCredentials.password.c_str(), mCredentials.password.size());
     }
@@ -120,6 +129,7 @@ void CWifi::mInitWifi(const WifiCredentials& aConfig) {
     WIFI_THROW_ON_ERROR( esp_wifi_set_mode(WIFI_MODE_STA) );
     WIFI_THROW_ON_ERROR( esp_wifi_set_config(WIFI_IF_STA, &wifi_config) );
 
+    // set enterprise settings
     if (enterprise) {
         WIFI_THROW_ON_ERROR( esp_wifi_sta_wpa2_ent_set_identity((uint8_t *)mCredentials.eapId.c_str(), mCredentials.eapId.size()) );
 
@@ -158,6 +168,13 @@ void CWifi::mDisconnect() {
     esp_wifi_disconnect();
 }
 
+/**
+ * makes sure event handlers are deregistered
+ * stops and deinits esp_wifi
+ * runs disconnect callbacks
+ * resets the ip address stored in the class
+ * removes any callbacks that were set before
+ */
 void CWifi::mDeinit() {
     esp_event_handler_unregister(WIFI_EVENT, ESP_EVENT_ANY_ID, &CWifi::m_EventHandler);
     esp_event_handler_unregister(IP_EVENT, ESP_EVENT_ANY_ID, &CWifi::m_EventHandler);
@@ -175,9 +192,15 @@ void CWifi::mDeinit() {
 
     m_ConnectCbs.clear();
     m_DisconnectCbs.clear();
+
     logger.mDebug("wifi succesfully deinited");
 }
 
+/**
+ * internal reconnect function, must be run using xTaskCreate()!
+ * loops every 30 seconds if the wifi connection was not reestablished within 5 seconds
+ * the recommended priority for the task is just above tskIDLE_PRIORITY
+ */
 void CWifi::m_Reconnect(void* aSelf) {
     CWifi& self = *static_cast<CWifi*>(aSelf);
 
