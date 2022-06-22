@@ -2,11 +2,6 @@
 
 #define DEBUG_ENABLED 0
 
-#define MQTT_URL "mqtts://test.ddss-sensebox.nl"
-
-#define PROVISION_KEY ""
-#define PROVISION_SECRET ""
-
 // public key
 #define MQTT_TLS_CERT \
 "-----BEGIN CERTIFICATE-----\n" \

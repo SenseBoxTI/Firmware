@@ -38,15 +38,23 @@ CMqtt& CMqtt::getInstance() {
     return instance;
 }
 
-void CMqtt::mInit(const std::string& acrDeviceId, const std::string& acrAccessToken) {
+void CMqtt::mInit() {
     logger.mInfo("Initializing MQTT");
 
     auto& wifi = CWifi::getInstance();
     if (!wifi.mConnected()) throw std::runtime_error("Need a active internet connection to connect to the MQTT server.");
 
-    mcp_DeviceId = acrDeviceId;
-    mcp_AccessToken = acrAccessToken;
-    mcp_SubscribeTopic = "/provision/response";
+    mp_SubscribeTopic = "/provision/response";
+
+    auto& config = CConfig::getInstance()["mqtt"];
+
+    if (!config.valid()) throw std::runtime_error("Invalid MQTT configuration.");
+
+    m_DeviceId = config.get<std::string>("deviceId");
+    m_AccessToken = config.get<std::string>("accessToken");
+    m_Url = config.get<std::string>("url");
+    m_ProvisionKey = config.get<std::string>("provisionKey");
+    m_ProvisionSecret = config.get<std::string>("provisionSecret");
 
     ESP_ERROR_CHECK(nvs_flash_init());
 
@@ -135,16 +143,19 @@ void CMqtt::mStartClient() {
 
     if (!CWifi::getInstance().mConnected()) return;
 
-    if (m_Client != NULL) throw std::runtime_error("Client was already constructed.");
+    if (m_Client != NULL) {
+        logger.mWarn("Client was already constructed.");
+        return;
+    }
 
     // allow the device to retry provisioning if the device is not provisioned
     // this should only be allowed here
     if (!mb_Provisioned) {
-        mInit(mcp_DeviceId, mcp_AccessToken);
+        mInit();
         return;
     }
 
-    const esp_mqtt_client_config_t mqtt_cfg = m_GetClientConfig(mcp_AccessToken.c_str());
+    const esp_mqtt_client_config_t mqtt_cfg = m_GetClientConfig(m_AccessToken.c_str());
     m_Client = esp_mqtt_client_init(&mqtt_cfg);
     esp_mqtt_client_start(m_Client);
 
@@ -253,7 +264,7 @@ void CMqtt::m_EventHandler(void* apArgs, esp_event_base_t aBase, int32_t aId, vo
         case MQTT_EVENT_DATA: {
             logger.mDebug("MQTT_EVENT_DATA");
 
-            if (strcmp(self.mcp_SubscribeTopic, event->topic) == 0) {
+            if (strcmp(self.mp_SubscribeTopic, event->topic) == 0) {
                 self.m_OnProvisionResponse(event->data, event->data_len);
             }
             break;
@@ -288,19 +299,19 @@ void CMqtt::m_RequestProvision() {
     cJSON* obj = cJSON_CreateObject();
     if (obj == NULL) throw std::runtime_error("Could not create provisioning object.");
 
-    if (cJSON_AddStringToObject(obj, "deviceName", mcp_DeviceId.c_str()) == NULL) {
+    if (cJSON_AddStringToObject(obj, "deviceName", m_DeviceId.c_str()) == NULL) {
         m_JsonError(obj, "Could not create deviceName for provisioning object.");
     }
-    if (cJSON_AddStringToObject(obj, "provisionDeviceKey", PROVISION_KEY) == NULL) {
+    if (cJSON_AddStringToObject(obj, "provisionDeviceKey", m_ProvisionKey.c_str()) == NULL) {
         m_JsonError(obj, "Could not create provisionDeviceKey for provisioning object.");
     }
-    if (cJSON_AddStringToObject(obj, "provisionDeviceSecret", PROVISION_SECRET) == NULL) {
+    if (cJSON_AddStringToObject(obj, "provisionDeviceSecret", m_ProvisionSecret.c_str()) == NULL) {
         m_JsonError(obj, "Could not create provisionDeviceSecret for provisioning object.");
     }
     if (cJSON_AddStringToObject(obj, "credentialsType", "ACCESS_TOKEN") == NULL) {
         m_JsonError(obj, "Could not create credentialsType for provisioning object.");
     }
-    if (cJSON_AddStringToObject(obj, "token", mcp_AccessToken.c_str()) == NULL) {
+    if (cJSON_AddStringToObject(obj, "token", m_AccessToken.c_str()) == NULL) {
         m_JsonError(obj, "Could not create token for provisioning object.");
     }
 
@@ -309,13 +320,13 @@ void CMqtt::m_RequestProvision() {
 
     cJSON_Delete(obj);
 
-    m_Subscribe(mcp_SubscribeTopic);
+    m_Subscribe(mp_SubscribeTopic);
 
     m_SendCustom(publishTopic, publishData);
 }
 
 void CMqtt::m_OnProvisionResponse(const char* acpData, int aLen) {
-    m_Unsubscribe(mcp_SubscribeTopic);
+    m_Unsubscribe(mp_SubscribeTopic);
 
     cJSON* data = cJSON_ParseWithLength(acpData, aLen);
     if (data == NULL) {
@@ -357,7 +368,7 @@ void CMqtt::m_OnProvisionResponse(const char* acpData, int aLen) {
 
 esp_mqtt_client_config_t CMqtt::m_GetClientConfig(const char* aUsername) {
     esp_mqtt_client_config_t config = {
-        .uri = MQTT_URL,
+        .uri = m_Url.c_str(),
         .client_id = NULL,
         .username = aUsername,
         .disable_auto_reconnect = true, // done in the event handler

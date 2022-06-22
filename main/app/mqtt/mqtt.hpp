@@ -6,7 +6,7 @@
 
 class CMqtt {
 public:
-    void mInit(const std::string& acrDeviceId, const std::string& acrAccessToken);
+    void mInit();
     static CMqtt& getInstance();
     void mSendMeasurements(Measurements& arValues);
     void mDisconnect();
@@ -30,9 +30,12 @@ private:
     void m_Connect();
 
     esp_mqtt_client_handle_t m_Client;
-    std::string mcp_DeviceId;
-    std::string mcp_AccessToken;
-    const char* mcp_SubscribeTopic;
+    std::string m_DeviceId;
+    std::string m_AccessToken;
+    std::string m_Url;
+    std::string m_ProvisionKey;
+    std::string m_ProvisionSecret;
+    const char* mp_SubscribeTopic;
     bool mb_Provisioned;
     bool mb_Connected;
     bool mb_SendAttributes;

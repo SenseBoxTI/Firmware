@@ -59,7 +59,7 @@ void App::init() {
 
         initWifi(config["wifi"]);
         if (status == Init) initNtp();
-        initMqtt(config["mqtt"]);
+        initMqtt();
         initSensors();
         attachWifiCallbacks();
         startSendingData();
@@ -114,13 +114,10 @@ void App::initNtp() {
     }
 }
 
-void App::initMqtt(toml::Value config) {
+void App::initMqtt() {
     try {
-        std::string deviceId = config.get<std::string>("deviceId");
-        std::string accessToken = config.get<std::string>("accessToken");
-
         auto& mqtt = CMqtt::getInstance();
-        if (status == Init) mqtt.mInit(deviceId, accessToken);
+        if (status == Init) mqtt.mInit();
         else mqtt.mStartClient();
     }
     catch (const std::runtime_error& e) {

@@ -26,7 +26,7 @@ private:
     void initSdCard();
     void initWifi(toml::Value config);
     void initNtp();
-    void initMqtt(toml::Value config);
+    void initMqtt();
     void initSensors();
     void startSendingData();
     void attachWifiCallbacks();
