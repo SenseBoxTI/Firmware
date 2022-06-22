@@ -12,8 +12,7 @@
 enum FileMode { //enumerate for filemode fopen
     Read,
     Write,
-    Append,
-    Closed
+    Append
 };
 
 enum SdState { //enumerate for filemode fopen
