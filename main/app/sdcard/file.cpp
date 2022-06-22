@@ -166,6 +166,11 @@ void CFile::mAppend(const std::string& arText) {
 void CFile::m_AddToQueue(const char* apText) {
     if (strlen(apText) > QUEUE_SIZE_BYTES) throw std::runtime_error("Text is longer than " + std::to_string(QUEUE_SIZE_BYTES) + " characters.");
 
+    if (m_WriteQueue == nullptr) {
+        printf("WARNING: file queue was not created\n");
+        return;
+    }
+
     BaseType_t result;
     BaseType_t isIsr = xPortInIsrContext();
 
