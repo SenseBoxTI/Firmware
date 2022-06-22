@@ -98,7 +98,6 @@ void CFile::m_Open() {
     if (m_SdState == Unitizialized) throw std::runtime_error("SD card is not initialized");
 
     mp_File = fopen(mPath.c_str(), FileModes[m_Mode]);
-    m_FileUntouchedCnt = 0;
 
     if (!m_IsOpen()) throw std::runtime_error("File does not exist and cannot be created");
 }
@@ -142,9 +141,6 @@ void CFile::mWrite(const std::string& arText) {
     m_Open();
 
     fprintf(mp_File, arText.c_str());
-
-    // reset the counter
-    m_FileUntouchedCnt = 0;
 }
 
 void CFile::mAppend(const std::string& arText) {
@@ -225,12 +221,7 @@ void CFile::m_WriteFromQueue() {
             }
         }
 
-        m_FileUntouchedCnt = 0;
-    } else if (m_FileUntouchedCnt == maxUntouchedBeforeClose) {
-        m_FileUntouchedCnt = 0;
         m_Close();
-    } else if (m_IsOpen()) {
-        m_FileUntouchedCnt++;
     }
 }
 
@@ -274,7 +265,6 @@ CFile::CFile(CFile &&arrOther) {
     arrOther.mp_File = nullptr;
     m_WriteQueue = arrOther.m_WriteQueue;
     arrOther.m_WriteQueue = nullptr;
-    m_FileUntouchedCnt = arrOther.m_FileUntouchedCnt;
     m_WriteTimer = arrOther.m_WriteTimer;
     arrOther.m_WriteTimer = nullptr;
     m_WriteTimerName = arrOther.m_WriteTimerName;
@@ -288,7 +278,6 @@ CFile & CFile::operator=(CFile &&arrOther) {
     arrOther.mp_File = nullptr;
     m_WriteQueue = arrOther.m_WriteQueue;
     arrOther.m_WriteQueue = nullptr;
-    m_FileUntouchedCnt = arrOther.m_FileUntouchedCnt;
     m_WriteTimer = arrOther.m_WriteTimer;
     arrOther.m_WriteTimer = nullptr;
     m_WriteTimerName = arrOther.m_WriteTimerName;

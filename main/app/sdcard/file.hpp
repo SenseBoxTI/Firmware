@@ -67,7 +67,6 @@ private:
     FileMode m_Mode;
     FILE* mp_File;
     QueueHandle_t m_WriteQueue;
-    uint8_t m_FileUntouchedCnt;
     CTimer* m_WriteTimer;
     std::string m_WriteTimerName;
 };
