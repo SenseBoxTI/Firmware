@@ -41,10 +41,6 @@ void App::m_SendMeasurements(void* aArgs) {
 void App::start() {
     try {
         init();
-
-        vTaskDelay(1.25 * 60 * 1000 / portTICK_PERIOD_MS);
-
-        throw std::runtime_error("WE DEAD NOWWW!");
     }
     catch (const std::runtime_error& e) {
         softRestart(e);
