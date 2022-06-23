@@ -20,7 +20,7 @@ SensorOutput CMax4466::m_MeasureCallback() {
     SensorOutput output;
 
     float measurement = (static_cast<float>(m_SampleADC()) * m_rc) + m_offset;
-    output.emplace("db", measurement);
+    output.emplace("dB", measurement);
 
     return output;
 }
