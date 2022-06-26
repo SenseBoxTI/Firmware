@@ -85,7 +85,7 @@ void CWifi::m_EventHandler(void* apArg, esp_event_base_t aBase, int32_t aId, voi
     }
 }
 
-void CWifi::mInitWifi(const WifiCredentials& aConfig) {
+void CWifi::mInit(const WifiCredentials& aConfig) {
     logger.mInfo("Initializing WiFi");
     bool enterprise = !aConfig.eapUsername.empty();
     esp_err_t error;
@@ -204,17 +204,31 @@ void CWifi::mDeinit() {
 void CWifi::m_Reconnect(void* aSelf) {
     CWifi& self = *static_cast<CWifi*>(aSelf);
 
+    if (self.m_ReconnectCnt) return;
+    self.m_ReconnectCnt++;
+
     logger.mInfo("Reconnecting to network: %s.", self.mCredentials.ssid.c_str());
     esp_wifi_connect();
 
     vTaskDelay(5 * 1000 / portTICK_PERIOD_MS);
 
-    while (!self.mConnected()) {
+    // run for 10 times, counter starts at 1
+    while (!self.mConnected() && self.m_ReconnectCnt < 11) {
         logger.mInfo("Reconnecting to network: %s.", self.mCredentials.ssid.c_str());
         esp_wifi_disconnect();
         esp_wifi_connect();
         vTaskDelay(30 * 1000 / portTICK_PERIOD_MS);
+
+        self.m_ReconnectCnt++;
     }
+
+    // we have been disconnected from wifi for more than 5 minutes
+    // reinit wifi, hopefully this fixes any issues with reconnecting
+    // if we can't reconnect the wifi network is probably unavailable, and we end up here again
+    self.mDeinit();
+    self.mInit();
+
+    m_ReconnectCnt = 0;
 
     vTaskDelete(NULL);
 }

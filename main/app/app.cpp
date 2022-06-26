@@ -94,7 +94,7 @@ void App::initWifi(toml::Value config) {
             .password = config.get<std::string>("password")
         };
 
-        CWifi::getInstance().mInitWifi(credentials);
+        CWifi::getInstance().mInit(credentials);
     }
     catch (const std::runtime_error &e) {
         logger.mError("Initializing WiFi threw error: %s", e.what());

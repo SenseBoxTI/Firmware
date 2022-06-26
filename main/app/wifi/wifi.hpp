@@ -22,12 +22,12 @@ public:
     static CWifi& getInstance();
 
     /// @brief initialize WiFi with given credentials
-    void mInitWifi(const WifiCredentials& aConfig);
+    void mInit(const WifiCredentials& aConfig);
+    void mDeinit();
 
     /// @brief get if we are currently connected
     bool mConnected();
     void mDisconnect(); // currently unused, but might become useful at some point
-    void mDeinit();
 
 private:
     EventGroupHandle_t m_EventGroup;
@@ -38,4 +38,5 @@ private:
 
     std::vector<WifiCb> m_ConnectCbs;
     std::vector<WifiCb> m_DisconnectCbs;
+    uint8_t m_ReconnectCnt;
 };
