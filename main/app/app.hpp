@@ -24,7 +24,7 @@ private:
     static void m_SendMeasurements(void* aArgs);
 
     void initSdCard();
-    void initWifi(toml::Value config);
+    void initWifi();
     void initNtp();
     void initMqtt();
     void initSensors();

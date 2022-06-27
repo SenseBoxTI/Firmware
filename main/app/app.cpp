@@ -57,7 +57,7 @@ void App::init() {
         auto& config = CConfig::getInstance();
         config.mRead("/sdcard/config.toml");
 
-        initWifi(config["wifi"]);
+        initWifi();
         if (status == Init) initNtp();
         initMqtt();
         initSensors();
@@ -85,16 +85,9 @@ void App::initSdCard() {
     }
 }
 
-void App::initWifi(toml::Value config) {
+void App::initWifi() {
     try {
-        WifiCredentials credentials = {
-            .ssid = config.get<std::string>("ssid"),
-            .eapId = config.get<std::string>("eapId"),
-            .eapUsername = config.get<std::string>("eapUsername"),
-            .password = config.get<std::string>("password")
-        };
-
-        CWifi::getInstance().mInit(credentials);
+        CWifi::getInstance().mInit();
     }
     catch (const std::runtime_error &e) {
         logger.mError("Initializing WiFi threw error: %s", e.what());

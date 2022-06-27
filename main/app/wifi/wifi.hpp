@@ -22,7 +22,7 @@ public:
     static CWifi& getInstance();
 
     /// @brief initialize WiFi with given credentials
-    void mInit(const WifiCredentials& aConfig);
+    void mInit();
     void mDeinit();
 
     /// @brief get if we are currently connected

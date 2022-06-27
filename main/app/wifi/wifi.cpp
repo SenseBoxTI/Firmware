@@ -8,6 +8,7 @@
 #include "freertos/event_groups.h"
 #include "esp_err.h"
 #include <freertos/task.h>
+#include <config.hpp>
 
 #include <logscope.hpp>
 
@@ -85,11 +86,19 @@ void CWifi::m_EventHandler(void* apArg, esp_event_base_t aBase, int32_t aId, voi
     }
 }
 
-void CWifi::mInit(const WifiCredentials& aConfig) {
+void CWifi::mInit() {
+    auto& config = CConfig::getInstance()["wifi"];
+
+    mCredentials = {
+        .ssid = config.get<std::string>("ssid"),
+        .eapId = config.get<std::string>("eapId"),
+        .eapUsername = config.get<std::string>("eapUsername"),
+        .password = config.get<std::string>("password")
+    };
+
     logger.mInfo("Initializing WiFi");
-    bool enterprise = !aConfig.eapUsername.empty();
+    bool enterprise = !mCredentials.eapUsername.empty();
     esp_err_t error;
-    mCredentials = aConfig;
 
     // check if the client was already inited, for stability
     wifi_mode_t mode;
@@ -228,7 +237,7 @@ void CWifi::m_Reconnect(void* aSelf) {
     self.mDeinit();
     self.mInit();
 
-    m_ReconnectCnt = 0;
+    self.m_ReconnectCnt = 0;
 
     vTaskDelete(NULL);
 }
