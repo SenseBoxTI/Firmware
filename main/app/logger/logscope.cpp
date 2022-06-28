@@ -3,6 +3,8 @@
 #include <string>
 #include <stdarg.h>
 
+#include <CConfig.hpp>
+
 std::string string_vformat(const char* apFormat, va_list aArgs) {
     // get size
     size_t size = vsnprintf(nullptr, 0, apFormat, aArgs) + 1;

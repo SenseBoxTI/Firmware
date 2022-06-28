@@ -104,10 +104,10 @@ To configure things in an existing sensebox, you should put a `config.toml` file
     intensityOffset = 0
 
     [voc]
-    factor = 0
+    factor = 1
 
     [particles]
-    factor = 0
+    factor = 1
 
     [db]
     offset = 0
@@ -117,10 +117,12 @@ To configure things in an existing sensebox, you should put a `config.toml` file
     offset = 0
     rc = 1
 
-
 [mqtt]
+    url = ""
     deviceId = ""
     accessToken = ""
+    provisionKey = ""
+    provisionSecret = ""
 ```
 
 ------

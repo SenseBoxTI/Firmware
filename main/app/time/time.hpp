@@ -8,6 +8,7 @@ public:
     static struct tm mGetTime();
     static time_t mGetUnixTime();
     static std::string mGetTimeString();
+    static std::string mGetFormattedTimeString();
 
     CTime() = delete;
 

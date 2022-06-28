@@ -4,11 +4,13 @@
 #include <sys/unistd.h>
 #include <string.h>
 #include <iostream>
-#include "esp_vfs_fat.h"
 #include <stdexcept>
 #include "sdmmc_cmd.h"
+#include <CConfig.hpp>
+#include <freertos/portmacro.h>
 
 #include <logscope.hpp>
+#include <CTimers.hpp>
 
 #define SDSPI_DEFAULT_DMA 3
 #define TRANSFER_SIZE 4000
@@ -19,6 +21,8 @@
 #define PIN_MOSI 3
 #define PIN_MISO 1
 
+#define QUEUE_SIZE_BYTES 128
+
 static CLogScope logger{"file"};
 
 static const char FileModes[3][2] = {
@@ -28,34 +32,84 @@ static const char FileModes[3][2] = {
 };
 
 SdState CFile::m_SdState = Unitizialized;
+sdmmc_card_t* CFile::m_SdCard = nullptr;
 
-CFile::CFile(const std::string& arPath)
+CFile::CFile(const std::string& arPath, FileMode aMode)
 :   mPath(MOUNT_POINT "/" + arPath),
-    m_Mode(Closed),
-    mp_File(nullptr)
-{}
+    m_Mode(aMode),
+    mp_File(nullptr),
+    m_WriteTimer(nullptr)
+{
+    m_WriteTimerName = m_GetTimerName();
 
-void CFile::m_Open(FileMode aMode) {
-    if (m_SdState == Unitizialized) throw std::runtime_error("SD card should have been initialized");
+    if (aMode == Append) mStartWriteTimer();
+}
 
-    if (m_IsOpen()) m_Close();
+void CFile::mStartWriteTimer() {
+    if (m_Mode != Append) return;
 
-    mp_File = fopen(mPath.c_str(), FileModes[aMode]);
+    if (!CTimers::mCheckTimerExists(m_WriteTimerName.c_str())) {
+        printf("Starting write timer for file %s\n", mPath.c_str());
+        m_WriteTimer = CTimer::mInit(m_WriteTimerName.c_str(), &m_StartWrite, this);
+        m_WriteTimer->mStartPeriodic(FILE_WRITE_INTERVAL);
+    }
 
-    if (!m_IsOpen()) throw std::runtime_error("File does not exist and cannot be created");
+    if (m_WriteQueue == nullptr) {
+        m_WriteQueue = xQueueCreate(16, QUEUE_SIZE_BYTES); // queue of 16
+    }
+}
+
+void CFile::m_CleanTimers() {
+    // really important, otherwise creates a infinite loop
+    if (m_WriteQueue != nullptr && uxQueueMessagesWaiting(m_WriteQueue) > 0) mFinalizeAppend();
+
+    if (CTimers::mCheckTimerExists(m_WriteTimerName.c_str())) {
+        m_WriteTimer->mDelete();
+    }
+
+    if (m_WriteQueue != nullptr) {
+        vQueueDelete(m_WriteQueue);
+        m_WriteQueue = nullptr;
+    }
+}
+
+/**
+ * Not thread safe if the file is being written to
+ * But currently all tasks have the same prio so there should not be any context switching
+ */
+void CFile::mReopen(FileMode aMode) {
+    if (aMode == m_Mode) return;
+
+    if (m_Mode == Append) m_CleanTimers();
+
+    m_Close();
 
     m_Mode = aMode;
+
+    m_Open();
+
+    if (m_Mode == Append) mStartWriteTimer();
+}
+
+void CFile::m_Open() {
+    // do nothing if file is already opened
+    if (m_IsOpen()) return;
+
+    if (m_SdState == Unitizialized) throw std::runtime_error("SD card is not initialized");
+
+    mp_File = fopen(mPath.c_str(), FileModes[m_Mode]);
+
+    if (!m_IsOpen()) throw std::runtime_error("File does not exist and cannot be created");
 }
 
 void CFile::m_Close() {
-    if (m_IsOpen())
-    {
-        if (fclose(mp_File) < 0) {
-            throw std::runtime_error("Failed to close file properly");
-        }
+    if (!m_IsOpen()) return;
+
+    if (fclose(mp_File) < 0) {
+        throw std::runtime_error("Failed to close file properly");
     }
+
     mp_File = nullptr;
-    m_Mode = Closed;
 }
 
 bool CFile::m_IsOpen() {
@@ -64,11 +118,12 @@ bool CFile::m_IsOpen() {
 
 std::string CFile::mRead() {
     if (m_SdState == Unavailable) return "";
+    if (m_Mode != Read) std::runtime_error("File " + mPath + " is not opened in read mode");
 
     size_t size = mGetFileLength();
     if (size <= 0) return "";
 
-    m_Open(Read);
+    m_Open();
 
     std::string output;
     output.resize(size);
@@ -81,22 +136,53 @@ std::string CFile::mRead() {
 
 void CFile::mWrite(const std::string& arText) {
     if (m_SdState == Unavailable) return;
+    if (m_Mode != Write) std::runtime_error("File " + mPath + " is not opened in write mode");
 
-    m_Open(Write);
+    m_Open();
 
     fprintf(mp_File, arText.c_str());
-
-    m_Close();
 }
 
 void CFile::mAppend(const std::string& arText) {
     if (m_SdState == Unavailable) return;
+    if (m_Mode != Append) std::runtime_error("File " + mPath + " is not opened in append mode");
 
-    m_Open(Append);
+    const size_t strLen = arText.size();
 
-    fprintf(mp_File, arText.c_str());
+    if (strLen <= QUEUE_SIZE_BYTES) {
+        m_AddToQueue(arText.c_str());
+        return;
+    }
 
-    m_Close();
+    // add multiple items to the queue if the text is too long
+    for (size_t i = 0; i < strLen; i += QUEUE_SIZE_BYTES) {
+        m_AddToQueue(arText.substr(i, QUEUE_SIZE_BYTES).c_str());
+    }
+}
+
+/**
+ * Add item to the write queue
+ */
+void CFile::m_AddToQueue(const char* apText) {
+    if (strlen(apText) > QUEUE_SIZE_BYTES) throw std::runtime_error("Text is longer than " + std::to_string(QUEUE_SIZE_BYTES) + " characters.");
+
+    if (m_WriteQueue == nullptr) {
+        printf("WARNING: file queue was not created\n");
+        return;
+    }
+
+    BaseType_t result;
+    BaseType_t isIsr = xPortInIsrContext();
+
+    if (isIsr)  result = xQueueSendToBackFromISR(m_WriteQueue, apText, (TickType_t)0);
+    else        result = xQueueSendToBack(m_WriteQueue, apText, (TickType_t)0);
+
+    if (result == errQUEUE_FULL) {
+        m_WriteFromQueue();
+
+        if (isIsr)  xQueueSendToBackFromISR(m_WriteQueue, apText, (TickType_t)0);
+        else        xQueueSendToBack(m_WriteQueue, apText, (TickType_t)0);
+    }
 }
 
 bool CFile::mExists() {
@@ -115,6 +201,54 @@ void CFile::mDelete() {
     if (mExists()) remove(mPath.c_str());
 }
 
+/**
+ * purely a wrapper of m_WriteFromQueue() to satisfy the esp_timer callback
+ */
+void CFile::m_StartWrite(void* aSelf) {
+    CFile& self = *static_cast<CFile*>(aSelf);
+    self.m_WriteFromQueue();
+}
+
+/**
+ * Writes the messages from the queue to the log file
+ */
+void CFile::m_WriteFromQueue() {
+    if (uxQueueMessagesWaiting(m_WriteQueue) > 0) {
+        m_Open();
+
+        char buffer[QUEUE_SIZE_BYTES];
+
+        while (uxQueueMessagesWaiting(m_WriteQueue) > 0) {
+            if (xQueueReceive(m_WriteQueue, &buffer, (TickType_t)0)) {
+                fprintf(mp_File, buffer);
+            }
+        }
+
+        m_Close();
+    }
+}
+
+/**
+ * Write any data that is still pending from the queue and close the file
+ */
+void CFile::mFinalizeAppend() {
+    if (m_Mode != Append) return;
+
+    m_Open();
+
+    char buffer[QUEUE_SIZE_BYTES];
+
+    while (uxQueueMessagesWaiting(m_WriteQueue) > 0) {
+        if (xQueueReceive(m_WriteQueue, &buffer, (TickType_t)0)) {
+            fprintf(mp_File, buffer);
+        }
+    }
+
+    m_CleanTimers();
+
+    m_Close();
+}
+
 size_t CFile::mGetFileLength() {
     if (m_SdState == Unavailable) return 0;
 
@@ -127,30 +261,62 @@ size_t CFile::mGetFileLength() {
 }
 
 CFile::CFile(CFile &&arrOther) {
+    mPath = arrOther.mPath;
+
+    m_Mode = arrOther.m_Mode;
     mp_File = arrOther.mp_File;
     arrOther.mp_File = nullptr;
-
-    mPath = arrOther.mPath;
+    m_WriteQueue = arrOther.m_WriteQueue;
+    arrOther.m_WriteQueue = nullptr;
+    m_WriteTimer = arrOther.m_WriteTimer;
+    arrOther.m_WriteTimer = nullptr;
+    m_WriteTimerName = arrOther.m_WriteTimerName;
 }
 
 CFile & CFile::operator=(CFile &&arrOther) {
+    mPath = arrOther.mPath;
+
+    m_Mode = arrOther.m_Mode;
     mp_File = arrOther.mp_File;
     arrOther.mp_File = nullptr;
-
-    mPath = arrOther.mPath;
+    m_WriteQueue = arrOther.m_WriteQueue;
+    arrOther.m_WriteQueue = nullptr;
+    m_WriteTimer = arrOther.m_WriteTimer;
+    arrOther.m_WriteTimer = nullptr;
+    m_WriteTimerName = arrOther.m_WriteTimerName;
 
     return *this;
 }
 
 CFile::~CFile() {
     m_Close();
+    if (m_WriteTimer != nullptr && CTimers::mCheckTimerExists(m_WriteTimerName.c_str())) {
+        m_WriteTimer->mDelete();
+    }
+    if (m_WriteQueue != nullptr) {
+        vQueueDelete(m_WriteQueue);
+    }
+}
+
+std::string CFile::m_GetTimerName() {
+    const size_t len = mPath.size();
+    const size_t maxLen = CONFIG_FREERTOS_MAX_TASK_NAME_LEN;
+
+    if (len <= maxLen) return mPath;
+    return mPath.substr(len - maxLen);
 }
 
 void CFile::mInitSd() {
+    if (m_SdState == Disabled) {
+        m_SdState = Ready;
+        logger.mDebug("Filesystem reinstated.");
+        sdmmc_card_print_info(stdout, m_SdCard);
+        return;
+    }
+
     m_SdState = Unavailable;
 
     esp_err_t ret;
-    sdmmc_card_t * sdCard;
 
     esp_vfs_fat_sdmmc_mount_config_t mount_config = {
         .format_if_mount_failed = false,
@@ -173,7 +339,7 @@ void CFile::mInitSd() {
     };
 
     logger.mDebug("Initializing bus");
-    ret = spi_bus_initialize((spi_host_device_t)SDSPI_DEFAULT_HOST, &bus_cfg, SDSPI_DEFAULT_DMA);
+    ret = spi_bus_initialize((spi_host_device_t)host.slot, &bus_cfg, SDSPI_DEFAULT_DMA);
     if (ret != ESP_OK) {
         logger.mError("Failed to initialize spi bus.");
         throw std::runtime_error(esp_err_to_name(ret));
@@ -183,7 +349,7 @@ void CFile::mInitSd() {
     slot_config.gpio_cs = static_cast<gpio_num_t>(PIN_CS);
     slot_config.host_id = static_cast<spi_host_device_t>(host.slot);
     logger.mDebug("Mounting filesystem");
-    ret = esp_vfs_fat_sdspi_mount(MOUNT_POINT, &host, &slot_config, &mount_config, &sdCard);
+    ret = esp_vfs_fat_sdspi_mount(MOUNT_POINT, &host, &slot_config, &mount_config, &m_SdCard);
 
     if (ret != ESP_OK) {
         if (ret == ESP_FAIL) {
@@ -200,7 +366,18 @@ void CFile::mInitSd() {
 
     logger.mDebug("Filesystem mounted");
     m_SdState = Ready;
-    sdmmc_card_print_info(stdout, sdCard);
+    sdmmc_card_print_info(stdout, m_SdCard);
+}
+
+/**
+ * disable the sd card, using the unmount function just crashes the whole system.
+ */
+void CFile::mDeinitSd() {
+    m_SdState = Disabled;
+
+    // esp_vfs_fat_sdcard_unmount(MOUNT_POINT, m_SdCard);
+
+    logger.mInfo("SD usage has been disabled.");
 }
 
 SdState CFile::getSdState() {

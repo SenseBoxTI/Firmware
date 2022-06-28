@@ -4,43 +4,37 @@
 #include "esp_sntp.h"
 #include <stdexcept>
 #include <logscope.hpp>
+#include <CConfig.hpp>
 
 static CLogScope logger{"time"};
-#define TIMEZONE "CET-1CEST,M3.4.0/2,M10.4.0/2" //timezone NL
 
 bool CTime::mb_IsInitialized = false;
+
+extern std::string string_vformat(const char* apFormat, ...);
 
 void CTime::mInitTime(const char* apNtpServer) {
     auto& wifi = CWifi::getInstance();
 
-    int retry = 0;
-    const int retry_count = 15;
-
-    logger.mInfo("Waiting for wifi to connect...");
-    while (!wifi.mConnected() && ++retry < retry_count) {
-        logger.mDebug("Waiting... (%d/%d)", retry, retry_count);
-        vTaskDelay(2000 / portTICK_PERIOD_MS);
-    }
-
     if (!wifi.mConnected()) throw std::runtime_error("Need a active internet connection to get the time.");
 
-    logger.mDebug("Initializing SNTP");
+    logger.mDebug("Initializing NTP");
     sntp_servermode_dhcp(1);
     sntp_setoperatingmode(SNTP_OPMODE_POLL);
     sntp_setservername(1, apNtpServer);
     sntp_setservername(0, apNtpServer);
     sntp_init();
 
-    retry = 0;
+    uint8_t retry = 0;
+    const uint8_t retryCnt = 15;
 
     logger.mInfo("Waiting for system time to be set...");
-    while (sntp_get_sync_status() == SNTP_SYNC_STATUS_RESET && ++retry < retry_count) {
-        logger.mDebug("Waiting...  (%d/%d)", retry, retry_count);
-        vTaskDelay(2000 / portTICK_PERIOD_MS);
+    while (sntp_get_sync_status() == SNTP_SYNC_STATUS_RESET && ++retry <= retryCnt) {
+        logger.mDebug("Waiting...  (%d/%d)", retry, retryCnt);
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 
     // check if we have time
-    if (retry == retry_count) throw std::runtime_error("Could not get the time from NTP server.");
+    if (retry == retryCnt) throw std::runtime_error("Could not get the time from NTP server.");
 
     setenv("TZ", TIMEZONE, 1);
     tzset();
@@ -71,4 +65,26 @@ std::string CTime::mGetTimeString() {
     size_t l = strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
 
     return std::string(strftime_buf, l);
+}
+
+std::string CTime::mGetFormattedTimeString() {
+    std::string timeString;
+
+    try {
+        struct tm timeinfo = CTime::mGetTime();
+        timeString = string_vformat(
+            "[ %02d/%02d/%4d | %02d:%02d:%02d ]",
+            timeinfo.tm_mday,
+            timeinfo.tm_mon + 1, // tm mon 0-11
+            timeinfo.tm_year + 1900, // tm years since 1900
+            timeinfo.tm_hour,
+            timeinfo.tm_min,
+            timeinfo.tm_sec
+        );
+    }
+    catch (const std::runtime_error& e) {
+        timeString = "[  TIME  UNINITIALIZED  ]";
+    }
+
+    return timeString;
 }

@@ -1,0 +1,41 @@
+[wifi]
+    ssid = ""
+    eapId = ""
+    eapUsername = ""
+    password = ""
+
+[calibration]
+    [scd30]
+    temperatureOffset = 0
+
+    [colorspectrum]
+    magentaOffset = 0
+    blueOffset = 0
+    greenOffset = 0
+    yellowOffset = 0
+    orangeOffset = 0
+    redOffset = 0
+
+    [lightintensity]
+    intensityOffset = 0
+
+    [voc]
+    factor = 1
+
+    [particles]
+    factor = 1
+
+    [db]
+    offset = 0
+    rc = 1
+
+    [o2]
+    offset = 0
+    rc = 1
+
+[mqtt]
+    url = ""
+    deviceId = ""
+    accessToken = ""
+    provisionKey = ""
+    provisionSecret = ""

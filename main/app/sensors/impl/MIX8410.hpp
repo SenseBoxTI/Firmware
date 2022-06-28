@@ -2,8 +2,7 @@
 
 #include <sensor.hpp>
 
-
-class CO2Sensor : public CSensor {
+class CMix8410 : public CSensor {
     public:
     using CSensor::CSensor;
 

@@ -3,4 +3,4 @@
 #include <map>
 #include <string>
 
-typedef std::map<std::string, std::string> SensorOutput;
+typedef std::map<std::string, float> SensorOutput;

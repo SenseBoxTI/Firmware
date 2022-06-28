@@ -1,28 +1,28 @@
-#include "scdsensor.hpp"
+#include "SCD30.hpp"
 #include <Adafruit_SCD30.h>
 #include <config.hpp>
+#include <CConfig.hpp>
 
 Adafruit_SCD30 scd30 = Adafruit_SCD30();
 
-SensorOutput CScdSensor::m_MeasureCallback() {
+SensorOutput CScd30::m_MeasureCallback() {
     SensorOutput output;
+
     if (scd30.dataReady() && scd30.read()) {
+        output.emplace("temperature", scd30.temperature);
+        output.emplace("relative_humidity", scd30.relative_humidity);
+        output.emplace("CO2", scd30.CO2);
+
         m_LastTemperature = scd30.temperature;
         m_LastRelative_humidity = scd30.relative_humidity;
-        m_LastCO2 = scd30.CO2;
-
-        output.emplace("temperature", std::to_string(m_LastTemperature));
-        output.emplace("relative_humidity", std::to_string(m_LastRelative_humidity));
-        output.emplace("CO2", std::to_string(m_LastCO2));
-    } else {
-        output.emplace("temperature", "NaN");
-        output.emplace("relative_humidity", "NaN");
-        output.emplace("CO2", "NaN");
     }
+
     return output;
 }
 
-CSensorStatus CScdSensor::m_InitCallback() {
+CSensorStatus CScd30::m_InitCallback() {
+    m_MeasureInterval = SCD30_MEASURE_INTERVAL_US;
+
     if (!Wire.begin(47, 48)) {
         return CSensorStatus::Error("TwoWire failed to init!");
     }
