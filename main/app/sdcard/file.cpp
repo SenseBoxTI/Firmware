@@ -213,8 +213,6 @@ void CFile::m_StartWrite(void* aSelf) {
  * Writes the messages from the queue to the log file
  */
 void CFile::m_WriteFromQueue() {
-    static const uint8_t maxUntouchedBeforeClose = FILE_CLOSE_TIMEOUT / FILE_WRITE_INTERVAL;
-
     if (uxQueueMessagesWaiting(m_WriteQueue) > 0) {
         m_Open();
 
