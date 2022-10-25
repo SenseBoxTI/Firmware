@@ -44,12 +44,16 @@ void CWifi::m_EventHandler(void* apArg, esp_event_base_t aBase, int32_t aId, voi
                 break;
             case WIFI_EVENT_STA_DISCONNECTED: {
                 logger.mInfo("WIFI_EVENT_STA_DISCONNECTED");
+
+                // NOTE(JENSON): Call all wifi disconnect callbacks
                 for (auto& func : self.m_DisconnectCbs) func();
 
+                // NOTE(JENSON): Seems to be resetting its memory parts for an ip and a event group?
                 xEventGroupClearBits(self.m_EventGroup, CONNECTED_BIT);
                 memset(&self.mIp, 0, sizeof(decltype(self.mIp)));
 
                 // create task to move of the event task, low priority so it does not block other wifi events
+                // NOTE(JENSON): Low priority? There are no other wifi events right? aren't you disconnected
                 xTaskHandle handle = NULL;
                 xTaskCreatePinnedToCore(&m_Reconnect, "wifiReconnect", CONFIG_PTHREAD_TASK_STACK_SIZE_DEFAULT, &self, 2, &handle, 1);
                 break;
@@ -64,9 +68,11 @@ void CWifi::m_EventHandler(void* apArg, esp_event_base_t aBase, int32_t aId, voi
             case IP_EVENT_STA_GOT_IP:
                 logger.mDebug("IP_EVENT_STA_GOT_IP");
 
+                // NOTE(JENSON): Idk what this function does but it seems that we are storing important data in ROM
                 xEventGroupSetBits(self.m_EventGroup, CONNECTED_BIT);
                 esp_netif_get_ip_info(self.m_StaNetif, &self.mIp);
 
+                // NOTE(JENSON): Calling all the wifi connection callbacks
                 for (auto& func : self.m_ConnectCbs) func();
                 break;
             case IP_EVENT_STA_LOST_IP:
@@ -185,13 +191,14 @@ void CWifi::mDisconnect() {
  * removes any callbacks that were set before
  */
 void CWifi::mDeinit() {
+    logger.mInfo("Will deinitialize now.");
     esp_event_handler_unregister(WIFI_EVENT, ESP_EVENT_ANY_ID, &CWifi::m_EventHandler);
     esp_event_handler_unregister(IP_EVENT, ESP_EVENT_ANY_ID, &CWifi::m_EventHandler);
 
-    logger.mDebug("wifi_init_sta stop sta");
+    logger.mDebug("wifi_init_sta stopping");
     ESP_ERROR_CHECK(esp_wifi_stop());
 
-    logger.mDebug("wifi_init_sta deinit sta");
+    logger.mDebug("Deinitialisation of wifi_init_sta starting");
     ESP_ERROR_CHECK(esp_wifi_deinit());
 
     for (auto& func : m_DisconnectCbs) func();
@@ -202,7 +209,7 @@ void CWifi::mDeinit() {
     m_ConnectCbs.clear();
     m_DisconnectCbs.clear();
 
-    logger.mDebug("wifi succesfully deinited");
+    logger.mInfo("Succesfully deinitialized");
 }
 
 /**
@@ -234,8 +241,12 @@ void CWifi::m_Reconnect(void* aSelf) {
     // we have been disconnected from wifi for more than 5 minutes
     // reinit wifi, hopefully this fixes any issues with reconnecting
     // if we can't reconnect the wifi network is probably unavailable, and we end up here again
-    self.mDeinit();
-    self.mInit();
+    // NOTE(JENSON): There doesn't seem to be a check for connection here and therefor its breaking the wifi stack right?
+    // NOTE(JENSON): Added a connection check before deinitializing
+    if (!(self.mConnected())) {
+        self.mDeinit();
+        self.mInit();
+    };
 
     self.m_ReconnectCnt = 0;
 

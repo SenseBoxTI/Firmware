@@ -116,8 +116,7 @@ void CMqtt::mDisconnect() {
 
 void CMqtt::mDeinit() {
     if (m_Client == NULL) return;
-
-    logger.mDebug("Client will deinit now.");
+    logger.mInfo("Client will deinit now.");
 
     esp_err_t ret;
     // no need to call disconnect or stop, this is done in esp_mqtt_client_destroy()
@@ -125,7 +124,7 @@ void CMqtt::mDeinit() {
 
     m_Client = NULL;
 
-    logger.mDebug("Client was deinited.");
+    logger.mInfo("Client was deinited.");
 }
 
 void CMqtt::mReconnect() {
