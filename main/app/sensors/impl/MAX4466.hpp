@@ -8,7 +8,7 @@ class CMax4466 : public CSensor {
 
     private:
     void* m_AdcCharacteristics = nullptr;
-    float m_rc = 1.0f;
+    float m_rc = 0.0f;
     float m_offset = 0.0f;
 
     uint32_t m_SampleADC();
