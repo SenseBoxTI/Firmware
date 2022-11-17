@@ -39,4 +39,6 @@ private:
     std::vector<WifiCb> m_ConnectCbs;
     std::vector<WifiCb> m_DisconnectCbs;
     uint8_t m_ReconnectCnt;
+
+    bool m_beaconTimeout = false;
 };

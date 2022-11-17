@@ -160,6 +160,8 @@ void App::startSendingData() {
 }
 
 uint8_t App::deinit() {
+    logger.mError("Starting deinitialisation");
+
     auto& mqtt = CMqtt::getInstance();
     auto& wifi = CWifi::getInstance();
     auto& log = CLog::getInstance();

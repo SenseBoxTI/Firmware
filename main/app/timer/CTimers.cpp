@@ -57,6 +57,8 @@ void CTimers::mRemoveTimer(const char* apName) {
  * only run after the program has reached a fatal error
  */
 void CTimers::mCleanTimers() {
+    logger.mInfo("Starting cleanup of timers.");
+
     // delete each item in the queue
     for (auto& tp : m_Timers) {
         auto timer = tp.second;
