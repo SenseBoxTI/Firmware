@@ -52,11 +52,24 @@ void CWifi::m_EventHandler(void* apArg, esp_event_base_t aBase, int32_t aId, voi
                 xEventGroupClearBits(self.m_EventGroup, CONNECTED_BIT);
                 memset(&self.mIp, 0, sizeof(decltype(self.mIp)));
 
+                // give the AP a bit of time to rethink the connection, connecting instantly to the AP after a disconnect
+                // results in issues of 1 hour no data
+                if (self.m_beaconTimeout) {
+                    vTaskDelay(60 * 1000 / portTICK_PERIOD_MS);
+                }
+                self.m_beaconTimeout = false;
+
                 // create task to move of the event task, low priority so it does not block other wifi events
                 // NOTE(JENSON): Low priority? There are no other wifi events right? aren't you disconnected
                 xTaskHandle handle = NULL;
                 xTaskCreatePinnedToCore(&m_Reconnect, "wifiReconnect", CONFIG_PTHREAD_TASK_STACK_SIZE_DEFAULT, &self, 2, &handle, 1);
                 break;
+            }
+            case WIFI_EVENT_STA_BEACON_TIMEOUT: {
+                logger.mInfo("WIFI_EVENT_STA_BEACON_TIMEOUT");
+
+                // this is like a timeout, if it doesn't receive answers from the AP it will result in a WIFI_EVENT_STA_DISCONNECTED
+                self.m_beaconTimeout = true;
             }
             default:
                 logger.mDebug("Unhandled wifi event id: %d", aId);
