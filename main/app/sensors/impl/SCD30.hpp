@@ -11,6 +11,7 @@ class CScd30 : public CSensor {
     private:
         float m_LastTemperature = 0.0f;
         float m_LastRelative_humidity = 0.0f;
+        float m_tempOffset = 0.0f;
 
         SensorOutput m_MeasureCallback();
         CSensorStatus m_InitCallback();
