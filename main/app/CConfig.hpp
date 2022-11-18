@@ -1,6 +1,6 @@
 #pragma once
 
-#define DEBUG_ENABLED 0
+#define DEBUG_ENABLED 1
 
 // public key
 #define MQTT_TLS_CERT \

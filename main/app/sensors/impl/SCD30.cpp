@@ -9,7 +9,8 @@ SensorOutput CScd30::m_MeasureCallback() {
     SensorOutput output;
 
     if (scd30.dataReady() && scd30.read()) {
-        output.emplace("temperature", scd30.temperature);
+//        printf("Temperature = %f\n TempOffset = %i\n Temp new value = %f\n", scd30.temperature, m_tempOffset, (scd30.temperature + m_tempOffset));
+        output.emplace("temperature", scd30.temperature + m_tempOffset);
         output.emplace("relative_humidity", scd30.relative_humidity);
         output.emplace("CO2", scd30.CO2);
 
@@ -31,10 +32,11 @@ CSensorStatus CScd30::m_InitCallback() {
         auto& calibration = CConfig::getInstance()["calibration"];
 
         if (calibration.valid()) {
-            auto& scdSensorCalibration = calibration["scd"];
-
+            auto& scdSensorCalibration = calibration["scd30"];
             if (scdSensorCalibration.valid()) {
-                scd30.setTemperatureOffset(scdSensorCalibration.get<int>("temperatureOffset"));
+//                scd30.setTemperatureOffset(scdSensorCalibration.get<int>("temperatureOffset"));
+                m_tempOffset = scdSensorCalibration.get<double>("temperatureOffset");
+                printf("%f", m_tempOffset);
             }
         }
 

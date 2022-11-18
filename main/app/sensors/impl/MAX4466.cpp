@@ -4,16 +4,29 @@
 #include <CConfig.hpp>
 
 uint32_t CMax4466::m_SampleADC() {
-    const int samples = 64;
     uint32_t reading = 0;
+    uint32_t highest_sample = 0;
+    uint32_t lowest_sample = 4049;
+    int64_t startMillis = esp_timer_get_time();
 
-    for (int i = 0; i < samples; i++) {\
-        reading += adc1_get_raw(static_cast<adc1_channel_t>(ADC_CHANNEL_7));
+    // sample every 50ms aka 20hz (lowest hz a human can hear)
+    while (esp_timer_get_time() - startMillis < 50000) {
+        reading = adc1_get_raw(static_cast<adc1_channel_t>(ADC_CHANNEL_7));
+
+        if (reading > highest_sample) {
+            highest_sample = reading;
+        } else if (reading < lowest_sample) {
+            lowest_sample = reading;
+        }
     }
-
-    reading /= samples;
-
-    return esp_adc_cal_raw_to_voltage(reading, static_cast<esp_adc_cal_characteristics_t*>(m_AdcCharacteristics));
+    // calculate average of the 20hz
+    uint32_t peakToPeak = highest_sample - lowest_sample;
+    //     voltage = ((average peak * 3.3v) / ADC channel) * magic number
+    double voltage = ((peakToPeak * 3.3) / 4048) * 0.707;
+    //       result = log10( voltage / rc) * magic number) - mic sensitivity + magic number - amp gain
+    uint32_t result = (log10(voltage / m_rc) * 20) - 44 + 94 - 25;
+//                                        0.00631  0.005012
+    return result;
 }
 
 SensorOutput CMax4466::m_MeasureCallback() {
@@ -41,6 +54,8 @@ CSensorStatus CMax4466::m_InitCallback() {
         if (dbSensorCalibration.valid()) {
             m_rc = dbSensorCalibration.get<double>("rc");
             m_offset = dbSensorCalibration.get<double>("offset");
+            printf("%f", m_rc);
+            printf("%f", m_offset);
         }
     }
 
